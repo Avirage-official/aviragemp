@@ -259,7 +259,7 @@ const StarField = () => {
 interface CardProps {
   code: typeof CULTURAL_CODES[0];
   index: number;
-  rotation: number;
+  rotation: ReturnType<typeof useSpring>;
   totalCards: number;
   onCardClick: () => void;
 }
@@ -269,18 +269,20 @@ const CarouselCard = ({ code, index, rotation, totalCards, onCardClick }: CardPr
   const cardAngle = index * anglePerCard;
   const radius = 600;
   
-  // Calculate position based on rotation
-  const adjustedAngle = cardAngle - rotation;
-  const x = Math.sin(adjustedAngle) * radius;
-  const z = Math.cos(adjustedAngle) * radius;
+  const adjustedAngle = useTransform(rotation, (r) => cardAngle - r);
+  const x = useTransform(adjustedAngle, (angle) => Math.sin(angle) * radius);
+  const z = useTransform(adjustedAngle, (angle) => Math.cos(angle) * radius);
   
   // Scale and opacity based on z position (depth)
-  const scale = 0.6 + (z + radius) / (radius * 2) * 0.6;
-  const opacity = 0.3 + (z + radius) / (radius * 2) * 0.7;
-  const blur = Math.max(0, (radius - z) / 100);
+  const scale = useTransform(z, (zVal) => 0.6 + (zVal + radius) / (radius * 2) * 0.6);
+  const opacity = useTransform(z, (zVal) => 0.3 + (zVal + radius) / (radius * 2) * 0.7);
+  const blur = useTransform(z, (zVal) => Math.max(0, (radius - zVal) / 100));
   
-  // Check if card is in center
-  const isCenter = Math.abs(adjustedAngle % (2 * Math.PI)) < 0.3;
+  // Transform for checking if centered (using adjustedAngle)
+  const isNearCenter = useTransform(adjustedAngle, (angle) => {
+    const normalizedAngle = ((angle % (2 * Math.PI)) + (2 * Math.PI)) % (2 * Math.PI);
+    return normalizedAngle < 0.3 || normalizedAngle > (2 * Math.PI - 0.3);
+  });
   
   return (
     <motion.div
@@ -292,14 +294,15 @@ const CarouselCard = ({ code, index, rotation, totalCards, onCardClick }: CardPr
         top: '50%',
         marginLeft: '-130px',
         marginTop: '-240px',
-        transform: `translate3d(${x}px, 0, ${z}px) scale(${scale})`,
+        x,
+        z,
+        scale,
         opacity,
-        filter: `blur(${blur}px)`,
-        zIndex: Math.round(z),
-        pointerEvents: isCenter ? 'auto' : 'none',
+        filter: useTransform(blur, (b) => `blur(${b}px)`),
+        zIndex: useTransform(z, (zVal) => Math.round(zVal)),
+        rotateY: useTransform(adjustedAngle, (angle) => `${angle * (180 / Math.PI)}deg`),
       }}
       onClick={onCardClick}
-      whileHover={isCenter ? { scale: scale * 1.05 } : {}}
       transition={{ type: 'spring', stiffness: 300, damping: 30 }}
     >
       <div className="relative w-full h-full rounded-2xl overflow-hidden shadow-2xl border border-white/20 backdrop-blur-sm">
@@ -337,15 +340,7 @@ const CarouselCard = ({ code, index, rotation, totalCards, onCardClick }: CardPr
           <div className="space-y-2">
             <h3 className="text-3xl font-bold tracking-wide drop-shadow-lg">{code.name}</h3>
             <p className="text-sm opacity-90 font-light">{code.tagline}</p>
-            {isCenter && (
-              <motion.p
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="text-xs opacity-75 italic"
-              >
-                Click to explore
-              </motion.p>
-            )}
+            <p className="text-xs opacity-75 italic">Click to explore</p>
           </div>
         </div>
       </div>
@@ -461,7 +456,7 @@ export default function LandingPage() {
                   key={code.id}
                   code={code}
                   index={index}
-                  rotation={useTransform(rotation, (r) => r)}
+                  rotation={rotation}
                   totalCards={CULTURAL_CODES.length}
                   onCardClick={() => handleCardClick(code)}
                 />
