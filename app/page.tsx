@@ -11,26 +11,26 @@ import { Sparkles, LogIn, UserPlus } from 'lucide-react';
 ====================================================== */
 
 const CULTURAL_CODES = [
-  { id: 'khoisan', name: 'KHOISAN', image: '/images/codes/KHOISAN-frontpage.jpeg', tagline: 'Hyper-Acute Perception' },
-  { id: 'kayori', name: 'KÁYORI', image: '/images/codes/KAYORI-frontpage.jpeg', tagline: 'Expressive Ritual Creativity' },
-  { id: 'sahen', name: 'SAHÉN', image: '/images/codes/SAHEN-frontpage.jpeg', tagline: 'Desert Wisdom' },
-  { id: 'enzuka', name: 'ENZUKA', image: '/images/codes/ENZUKA-frontpage.jpeg', tagline: 'Warrior Discipline' },
-  { id: 'siyuane', name: 'SIYUANÉ', image: '/images/codes/SIYUANE-frontpage.jpeg', tagline: 'Generational Harmony' },
-  { id: 'jaejin', name: 'JAEJIN', image: '/images/codes/JAEJIN-frontpage.jpeg', tagline: 'Compressed Emotion' },
-  { id: 'namsea', name: 'NAMSÉA', image: '/images/codes/NAMSEA-frontpage.jpeg', tagline: 'Water-Based Cognition' },
-  { id: 'shokunin', name: 'SHOKUNIN', image: '/images/codes/SHOKUNIN-frontpage.jpeg', tagline: 'Craft Mastery' },
-  { id: 'khoruun', name: 'KHORUUN', image: '/images/codes/KHORUUN-frontpage.jpeg', tagline: 'Nomadic Mobility' },
-  { id: 'lhumir', name: 'LHUMIR', image: '/images/codes/LHUMIR-frontpage.jpeg', tagline: 'Stillness & Meaning' },
-  { id: 'yatevar', name: 'YATEVAR', image: '/images/codes/YATEVAR-frontpage.jpeg', tagline: 'Warrior Philosopher' },
-  { id: 'renara', name: 'RÉNARA', image: '/images/codes/RENARA-frontpage.jpeg', tagline: 'Refined Subtlety' },
-  { id: 'karayni', name: 'KARAYNI', image: '/images/codes/KARAYNI-frontpage.jpeg', tagline: 'Sacred Reciprocity' },
-  { id: 'wohaka', name: 'WÓHAKA', image: '/images/codes/WOHAKA-frontpage.jpeg', tagline: 'All Beings as Kin' },
-  { id: 'tjukari', name: 'TJUKARI', image: '/images/codes/TJUKARI-frontpage.jpeg', tagline: 'Dreamtime Cosmology' },
-  { id: 'kinmora', name: 'KINMORA', image: '/images/codes/KINMORA-frontpage.jpeg', tagline: 'Cosmic Cycles' },
-  { id: 'siljoa', name: 'SILJOA', image: '/images/codes/SILJOA-frontpage.jpeg', tagline: 'Arctic Intelligence' },
-  { id: 'skenari', name: 'SKÉNARI', image: '/images/codes/SKENARI-frontpage.jpeg', tagline: 'Seventh Generation' },
-  { id: 'ashkara', name: 'ASHKARA', image: '/images/codes/ASHKARA-frontpage.jpeg', tagline: 'Truth as Action' },
-  { id: 'alethir', name: 'ALÉTHIR', image: '/images/codes/ALETHIR-frontpage.jpeg', tagline: 'Logos Inquiry' }
+  { id: 'khoisan', name: 'KHOISAN', image: '/images/codes/KHOISAN-frontpage.jpeg .jpeg', tagline: 'Hyper-Acute Perception' },
+  { id: 'kayori', name: 'KÁYORI', image: '/images/codes/KAYORI-frontpage.jpeg .jpeg', tagline: 'Expressive Ritual Creativity' },
+  { id: 'sahen', name: 'SAHÉN', image: '/images/codes/SAHEN-frontpage.jpeg .jpeg', tagline: 'Desert Wisdom' },
+  { id: 'enzuka', name: 'ENZUKA', image: '/images/codes/ENZUKA-frontpage.jpeg .jpeg', tagline: 'Warrior Discipline' },
+  { id: 'siyuane', name: 'SIYUANÉ', image: '/images/codes/SIYUANE-frontpage.jpeg .jpeg', tagline: 'Generational Harmony' },
+  { id: 'jaejin', name: 'JAEJIN', image: '/images/codes/JAEJIN-frontpage.jpeg .jpeg', tagline: 'Compressed Emotion' },
+  { id: 'namsea', name: 'NAMSÉA', image: '/images/codes/NAMSEA-frontpage.jpeg .jpeg', tagline: 'Water-Based Cognition' },
+  { id: 'shokunin', name: 'SHOKUNIN', image: '/images/codes/SHOKUNIN-frontpage.jpeg .jpeg', tagline: 'Craft Mastery' },
+  { id: 'khoruun', name: 'KHORUUN', image: '/images/codes/KHORUUN-frontpage.jpeg .jpeg', tagline: 'Nomadic Mobility' },
+  { id: 'lhumir', name: 'LHUMIR', image: '/images/codes/LHUMIR-frontpage.jpeg .jpeg', tagline: 'Stillness & Meaning' },
+  { id: 'yatevar', name: 'YATEVAR', image: '/images/codes/YATEVAR-frontpage.jpeg .jpeg', tagline: 'Warrior Philosopher' },
+  { id: 'renara', name: 'RÉNARA', image: '/images/codes/RENARA-frontpage.jpeg .jpeg', tagline: 'Refined Subtlety' },
+  { id: 'karayni', name: 'KARAYNI', image: '/images/codes/KARAYNI-frontpage.jpeg .jpeg', tagline: 'Sacred Reciprocity' },
+  { id: 'wohaka', name: 'WÓHAKA', image: '/images/codes/WOHAKA-frontpage.jpeg .jpeg', tagline: 'All Beings as Kin' },
+  { id: 'tjukari', name: 'TJUKARI', image: '/images/codes/TJUKARI-frontpage.jpeg .jpeg', tagline: 'Dreamtime Cosmology' },
+  { id: 'kinmora', name: 'KINMORA', image: '/images/codes/KINMORA-frontpage.jpeg .jpeg', tagline: 'Cosmic Cycles' },
+  { id: 'siljoa', name: 'SILJOA', image: '/images/codes/SILJOA-frontpage.jpeg .jpeg', tagline: 'Arctic Intelligence' },
+  { id: 'skenari', name: 'SKÉNARI', image: '/images/codes/SKENARI-frontpage.jpeg .jpeg', tagline: 'Seventh Generation' },
+  { id: 'ashkara', name: 'ASHKARA', image: '/images/codes/ASHKARA-frontpage.jpeg .jpeg', tagline: 'Truth as Action' },
+  { id: 'alethir', name: 'ALÉTHIR', image: '/images/codes/ALETHIR-frontpage.jpeg .jpeg', tagline: 'Logos Inquiry' }
 ];
 
 /* ======================================================
