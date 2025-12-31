@@ -1,191 +1,191 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence, useMotionValue } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles, ArrowRight, LogIn, UserPlus, ChevronLeft, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 
-// Cultural Codes data with enhanced visuals
+// REAL Cultural Codes with authentic data
 const CULTURAL_CODES = [
   {
+    id: 'khoisan',
+    name: 'KHOISAN',
+    origin: 'Khoisan Peoples',
+    tagline: 'Hyper-Acute Perception',
+    essence: 'Hyper-acute environmental perception, radical egalitarianism, present-moment survival intelligence',
+    gradient: 'from-amber-900 via-orange-800 to-amber-700',
+    icon: '🏹',
+  },
+  {
+    id: 'kayori',
+    name: 'KÁYORI',
+    origin: 'Yoruba',
+    tagline: 'Expressive Ritual Creativity',
+    essence: 'Expressive ritual creativity, destiny-aware, communal intellect, oral-intellectual tradition',
+    gradient: 'from-purple-900 via-fuchsia-800 to-purple-700',
+    icon: '🎭',
+  },
+  {
+    id: 'sahen',
+    name: 'SAHÉN',
+    origin: 'Tuareg',
+    tagline: 'Desert Wisdom',
+    essence: 'Introspective poetic identity, desert wisdom, existential longing, nomadic autonomy',
+    gradient: 'from-yellow-900 via-amber-800 to-yellow-700',
+    icon: '🏜️',
+  },
+  {
+    id: 'enzuka',
+    name: 'ENZUKA',
+    origin: 'Maasai + Zulu',
+    tagline: 'Warrior Discipline',
+    essence: 'Strength through people, courage as social duty, warrior discipline, collective honor',
+    gradient: 'from-red-900 via-orange-800 to-red-700',
+    icon: '🛡️',
+  },
+  {
+    id: 'siyuane',
+    name: 'SIYUANÉ',
+    origin: 'Ethiopian + Han Chinese',
+    tagline: 'Generational Harmony',
+    essence: 'Harmony sustained across generations, long continuity, hierarchical order, disciplined tradition',
+    gradient: 'from-emerald-900 via-teal-800 to-emerald-700',
+    icon: '🏛️',
+  },
+  {
+    id: 'jaejin',
+    name: 'JAEJIN',
+    origin: 'Korean',
+    tagline: 'Compressed Emotion (Han)',
+    essence: 'Strength forged under constraint, compressed emotion (Han), intense loyalty, extreme diligence',
+    gradient: 'from-slate-800 via-blue-900 to-slate-700',
+    icon: '⚡',
+  },
+  {
+    id: 'namsea',
+    name: 'NAMSÉA',
+    origin: 'Vietnamese + Thai',
+    tagline: 'Water-Based Cognition',
+    essence: 'Grace under movement, water-based cognition, calm resilience, gentle ease, conflict avoidance',
+    gradient: 'from-cyan-900 via-blue-800 to-cyan-700',
+    icon: '🌊',
+  },
+  {
     id: 'shokunin',
-    name: 'Shokunin',
-    tagline: 'The Master Craftsperson',
-    description: 'Japanese craft mastery. You value depth, patience, and the relentless pursuit of perfection in your craft.',
-    gradient: 'from-amber-900 via-yellow-800 to-amber-700',
+    name: 'SHOKUNIN',
+    origin: 'Japanese',
+    tagline: 'Perfectionist Craftsmanship',
+    essence: 'Perfectionist craftsmanship, group harmony (Wa), aesthetic discipline, ritualized order',
+    gradient: 'from-rose-900 via-pink-800 to-rose-700',
     icon: '🎋',
-    bgPattern: 'bamboo'
+  },
+  {
+    id: 'khoruun',
+    name: 'KHORUUN',
+    origin: 'Mongolian',
+    tagline: 'Nomadic Mobility',
+    essence: 'Freedom sustained by movement, nomadic mobility intelligence, decentralized strength',
+    gradient: 'from-stone-800 via-gray-700 to-stone-700',
+    icon: '🐎',
+  },
+  {
+    id: 'lhumir',
+    name: 'LHUMIR',
+    origin: 'Tibetan',
+    tagline: 'Contemplative Consciousness',
+    essence: 'Stillness that includes others, contemplative consciousness, impermanence worldview, compassion discipline',
+    gradient: 'from-indigo-900 via-purple-800 to-indigo-700',
+    icon: '🕉️',
+  },
+  {
+    id: 'yatevar',
+    name: 'YATEVAR',
+    origin: 'Vedic + Aztec',
+    tagline: 'Warrior-Philosopher',
+    essence: 'Order embodied through duty, law as lived ritual, metaphysical abstraction, warrior-philosopher',
+    gradient: 'from-orange-900 via-amber-800 to-orange-700',
+    icon: '🔱',
+  },
+  {
+    id: 'renara',
+    name: 'RÉNARA',
+    origin: 'Javanese',
+    tagline: 'Refined Subtlety (Halus)',
+    essence: 'Order maintained through balance, refined subtlety (Halus), emotional restraint, hierarchical harmony',
+    gradient: 'from-emerald-800 via-green-700 to-emerald-700',
+    icon: '🌺',
+  },
+  {
+    id: 'karayni',
+    name: 'KARAYNI',
+    origin: 'Balinese + Quechua',
+    tagline: 'Sacred Reciprocity',
+    essence: 'Sacred balance through reciprocity, mutual responsibility (humans-spirits-land), communal ritual labor',
+    gradient: 'from-yellow-800 via-orange-700 to-yellow-700',
+    icon: '🌄',
+  },
+  {
+    id: 'wohaka',
+    name: 'WÓHAKA',
+    origin: 'Maori + Lakota',
+    tagline: 'All Beings as Kin',
+    essence: 'Existence as relationship, all beings as kin, warrior-spiritual synthesis, land-identity fusion',
+    gradient: 'from-teal-900 via-cyan-800 to-teal-700',
+    icon: '🦅',
+  },
+  {
+    id: 'tjukari',
+    name: 'TJUKARI',
+    origin: 'Aboriginal Australian',
+    tagline: 'Dreamtime Cosmology',
+    essence: 'Land remembers through us, Dreamtime cosmology, Songline navigation, non-linear time, deep time consciousness',
+    gradient: 'from-red-800 via-orange-700 to-red-700',
+    icon: '🪃',
+  },
+  {
+    id: 'kinmora',
+    name: 'KINMORA',
+    origin: 'Maya',
+    tagline: 'Mathematical Cosmology',
+    essence: 'Mastery of cycles, mathematical cosmology, cyclical time consciousness, astronomical precision',
+    gradient: 'from-lime-900 via-green-800 to-lime-700',
+    icon: '🌙',
+  },
+  {
+    id: 'siljoa',
+    name: 'SILJOA',
+    origin: 'Inuit + Sami',
+    tagline: 'Arctic Intelligence',
+    essence: 'Living in dialogue with climate and place, environment as thinking partner, Arctic survival intelligence',
+    gradient: 'from-blue-900 via-cyan-800 to-blue-700',
+    icon: '❄️',
+  },
+  {
+    id: 'skenari',
+    name: 'SKÉNARI',
+    origin: 'Haudenosaunee',
+    tagline: 'Seventh Generation',
+    essence: 'Responsibility to the unborn, Seventh Generation principle, consensus governance, future-oriented ethics',
+    gradient: 'from-green-900 via-emerald-800 to-green-700',
+    icon: '🌲',
+  },
+  {
+    id: 'ashkara',
+    name: 'ASHKARA',
+    origin: 'Persian/Zoroastrian',
+    tagline: 'Truth as Sacred Action',
+    essence: 'Truth enacted not believed, moral choice as sacred action, ethical dualism, fire symbolism',
+    gradient: 'from-orange-800 via-red-700 to-orange-700',
+    icon: '🔥',
   },
   {
     id: 'alethir',
-    name: 'Alethir',
-    tagline: 'The Truth Seeker',
-    description: 'Ancient Greek inquiry. You seek truth through questioning, philosophical dialogue, and intellectual exploration.',
-    gradient: 'from-blue-900 via-indigo-800 to-blue-700',
-    icon: '🏛️',
-    bgPattern: 'columns'
-  },
-  {
-    id: 'ubuntu',
-    name: 'Ubuntu',
-    tagline: 'The Communal Spirit',
-    description: 'African communalism. You believe in collective wellbeing and that humanity is deeply interconnected.',
-    gradient: 'from-orange-900 via-red-800 to-orange-700',
-    icon: '🌍',
-    bgPattern: 'earth'
-  },
-  {
-    id: 'vivencia',
-    name: 'Vivencia',
-    tagline: 'The Present Moment',
-    description: 'Latin American lived experience. You embrace sensory richness, celebration, and being fully present.',
-    gradient: 'from-pink-900 via-rose-800 to-pink-700',
-    icon: '💃',
-    bgPattern: 'dance'
-  },
-  {
-    id: 'hygge',
-    name: 'Hygge',
-    tagline: 'The Cozy Soul',
-    description: 'Nordic comfort. You find beauty in simplicity, warmth, and creating intimate sanctuaries of contentment.',
-    gradient: 'from-stone-700 via-neutral-600 to-stone-600',
-    icon: '🕯️',
-    bgPattern: 'candle'
-  },
-  {
-    id: 'wabi-sabi',
-    name: 'Wabi-Sabi',
-    tagline: 'The Imperfect Beauty',
-    description: 'Japanese aesthetics of impermanence. You appreciate the beauty in imperfection and the passage of time.',
-    gradient: 'from-green-900 via-emerald-800 to-green-700',
-    icon: '🍂',
-    bgPattern: 'leaf'
-  },
-  {
-    id: 'kairos',
-    name: 'Kairos',
-    tagline: 'The Perfect Timing',
-    description: 'Greek opportune moment. You live for those fleeting perfect moments when everything aligns.',
-    gradient: 'from-purple-900 via-violet-800 to-purple-700',
-    icon: '⏱️',
-    bgPattern: 'clock'
-  },
-  {
-    id: 'sisu',
-    name: 'Sisu',
-    tagline: 'The Stoic Strength',
-    description: 'Finnish resilience. You possess extraordinary determination and courage in the face of adversity.',
-    gradient: 'from-slate-800 via-blue-900 to-slate-700',
-    icon: '⛰️',
-    bgPattern: 'mountain'
-  },
-  {
-    id: 'yuan',
-    name: 'Yuan',
-    tagline: 'The Destined Path',
-    description: 'Chinese fateful connection. You trust in the invisible threads that connect people and circumstances.',
-    gradient: 'from-red-900 via-rose-800 to-red-700',
-    icon: '🎎',
-    bgPattern: 'knot'
-  },
-  {
-    id: 'lagom',
-    name: 'Lagom',
-    tagline: 'The Balanced One',
-    description: 'Swedish moderation. You seek the perfect balance—not too much, not too little, but just right.',
-    gradient: 'from-teal-800 via-cyan-700 to-teal-700',
-    icon: '⚖️',
-    bgPattern: 'balance'
-  },
-  {
-    id: 'meraki',
-    name: 'Meraki',
-    tagline: 'The Soul Creator',
-    description: 'Greek creative essence. You pour your soul, creativity, and love into everything you create.',
-    gradient: 'from-fuchsia-900 via-pink-800 to-fuchsia-700',
-    icon: '🎨',
-    bgPattern: 'art'
-  },
-  {
-    id: 'gaman',
-    name: 'Gaman',
-    tagline: 'The Dignified Endurer',
-    description: 'Japanese perseverance. You endure hardship with dignity and patience, finding strength in stoicism.',
-    gradient: 'from-gray-800 via-slate-700 to-gray-700',
-    icon: '🌸',
-    bgPattern: 'sakura'
-  },
-  {
-    id: 'tarab',
-    name: 'Tarab',
-    tagline: 'The Ecstatic Spirit',
-    description: 'Arabic musical ecstasy. You experience profound emotional and spiritual transformation through art.',
-    gradient: 'from-yellow-800 via-amber-700 to-yellow-700',
-    icon: '🎵',
-    bgPattern: 'music'
-  },
-  {
-    id: 'savoir-faire',
-    name: 'Savoir-Faire',
-    tagline: 'The Refined Expert',
-    description: 'French sophistication. You navigate life with grace, elegance, and an instinct for the refined.',
-    gradient: 'from-purple-800 via-fuchsia-700 to-purple-700',
-    icon: '🥐',
-    bgPattern: 'paris'
-  },
-  {
-    id: 'sankofa',
-    name: 'Sankofa',
-    tagline: 'The Wisdom Keeper',
-    description: 'West African retrospection. You look to the past to understand the present and shape the future.',
-    gradient: 'from-amber-800 via-orange-700 to-amber-700',
-    icon: '🦅',
-    bgPattern: 'bird'
-  },
-  {
-    id: 'duende',
-    name: 'Duende',
-    tagline: 'The Passionate Soul',
-    description: 'Spanish heightened emotion. You seek that mysterious power that moves people beyond rational thought.',
-    gradient: 'from-red-800 via-orange-700 to-red-700',
-    icon: '🔥',
-    bgPattern: 'flame'
-  },
-  {
-    id: 'ikigai',
-    name: 'Ikigai',
-    tagline: 'The Purpose Finder',
-    description: 'Japanese reason for being. You seek the intersection of what you love, what you\'re good at, and what the world needs.',
-    gradient: 'from-orange-800 via-red-700 to-orange-700',
-    icon: '☀️',
-    bgPattern: 'sun'
-  },
-  {
-    id: 'gezellig',
-    name: 'Gezellig',
-    tagline: 'The Warm Connector',
-    description: 'Dutch togetherness. You create cozy, convivial atmospheres where everyone feels welcome and connected.',
-    gradient: 'from-amber-700 via-yellow-600 to-amber-600',
-    icon: '🏡',
-    bgPattern: 'home'
-  },
-  {
-    id: 'mbuki-mvuki',
-    name: 'Mbuki-Mvuki',
-    tagline: 'The Joyful Dancer',
-    description: 'Bantu celebratory release. You shake off burdens through dance, movement, and uninhibited celebration.',
-    gradient: 'from-green-800 via-emerald-700 to-green-700',
-    icon: '🎉',
-    bgPattern: 'celebration'
-  },
-  {
-    id: 'saudade',
-    name: 'Saudade',
-    tagline: 'The Nostalgic Heart',
-    description: 'Portuguese longing. You feel deep, melancholic nostalgia for something or someone you love but is absent.',
-    gradient: 'from-indigo-900 via-purple-800 to-indigo-800',
-    icon: '🌙',
-    bgPattern: 'moon'
+    name: 'ALÉTHIR',
+    origin: 'Ancient Greek',
+    tagline: 'Logos-Centered Inquiry',
+    essence: 'To live by seeking what is real, truth emerges through inquiry and dialogue, logos-centered thinking',
+    gradient: 'from-blue-800 via-indigo-700 to-blue-700',
+    icon: '🏺',
   }
 ];
 
@@ -253,7 +253,7 @@ const StarField = () => {
   return <canvas ref={canvasRef} className="fixed inset-0 pointer-events-none" style={{ zIndex: 1 }} />;
 };
 
-// Enhanced Card Component with gradient backgrounds
+// Enhanced Card Component
 interface CardProps {
   code: typeof CULTURAL_CODES[0];
   index: number;
@@ -278,17 +278,18 @@ const CulturalCodeCard = ({ code, index }: CardProps) => {
       >
         {/* Front of card */}
         <div className={`absolute inset-0 backface-hidden rounded-2xl overflow-hidden bg-gradient-to-br ${code.gradient} shadow-2xl`}>
-          <div className="absolute inset-0 bg-black/20" />
+          <div className="absolute inset-0 bg-black/30" />
           <div className="relative h-full flex flex-col items-center justify-between p-8 text-white">
             {/* Icon section */}
-            <div className="flex-1 flex items-center justify-center">
+            <div className="flex-1 flex flex-col items-center justify-center">
               <motion.div
-                className="text-8xl drop-shadow-2xl"
+                className="text-7xl drop-shadow-2xl mb-4"
                 whileHover={{ scale: 1.1, rotate: 5 }}
                 transition={{ type: 'spring', stiffness: 300 }}
               >
                 {code.icon}
               </motion.div>
+              <p className="text-xs uppercase tracking-widest opacity-70 mb-2">{code.origin}</p>
             </div>
             
             {/* Title section */}
@@ -307,12 +308,14 @@ const CulturalCodeCard = ({ code, index }: CardProps) => {
         {/* Back of card */}
         <div 
           className={`absolute inset-0 backface-hidden rounded-2xl overflow-hidden bg-gradient-to-br ${code.gradient} shadow-2xl`}
-          style={{ rotateY: 180 }}
+          style={{ transform: 'rotateY(180deg)' }}
         >
           <div className="absolute inset-0 bg-black/40" />
           <div className="relative h-full flex flex-col items-center justify-between p-8 text-white">
-            <div className="flex-1 flex items-center justify-center">
-              <p className="text-center text-lg leading-relaxed font-light">{code.description}</p>
+            <div className="flex-1 flex flex-col items-center justify-center space-y-4">
+              <p className="text-xs uppercase tracking-widest opacity-70">{code.origin}</p>
+              <h4 className="text-2xl font-bold">{code.name}</h4>
+              <p className="text-center text-base leading-relaxed font-light">{code.essence}</p>
             </div>
             
             <Link href={`/explore/${code.id}`} className="w-full">
@@ -335,12 +338,10 @@ const CulturalCodeCard = ({ code, index }: CardProps) => {
 export default function LandingPage() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showAuth, setShowAuth] = useState(false);
-  const constraintsRef = useRef(null);
   
   const cardsPerView = 4;
   const cardWidth = 320;
   const gap = 32;
-  const totalWidth = (cardWidth + gap) * CULTURAL_CODES.length;
   
   const nextSlide = () => {
     setCurrentIndex((prev) => Math.min(prev + 1, CULTURAL_CODES.length - cardsPerView));
@@ -402,16 +403,16 @@ export default function LandingPage() {
               Choose Your Destiny
             </h1>
             <p className="text-xl text-gray-300">
-              Discover your cultural code and enter a world tailored just for you
+              20 cultural codes. One matches the way you see the world.
             </p>
             <p className="text-sm text-gray-400 max-w-xl mx-auto">
-              Click any card to explore its world, or swipe to see all 20 cultural codes
+              Each code represents an ancient way of being. Click to explore, swipe to discover all.
             </p>
           </motion.div>
           
           {/* Carousel */}
           <div className="relative w-full max-w-[1400px] mb-16">
-            <div className="overflow-hidden" ref={constraintsRef}>
+            <div className="overflow-hidden">
               <motion.div
                 className="flex gap-8"
                 animate={{
