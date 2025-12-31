@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles, ArrowRight, LogIn, UserPlus, ChevronLeft, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 
 // REAL Cultural Codes with authentic data
 const CULTURAL_CODES = [
@@ -13,8 +14,8 @@ const CULTURAL_CODES = [
     origin: 'Khoisan Peoples',
     tagline: 'Hyper-Acute Perception',
     essence: 'Hyper-acute environmental perception, radical egalitarianism, present-moment survival intelligence',
-    gradient: 'from-amber-900 via-orange-800 to-amber-700',
-    icon: '🏹',
+    gradient: 'from-amber-900/90 via-orange-800/90 to-amber-700/90',
+    image: '/images/codes/KHOISAN-frontpage.jpeg'
   },
   {
     id: 'kayori',
@@ -22,8 +23,8 @@ const CULTURAL_CODES = [
     origin: 'Yoruba',
     tagline: 'Expressive Ritual Creativity',
     essence: 'Expressive ritual creativity, destiny-aware, communal intellect, oral-intellectual tradition',
-    gradient: 'from-purple-900 via-fuchsia-800 to-purple-700',
-    icon: '🎭',
+    gradient: 'from-purple-900/90 via-fuchsia-800/90 to-purple-700/90',
+    image: '/images/codes/KAYORI-frontpage.jpeg'
   },
   {
     id: 'sahen',
@@ -31,8 +32,8 @@ const CULTURAL_CODES = [
     origin: 'Tuareg',
     tagline: 'Desert Wisdom',
     essence: 'Introspective poetic identity, desert wisdom, existential longing, nomadic autonomy',
-    gradient: 'from-yellow-900 via-amber-800 to-yellow-700',
-    icon: '🏜️',
+    gradient: 'from-yellow-900/90 via-amber-800/90 to-yellow-700/90',
+    image: '/images/codes/SAHEN-frontpage.jpeg'
   },
   {
     id: 'enzuka',
@@ -40,8 +41,8 @@ const CULTURAL_CODES = [
     origin: 'Maasai + Zulu',
     tagline: 'Warrior Discipline',
     essence: 'Strength through people, courage as social duty, warrior discipline, collective honor',
-    gradient: 'from-red-900 via-orange-800 to-red-700',
-    icon: '🛡️',
+    gradient: 'from-red-900/90 via-orange-800/90 to-red-700/90',
+    image: '/images/codes/ENZUKA-frontpage.jpeg'
   },
   {
     id: 'siyuane',
@@ -49,8 +50,8 @@ const CULTURAL_CODES = [
     origin: 'Ethiopian + Han Chinese',
     tagline: 'Generational Harmony',
     essence: 'Harmony sustained across generations, long continuity, hierarchical order, disciplined tradition',
-    gradient: 'from-emerald-900 via-teal-800 to-emerald-700',
-    icon: '🏛️',
+    gradient: 'from-emerald-900/90 via-teal-800/90 to-emerald-700/90',
+    image: '/images/codes/SIYUANE-frontpage.jpeg'
   },
   {
     id: 'jaejin',
@@ -58,8 +59,8 @@ const CULTURAL_CODES = [
     origin: 'Korean',
     tagline: 'Compressed Emotion (Han)',
     essence: 'Strength forged under constraint, compressed emotion (Han), intense loyalty, extreme diligence',
-    gradient: 'from-slate-800 via-blue-900 to-slate-700',
-    icon: '⚡',
+    gradient: 'from-slate-800/90 via-blue-900/90 to-slate-700/90',
+    image: '/images/codes/JAEJIN-frontpage.jpeg'
   },
   {
     id: 'namsea',
@@ -67,8 +68,8 @@ const CULTURAL_CODES = [
     origin: 'Vietnamese + Thai',
     tagline: 'Water-Based Cognition',
     essence: 'Grace under movement, water-based cognition, calm resilience, gentle ease, conflict avoidance',
-    gradient: 'from-cyan-900 via-blue-800 to-cyan-700',
-    icon: '🌊',
+    gradient: 'from-cyan-900/90 via-blue-800/90 to-cyan-700/90',
+    image: '/images/codes/NAMSEA-frontpage.jpeg'
   },
   {
     id: 'shokunin',
@@ -76,8 +77,8 @@ const CULTURAL_CODES = [
     origin: 'Japanese',
     tagline: 'Perfectionist Craftsmanship',
     essence: 'Perfectionist craftsmanship, group harmony (Wa), aesthetic discipline, ritualized order',
-    gradient: 'from-rose-900 via-pink-800 to-rose-700',
-    icon: '🎋',
+    gradient: 'from-rose-900/90 via-pink-800/90 to-rose-700/90',
+    image: '/images/codes/SHOKUNIN-frontpage.jpeg'
   },
   {
     id: 'khoruun',
@@ -85,8 +86,8 @@ const CULTURAL_CODES = [
     origin: 'Mongolian',
     tagline: 'Nomadic Mobility',
     essence: 'Freedom sustained by movement, nomadic mobility intelligence, decentralized strength',
-    gradient: 'from-stone-800 via-gray-700 to-stone-700',
-    icon: '🐎',
+    gradient: 'from-stone-800/90 via-gray-700/90 to-stone-700/90',
+    image: '/images/codes/KHORUUN-frontpage.jpeg'
   },
   {
     id: 'lhumir',
@@ -94,8 +95,8 @@ const CULTURAL_CODES = [
     origin: 'Tibetan',
     tagline: 'Contemplative Consciousness',
     essence: 'Stillness that includes others, contemplative consciousness, impermanence worldview, compassion discipline',
-    gradient: 'from-indigo-900 via-purple-800 to-indigo-700',
-    icon: '🕉️',
+    gradient: 'from-indigo-900/90 via-purple-800/90 to-indigo-700/90',
+    image: '/images/codes/LHUMIR-frontpage.jpeg'
   },
   {
     id: 'yatevar',
@@ -103,8 +104,8 @@ const CULTURAL_CODES = [
     origin: 'Vedic + Aztec',
     tagline: 'Warrior-Philosopher',
     essence: 'Order embodied through duty, law as lived ritual, metaphysical abstraction, warrior-philosopher',
-    gradient: 'from-orange-900 via-amber-800 to-orange-700',
-    icon: '🔱',
+    gradient: 'from-orange-900/90 via-amber-800/90 to-orange-700/90',
+    image: '/images/codes/YATEVAR-frontpage.jpeg'
   },
   {
     id: 'renara',
@@ -112,8 +113,8 @@ const CULTURAL_CODES = [
     origin: 'Javanese',
     tagline: 'Refined Subtlety (Halus)',
     essence: 'Order maintained through balance, refined subtlety (Halus), emotional restraint, hierarchical harmony',
-    gradient: 'from-emerald-800 via-green-700 to-emerald-700',
-    icon: '🌺',
+    gradient: 'from-emerald-800/90 via-green-700/90 to-emerald-700/90',
+    image: '/images/codes/RENARA-frontpage.jpeg'
   },
   {
     id: 'karayni',
@@ -121,8 +122,8 @@ const CULTURAL_CODES = [
     origin: 'Balinese + Quechua',
     tagline: 'Sacred Reciprocity',
     essence: 'Sacred balance through reciprocity, mutual responsibility (humans-spirits-land), communal ritual labor',
-    gradient: 'from-yellow-800 via-orange-700 to-yellow-700',
-    icon: '🌄',
+    gradient: 'from-yellow-800/90 via-orange-700/90 to-yellow-700/90',
+    image: '/images/codes/KARAYNI-frontpage.jpeg'
   },
   {
     id: 'wohaka',
@@ -130,8 +131,8 @@ const CULTURAL_CODES = [
     origin: 'Maori + Lakota',
     tagline: 'All Beings as Kin',
     essence: 'Existence as relationship, all beings as kin, warrior-spiritual synthesis, land-identity fusion',
-    gradient: 'from-teal-900 via-cyan-800 to-teal-700',
-    icon: '🦅',
+    gradient: 'from-teal-900/90 via-cyan-800/90 to-teal-700/90',
+    image: '/images/codes/WOHAKA-frontpage.jpeg'
   },
   {
     id: 'tjukari',
@@ -139,8 +140,8 @@ const CULTURAL_CODES = [
     origin: 'Aboriginal Australian',
     tagline: 'Dreamtime Cosmology',
     essence: 'Land remembers through us, Dreamtime cosmology, Songline navigation, non-linear time, deep time consciousness',
-    gradient: 'from-red-800 via-orange-700 to-red-700',
-    icon: '🪃',
+    gradient: 'from-red-800/90 via-orange-700/90 to-red-700/90',
+    image: '/images/codes/TJUKARI-frontpage.jpeg'
   },
   {
     id: 'kinmora',
@@ -148,8 +149,8 @@ const CULTURAL_CODES = [
     origin: 'Maya',
     tagline: 'Mathematical Cosmology',
     essence: 'Mastery of cycles, mathematical cosmology, cyclical time consciousness, astronomical precision',
-    gradient: 'from-lime-900 via-green-800 to-lime-700',
-    icon: '🌙',
+    gradient: 'from-lime-900/90 via-green-800/90 to-lime-700/90',
+    image: '/images/codes/KINMORA-frontpage.jpeg'
   },
   {
     id: 'siljoa',
@@ -157,8 +158,8 @@ const CULTURAL_CODES = [
     origin: 'Inuit + Sami',
     tagline: 'Arctic Intelligence',
     essence: 'Living in dialogue with climate and place, environment as thinking partner, Arctic survival intelligence',
-    gradient: 'from-blue-900 via-cyan-800 to-blue-700',
-    icon: '❄️',
+    gradient: 'from-blue-900/90 via-cyan-800/90 to-blue-700/90',
+    image: '/images/codes/SILJOA-frontpage.jpeg'
   },
   {
     id: 'skenari',
@@ -166,8 +167,8 @@ const CULTURAL_CODES = [
     origin: 'Haudenosaunee',
     tagline: 'Seventh Generation',
     essence: 'Responsibility to the unborn, Seventh Generation principle, consensus governance, future-oriented ethics',
-    gradient: 'from-green-900 via-emerald-800 to-green-700',
-    icon: '🌲',
+    gradient: 'from-green-900/90 via-emerald-800/90 to-green-700/90',
+    image: '/images/codes/SKENARI-frontpage.jpeg'
   },
   {
     id: 'ashkara',
@@ -175,8 +176,8 @@ const CULTURAL_CODES = [
     origin: 'Persian/Zoroastrian',
     tagline: 'Truth as Sacred Action',
     essence: 'Truth enacted not believed, moral choice as sacred action, ethical dualism, fire symbolism',
-    gradient: 'from-orange-800 via-red-700 to-orange-700',
-    icon: '🔥',
+    gradient: 'from-orange-800/90 via-red-700/90 to-orange-700/90',
+    image: '/images/codes/ASHKARA-frontpage.jpeg'
   },
   {
     id: 'alethir',
@@ -184,8 +185,8 @@ const CULTURAL_CODES = [
     origin: 'Ancient Greek',
     tagline: 'Logos-Centered Inquiry',
     essence: 'To live by seeking what is real, truth emerges through inquiry and dialogue, logos-centered thinking',
-    gradient: 'from-blue-800 via-indigo-700 to-blue-700',
-    icon: '🏺',
+    gradient: 'from-blue-800/90 via-indigo-700/90 to-blue-700/90',
+    image: '/images/codes/ALETHIR-frontpage.jpeg'
   }
 ];
 
@@ -253,7 +254,7 @@ const StarField = () => {
   return <canvas ref={canvasRef} className="fixed inset-0 pointer-events-none" style={{ zIndex: 1 }} />;
 };
 
-// Enhanced Card Component
+// Enhanced Card Component with images
 interface CardProps {
   code: typeof CULTURAL_CODES[0];
   index: number;
@@ -265,7 +266,7 @@ const CulturalCodeCard = ({ code, index }: CardProps) => {
   return (
     <motion.div
       className="relative flex-shrink-0 cursor-pointer group"
-      style={{ width: '320px', height: '480px' }}
+      style={{ width: '380px', height: '560px' }}
       initial={{ opacity: 0, y: 50 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.05, duration: 0.5 }}
@@ -277,50 +278,77 @@ const CulturalCodeCard = ({ code, index }: CardProps) => {
         transition={{ duration: 0.6 }}
       >
         {/* Front of card */}
-        <div className={`absolute inset-0 backface-hidden rounded-2xl overflow-hidden bg-gradient-to-br ${code.gradient} shadow-2xl`}>
-          <div className="absolute inset-0 bg-black/30" />
-          <div className="relative h-full flex flex-col items-center justify-between p-8 text-white">
-            {/* Icon section */}
-            <div className="flex-1 flex flex-col items-center justify-center">
-              <motion.div
-                className="text-7xl drop-shadow-2xl mb-4"
-                whileHover={{ scale: 1.1, rotate: 5 }}
-                transition={{ type: 'spring', stiffness: 300 }}
-              >
-                {code.icon}
-              </motion.div>
-              <p className="text-xs uppercase tracking-widest opacity-70 mb-2">{code.origin}</p>
+        <div className="absolute inset-0 backface-hidden rounded-3xl overflow-hidden shadow-2xl border border-white/10">
+          {/* Background image */}
+          <div className="absolute inset-0">
+            <Image
+              src={code.image}
+              alt={code.name}
+              fill
+              className="object-cover"
+              sizes="380px"
+              priority={index < 4}
+            />
+          </div>
+          
+          {/* Gradient overlay */}
+          <div className={`absolute inset-0 bg-gradient-to-t ${code.gradient}`} />
+          
+          {/* Content */}
+          <div className="relative h-full flex flex-col justify-end p-8 text-white">
+            {/* Origin badge at top */}
+            <div className="absolute top-6 left-6">
+              <div className="px-4 py-2 rounded-full backdrop-blur-md bg-black/30 border border-white/20">
+                <p className="text-xs uppercase tracking-widest font-light">{code.origin}</p>
+              </div>
             </div>
             
-            {/* Title section */}
-            <div className="text-center space-y-2">
-              <h3 className="text-3xl font-bold tracking-wide">{code.name}</h3>
-              <p className="text-sm opacity-90 font-light">{code.tagline}</p>
+            {/* Number badge at top right */}
+            <div className="absolute top-6 right-6">
+              <div className="w-14 h-14 rounded-full backdrop-blur-md bg-black/30 border border-white/20 flex items-center justify-center">
+                <span className="text-xl font-light">{String(index + 1).padStart(2, '0')}</span>
+              </div>
             </div>
             
-            {/* Number badge */}
-            <div className="absolute bottom-8 right-8 w-16 h-16 rounded-full border-2 border-white/30 flex items-center justify-center backdrop-blur-sm bg-white/10">
-              <span className="text-2xl font-light">{String(index + 1).padStart(2, '0')}</span>
+            {/* Title section at bottom */}
+            <div className="space-y-3">
+              <h3 className="text-4xl font-bold tracking-wide drop-shadow-lg">{code.name}</h3>
+              <p className="text-lg opacity-90 font-light">{code.tagline}</p>
+              <p className="text-sm opacity-75 italic">Tap to explore</p>
             </div>
           </div>
         </div>
         
         {/* Back of card */}
         <div 
-          className={`absolute inset-0 backface-hidden rounded-2xl overflow-hidden bg-gradient-to-br ${code.gradient} shadow-2xl`}
+          className="absolute inset-0 backface-hidden rounded-3xl overflow-hidden shadow-2xl border border-white/10"
           style={{ transform: 'rotateY(180deg)' }}
         >
-          <div className="absolute inset-0 bg-black/40" />
+          {/* Background image (dimmed) */}
+          <div className="absolute inset-0">
+            <Image
+              src={code.image}
+              alt={code.name}
+              fill
+              className="object-cover opacity-40"
+              sizes="380px"
+            />
+          </div>
+          
+          {/* Gradient overlay (stronger) */}
+          <div className={`absolute inset-0 bg-gradient-to-br ${code.gradient.replace('/90', '/95')}`} />
+          
+          {/* Content */}
           <div className="relative h-full flex flex-col items-center justify-between p-8 text-white">
-            <div className="flex-1 flex flex-col items-center justify-center space-y-4">
+            <div className="flex-1 flex flex-col items-center justify-center space-y-6 text-center">
               <p className="text-xs uppercase tracking-widest opacity-70">{code.origin}</p>
-              <h4 className="text-2xl font-bold">{code.name}</h4>
-              <p className="text-center text-base leading-relaxed font-light">{code.essence}</p>
+              <h4 className="text-3xl font-bold">{code.name}</h4>
+              <p className="text-base leading-relaxed font-light max-w-sm">{code.essence}</p>
             </div>
             
-            <Link href={`/explore/${code.id}`} className="w-full">
+            <Link href={`/explore/${code.id}`} className="w-full" onClick={(e) => e.stopPropagation()}>
               <motion.button
-                className="w-full px-6 py-4 rounded-xl font-semibold text-lg flex items-center justify-center gap-2 bg-white text-gray-900 hover:bg-gray-100 transition-colors"
+                className="w-full px-6 py-4 rounded-2xl font-semibold text-lg flex items-center justify-center gap-2 bg-white text-gray-900 hover:bg-gray-100 transition-colors shadow-xl"
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
               >
@@ -339,9 +367,9 @@ export default function LandingPage() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showAuth, setShowAuth] = useState(false);
   
-  const cardsPerView = 4;
-  const cardWidth = 320;
-  const gap = 32;
+  const cardsPerView = 3;
+  const cardWidth = 380;
+  const gap = 40;
   
   const nextSlide = () => {
     setCurrentIndex((prev) => Math.min(prev + 1, CULTURAL_CODES.length - cardsPerView));
@@ -394,7 +422,7 @@ export default function LandingPage() {
         <div className="min-h-screen flex flex-col items-center justify-center px-4 pt-32 pb-20">
           {/* Hero text */}
           <motion.div
-            className="text-center mb-16 space-y-4 max-w-3xl"
+            className="text-center mb-20 space-y-4 max-w-3xl"
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.3 }}
@@ -406,15 +434,15 @@ export default function LandingPage() {
               20 cultural codes. One matches the way you see the world.
             </p>
             <p className="text-sm text-gray-400 max-w-xl mx-auto">
-              Each code represents an ancient way of being. Click to explore, swipe to discover all.
+              Each code represents an ancient way of being. Click to explore.
             </p>
           </motion.div>
           
           {/* Carousel */}
-          <div className="relative w-full max-w-[1400px] mb-16">
+          <div className="relative w-full max-w-[1400px] mb-20">
             <div className="overflow-hidden">
               <motion.div
-                className="flex gap-8"
+                className="flex gap-10"
                 animate={{
                   x: -(currentIndex * (cardWidth + gap))
                 }}
@@ -434,7 +462,7 @@ export default function LandingPage() {
             {currentIndex > 0 && (
               <motion.button
                 onClick={prevSlide}
-                className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white hover:bg-white/20 transition-colors"
+                className="absolute left-4 top-1/2 -translate-y-1/2 w-14 h-14 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white hover:bg-white/20 transition-colors z-10"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 whileHover={{ scale: 1.1 }}
@@ -447,7 +475,7 @@ export default function LandingPage() {
             {currentIndex < CULTURAL_CODES.length - cardsPerView && (
               <motion.button
                 onClick={nextSlide}
-                className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white hover:bg-white/20 transition-colors"
+                className="absolute right-4 top-1/2 -translate-y-1/2 w-14 h-14 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white hover:bg-white/20 transition-colors z-10"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 whileHover={{ scale: 1.1 }}
@@ -459,14 +487,15 @@ export default function LandingPage() {
           </div>
           
           {/* Progress indicators */}
-          <div className="flex gap-2 mb-8">
+          <div className="flex gap-2 mb-12">
             {Array.from({ length: Math.ceil(CULTURAL_CODES.length / cardsPerView) }).map((_, i) => (
-              <motion.div
+              <motion.button
                 key={i}
-                className={`h-1.5 rounded-full transition-all ${
+                onClick={() => setCurrentIndex(i * cardsPerView)}
+                className={`h-1.5 rounded-full transition-all cursor-pointer ${
                   Math.floor(currentIndex / cardsPerView) === i 
                     ? 'w-12 bg-purple-500' 
-                    : 'w-1.5 bg-gray-600'
+                    : 'w-1.5 bg-gray-600 hover:bg-gray-500'
                 }`}
                 whileHover={{ scale: 1.2 }}
               />
@@ -485,7 +514,7 @@ export default function LandingPage() {
             </p>
             <Link href="/quiz">
               <motion.button
-                className="px-8 py-4 rounded-full bg-white text-black font-semibold text-lg hover:bg-gray-100 transition-colors"
+                className="px-10 py-4 rounded-full bg-white text-black font-semibold text-lg hover:bg-gray-100 transition-colors shadow-xl"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
