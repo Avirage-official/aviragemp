@@ -500,5 +500,59 @@ export default function LandingPage() {
                 {/* background texture from env hero code */}
                 <div className="absolute inset-0">
                   <Image
-                    src={codeIndex.get(envForModal.heroBgFromCode)?.image ?? '/images/code
+                    src={codeIndex.get(envForModal.heroBgFromCode)?.image ?? '/images/codes/ALETHIR-frontpage.jpeg'}
+                    alt={envForModal.title}
+                    fill
+                    className="object-cover opacity-[0.22]"
+                    sizes="100vw"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-b from-black/65 via-black/35 to-black/15" />
+                </div>
 
+                <div className="relative">
+                  <div className="text-xs uppercase tracking-[0.22em] text-white/70">
+                    Environment
+                  </div>
+                  <div className="mt-2 text-3xl md:text-4xl font-semibold tracking-tight">
+                    {envForModal.title}
+                  </div>
+                  <div className="mt-2 text-white/70 max-w-2xl">{envForModal.poetic}</div>
+
+                  <div className="mt-6 flex items-center gap-3">
+                    <button
+                      onClick={closeEnvironment}
+                      className="px-4 py-2 rounded-full border border-white/14 bg-white/[0.03] hover:bg-white/[0.06] transition text-white/85"
+                    >
+                      Close
+                    </button>
+
+                    <Link href="/quiz">
+                      <button className="px-4 py-2 rounded-full bg-white text-black font-semibold">
+                        Take Quiz
+                      </button>
+                    </Link>
+                  </div>
+                </div>
+              </div>
+
+              {/* Code tiles */}
+              <div className="p-7 md:p-10 pt-0">
+                <div className="text-sm text-white/65 mb-4">
+                  Codes that live in this space:
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                  {envForModal.codeIds.map((id) => {
+                    const code = codeIndex.get(id);
+                    if (!code) return null;
+                    return <CodeTile key={code.id} code={code} />;
+                  })}
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
