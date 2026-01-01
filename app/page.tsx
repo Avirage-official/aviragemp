@@ -1,756 +1,621 @@
 'use client';
 
-import { useParams, useRouter } from 'next/navigation';
-import { useState, useMemo } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import Link from 'next/link';
 import Image from 'next/image';
-import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  ArrowLeft, 
-  MapPin, 
-  Star, 
-  Heart, 
-  X,
-  Clock,
-  DollarSign,
-  Users,
-  Coffee,
-  Briefcase,
-  Home,
-  Dumbbell,
-  ShoppingBag,
-  Map,
-  SlidersHorizontal,
-  Check
-} from 'lucide-react';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
+import { ArrowLeft, ArrowRight, Sparkles } from 'lucide-react';
 
-// Cultural Code data
-const CULTURAL_CODES = {
-  khoisan: { name: 'KHOISAN', tagline: 'Hyper-Acute Perception', gradient: 'from-amber-900 via-orange-800 to-amber-700', color: '#d97706' },
-  kayori: { name: 'KÁYORI', tagline: 'Expressive Ritual Creativity', gradient: 'from-purple-900 via-fuchsia-800 to-purple-700', color: '#a855f7' },
-  sahen: { name: 'SAHÉN', tagline: 'Desert Wisdom', gradient: 'from-yellow-900 via-amber-800 to-yellow-700', color: '#f59e0b' },
-  enzuka: { name: 'ENZUKA', tagline: 'Warrior Discipline', gradient: 'from-red-900 via-orange-800 to-red-700', color: '#dc2626' },
-  siyuane: { name: 'SIYUANÉ', tagline: 'Generational Harmony', gradient: 'from-emerald-900 via-teal-800 to-emerald-700', color: '#059669' },
-  jaejin: { name: 'JAEJIN', tagline: 'Compressed Emotion (Han)', gradient: 'from-slate-800 via-blue-900 to-slate-700', color: '#475569' },
-  namsea: { name: 'NAMSÉA', tagline: 'Water-Based Cognition', gradient: 'from-cyan-900 via-blue-800 to-cyan-700', color: '#0891b2' },
-  shokunin: { name: 'SHOKUNIN', tagline: 'Perfectionist Craftsmanship', gradient: 'from-rose-900 via-pink-800 to-rose-700', color: '#e11d48' },
-  khoruun: { name: 'KHORUUN', tagline: 'Nomadic Mobility', gradient: 'from-stone-800 via-gray-700 to-stone-700', color: '#57534e' },
-  lhumir: { name: 'LHUMIR', tagline: 'Contemplative Consciousness', gradient: 'from-indigo-900 via-purple-800 to-indigo-700', color: '#6366f1' },
-  yatevar: { name: 'YATEVAR', tagline: 'Warrior-Philosopher', gradient: 'from-orange-900 via-amber-800 to-orange-700', color: '#ea580c' },
-  renara: { name: 'RÉNARA', tagline: 'Refined Subtlety (Halus)', gradient: 'from-emerald-800 via-green-700 to-emerald-700', color: '#10b981' },
-  karayni: { name: 'KARAYNI', tagline: 'Sacred Reciprocity', gradient: 'from-yellow-800 via-orange-700 to-yellow-700', color: '#f59e0b' },
-  wohaka: { name: 'WÓHAKA', tagline: 'All Beings as Kin', gradient: 'from-teal-900 via-cyan-800 to-teal-700', color: '#14b8a6' },
-  tjukari: { name: 'TJUKARI', tagline: 'Dreamtime Cosmology', gradient: 'from-red-800 via-orange-700 to-red-700', color: '#dc2626' },
-  kinmora: { name: 'KINMORA', tagline: 'Mathematical Cosmology', gradient: 'from-lime-900 via-green-800 to-lime-700', color: '#65a30d' },
-  siljoa: { name: 'SILJOA', tagline: 'Arctic Intelligence', gradient: 'from-blue-900 via-cyan-800 to-blue-700', color: '#2563eb' },
-  skenari: { name: 'SKÉNARI', tagline: 'Seventh Generation', gradient: 'from-green-900 via-emerald-800 to-green-700', color: '#16a34a' },
-  ashkara: { name: 'ASHKARA', tagline: 'Truth as Sacred Action', gradient: 'from-orange-800 via-red-700 to-orange-700', color: '#ea580c' },
-  alethir: { name: 'ALÉTHIR', tagline: 'Logos-Centered Inquiry', gradient: 'from-blue-800 via-indigo-700 to-blue-700', color: '#3b82f6' },
+/* =========================
+   DATA (keep your IDs/images)
+========================= */
+
+type Code = {
+  id: string;
+  name: string;
+  tagline: string;
+  image: string;
 };
 
-// Extended demo data
-const DEMO_BUSINESSES = [
+const CULTURAL_CODES: Code[] = [
+  { id: 'khoisan', name: 'KHOISAN', tagline: 'Hyper-Acute Perception', image: '/images/codes/KHOISAN-frontpage.jpeg' },
+  { id: 'kayori', name: 'KÁYORI', tagline: 'Expressive Ritual Creativity', image: '/images/codes/KAYORI-frontpage.jpeg' },
+  { id: 'sahen', name: 'SAHÉN', tagline: 'Desert Wisdom', image: '/images/codes/SAHEN-frontpage.jpeg' },
+  { id: 'enzuka', name: 'ENZUKA', tagline: 'Warrior Discipline', image: '/images/codes/ENZUKA-frontpage.jpeg' },
+  { id: 'siyuane', name: 'SIYUANÉ', tagline: 'Generational Harmony', image: '/images/codes/SIYUANE-frontpage.jpeg' },
+  { id: 'jaejin', name: 'JAEJIN', tagline: 'Compressed Emotion', image: '/images/codes/JAEJIN-frontpage.jpeg' },
+  { id: 'namsea', name: 'NAMSÉA', tagline: 'Water-Based Cognition', image: '/images/codes/NAMSEA-frontpage.jpeg' },
+  { id: 'shokunin', name: 'SHOKUNIN', tagline: 'Craft Mastery', image: '/images/codes/SHOKUNIN-frontpage.jpeg' },
+  { id: 'khoruun', name: 'KHORUUN', tagline: 'Nomadic Mobility', image: '/images/codes/KHORUUN-frontpage.jpeg' },
+  { id: 'lhumir', name: 'LHUMIR', tagline: 'Stillness & Meaning', image: '/images/codes/LHUMIR-frontpage.jpeg' },
+  { id: 'yatevar', name: 'YATEVAR', tagline: 'Warrior-Philosopher', image: '/images/codes/YATEVAR-frontpage.jpeg' },
+  { id: 'renara', name: 'RÉNARA', tagline: 'Refined Subtlety', image: '/images/codes/RENARA-frontpage.jpeg' },
+  { id: 'karayni', name: 'KARAYNI', tagline: 'Sacred Reciprocity', image: '/images/codes/KARAYNI-frontpage.jpeg' },
+  { id: 'wohaka', name: 'WÓHAKA', tagline: 'All Beings as Kin', image: '/images/codes/WOHAKA-frontpage.jpeg' },
+  { id: 'tjukari', name: 'TJUKARI', tagline: 'Dreamtime Cosmology', image: '/images/codes/TJUKARI-frontpage.jpeg' },
+  { id: 'kinmora', name: 'KINMORA', tagline: 'Cosmic Cycles', image: '/images/codes/KINMORA-frontpage.jpeg' },
+  { id: 'siljoa', name: 'SILJOA', tagline: 'Arctic Intelligence', image: '/images/codes/SILJOA-frontpage.jpeg' },
+  { id: 'skenari', name: 'SKÉNARI', tagline: 'Seventh Generation', image: '/images/codes/SKENARI-frontpage.jpeg' },
+  { id: 'ashkara', name: 'ASHKARA', tagline: 'Truth as Action', image: '/images/codes/ASHKARA-frontpage.jpeg' },
+  { id: 'alethir', name: 'ALÉTHIR', tagline: 'Logos Inquiry', image: '/images/codes/ALETHIR-frontpage.jpeg' },
+];
+
+type Environment = {
+  id: string;
+  title: string;
+  subtitle: string;
+  poetic: string;
+  heroCodeId: string;
+  codeIds: string[];
+};
+
+const ENVIRONMENTS: Environment[] = [
   {
-    id: '1',
-    name: 'Minimalist Café Tokyo',
-    category: 'Café',
-    location: 'Shibuya, Tokyo',
-    city: 'Tokyo',
-    image: 'https://images.unsplash.com/photo-1501492693086-291f65a61ea4?w=800',
-    matchScore: 94,
-    priceRange: '$$',
-    rating: 4.8,
-    reviews: 127,
-    tags: ['Quiet', 'Solo-friendly', 'Minimalist'],
-    vibe: ['Contemplative', 'Focused', 'Clean'],
-    openNow: true,
-    distance: '1.2 km',
-    codeId: 'shokunin',
+    id: 'urban',
+    title: 'Structured Intensity',
+    subtitle: 'City / mastery / discipline',
+    poetic: 'Where pressure becomes precision.',
+    heroCodeId: 'shokunin',
+    codeIds: ['jaejin', 'shokunin', 'siyuane'],
   },
   {
-    id: '2',
-    name: 'Ubuntu Kitchen',
-    category: 'Restaurant',
-    location: 'Cape Town CBD',
-    city: 'Cape Town',
-    image: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800',
-    matchScore: 91,
-    priceRange: '$$$',
-    rating: 4.9,
-    reviews: 203,
-    tags: ['Community', 'Family-style', 'Warm'],
-    vibe: ['Communal', 'Lively', 'Welcoming'],
-    openNow: true,
-    distance: '2.8 km',
-    codeId: 'kayori',
+    id: 'coastal',
+    title: 'Adaptive Flow',
+    subtitle: 'Ocean / river / ease',
+    poetic: 'Calm movement. Quiet power.',
+    heroCodeId: 'namsea',
+    codeIds: ['namsea', 'siljoa'],
   },
   {
-    id: '3',
-    name: 'Desert Silence Retreat',
-    category: 'Wellness',
-    location: 'Merzouga, Morocco',
-    city: 'Merzouga',
-    image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800',
-    matchScore: 96,
-    priceRange: '$$$$',
-    rating: 5.0,
-    reviews: 89,
-    tags: ['Contemplative', 'Remote', 'Transformative'],
-    vibe: ['Silent', 'Introspective', 'Sacred'],
-    openNow: false,
-    distance: '45 km',
-    codeId: 'sahen',
+    id: 'mountain',
+    title: 'Inner Altitude',
+    subtitle: 'Mountains / stillness / meaning',
+    poetic: 'Silence as clarity.',
+    heroCodeId: 'lhumir',
+    codeIds: ['lhumir'],
   },
   {
-    id: '4',
-    name: 'Flow State Studio',
-    category: 'Workspace',
-    location: 'Old Quarter, Hanoi',
-    city: 'Hanoi',
-    image: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=800',
-    matchScore: 89,
-    priceRange: '$',
-    rating: 4.7,
-    reviews: 156,
-    tags: ['Calm', 'Natural light', 'Flexible'],
-    vibe: ['Flowing', 'Peaceful', 'Adaptive'],
-    openNow: true,
-    distance: '0.8 km',
-    codeId: 'namsea',
+    id: 'wild',
+    title: 'Unbounded Awareness',
+    subtitle: 'Wilderness / freedom / land',
+    poetic: 'You read the world in signals.',
+    heroCodeId: 'khoisan',
+    codeIds: ['khoisan', 'khoruun', 'tjukari'],
   },
   {
-    id: '5',
-    name: 'Mountain Lodge Lhasa',
-    category: 'Accommodation',
-    location: 'Lhasa, Tibet',
-    city: 'Lhasa',
-    image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800',
-    matchScore: 93,
-    priceRange: '$$$',
-    rating: 4.9,
-    reviews: 78,
-    tags: ['Peaceful', 'Panoramic', 'Meditative'],
-    vibe: ['Still', 'Elevated', 'Contemplative'],
-    openNow: true,
-    distance: '5.3 km',
-    codeId: 'lhumir',
+    id: 'communal',
+    title: 'Shared Meaning',
+    subtitle: 'Village / ritual / belonging',
+    poetic: 'Identity as relationship.',
+    heroCodeId: 'karayni',
+    codeIds: ['karayni', 'wohaka', 'skenari'],
   },
   {
-    id: '6',
-    name: 'Steppe Nomad Tours',
-    category: 'Experience',
-    location: 'Terelj, Mongolia',
-    city: 'Ulaanbaatar',
-    image: 'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=800',
-    matchScore: 97,
-    priceRange: '$$',
-    rating: 4.8,
-    reviews: 134,
-    tags: ['Adventure', 'Freedom', 'Authentic'],
-    vibe: ['Nomadic', 'Expansive', 'Wild'],
-    openNow: true,
-    distance: '68 km',
-    codeId: 'khoruun',
-  },
-  {
-    id: '7',
-    name: 'Agora Philosophy Café',
-    category: 'Café',
-    location: 'Plaka, Athens',
-    city: 'Athens',
-    image: 'https://images.unsplash.com/photo-1445116572660-236099ec97a0?w=800',
-    matchScore: 92,
-    priceRange: '$$',
-    rating: 4.6,
-    reviews: 201,
-    tags: ['Discussion', 'Intellectual', 'Historic'],
-    vibe: ['Dialogic', 'Questioning', 'Classical'],
-    openNow: true,
-    distance: '1.5 km',
-    codeId: 'alethir',
-  },
-  {
-    id: '8',
-    name: 'Precision Workshop',
-    category: 'Workspace',
-    location: 'Gion, Kyoto',
-    city: 'Kyoto',
-    image: 'https://images.unsplash.com/photo-1504253163759-c23fccaebb55?w=800',
-    matchScore: 95,
-    priceRange: '$$$',
-    rating: 5.0,
-    reviews: 67,
-    tags: ['Craftsmanship', 'Detail-oriented', 'Traditional'],
-    vibe: ['Focused', 'Perfectionist', 'Refined'],
-    openNow: false,
-    distance: '3.2 km',
-    codeId: 'shokunin',
-  },
-  {
-    id: '9',
-    name: 'Collective Garden',
-    category: 'Restaurant',
-    location: 'Brooklyn, NYC',
-    city: 'New York',
-    image: 'https://images.unsplash.com/photo-1466978913421-dad2ebd01d17?w=800',
-    matchScore: 88,
-    priceRange: '$$',
-    rating: 4.5,
-    reviews: 312,
-    tags: ['Community', 'Organic', 'Shared-tables'],
-    vibe: ['Collaborative', 'Warm', 'Inclusive'],
-    openNow: true,
-    distance: '2.1 km',
-    codeId: 'wohaka',
-  },
-  {
-    id: '10',
-    name: 'Arctic Sauna House',
-    category: 'Wellness',
-    location: 'Tromsø, Norway',
-    city: 'Tromsø',
-    image: 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=800',
-    matchScore: 90,
-    priceRange: '$$',
-    rating: 4.7,
-    reviews: 98,
-    tags: ['Cold', 'Resilient', 'Natural'],
-    vibe: ['Hardy', 'Elemental', 'Purifying'],
-    openNow: true,
-    distance: '4.7 km',
-    codeId: 'siljoa',
-  },
-  {
-    id: '11',
-    name: 'Ritual Coffee House',
-    category: 'Café',
-    location: 'Lagos Island',
-    city: 'Lagos',
-    image: 'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=800',
-    matchScore: 93,
-    priceRange: '$',
-    rating: 4.8,
-    reviews: 178,
-    tags: ['Vibrant', 'Music', 'Storytelling'],
-    vibe: ['Expressive', 'Rhythmic', 'Ancestral'],
-    openNow: true,
-    distance: '1.1 km',
-    codeId: 'kayori',
-  },
-  {
-    id: '12',
-    name: 'Silent Forest Gym',
-    category: 'Fitness',
-    location: 'Portland, Oregon',
-    city: 'Portland',
-    image: 'https://images.unsplash.com/photo-1571902943202-507ec2618e8f?w=800',
-    matchScore: 87,
-    priceRange: '$$',
-    rating: 4.6,
-    reviews: 145,
-    tags: ['Nature', 'Mindful', 'Small-groups'],
-    vibe: ['Grounded', 'Intentional', 'Quiet'],
-    openNow: true,
-    distance: '3.5 km',
-    codeId: 'lhumir',
+    id: 'civic',
+    title: 'Truth & Order',
+    subtitle: 'Agora / law / inquiry',
+    poetic: 'Seek what is real — live by it.',
+    heroCodeId: 'alethir',
+    codeIds: ['alethir', 'yatevar', 'ashkara'],
   },
 ];
 
-type Business = typeof DEMO_BUSINESSES[0];
+/* =========================
+   HELPERS
+========================= */
 
-const CITIES = ['All Cities', 'Tokyo', 'Cape Town', 'Hanoi', 'Athens', 'New York', 'Kyoto', 'Lagos', 'Portland', 'Tromsø', 'Lhasa', 'Ulaanbaatar', 'Merzouga'];
-const CATEGORIES = ['All', 'Café', 'Restaurant', 'Workspace', 'Wellness', 'Experience', 'Accommodation', 'Fitness'];
-const PRICE_RANGES = ['All', '$', '$$', '$$$', '$$$$'];
-const SORT_OPTIONS = ['Best Match', 'Highest Rated', 'Most Reviews', 'Nearest'];
+function clamp(n: number, min: number, max: number) {
+  return Math.max(min, Math.min(max, n));
+}
 
-export default function MarketplacePage() {
-  const params = useParams();
-  const router = useRouter();
-  const codeId = params.code as string;
-  
-  const codeData = CULTURAL_CODES[codeId as keyof typeof CULTURAL_CODES];
-  
-  const [selectedBusiness, setSelectedBusiness] = useState<Business | null>(null);
-  const [selectedCity, setSelectedCity] = useState('All Cities');
-  const [selectedCategory, setSelectedCategory] = useState('All');
-  const [selectedPrice, setSelectedPrice] = useState('All');
-  const [sortBy, setSortBy] = useState('Best Match');
-  const [minMatch, setMinMatch] = useState(80);
-  const [showOpenOnly, setShowOpenOnly] = useState(false);
-  const [favorites, setFavorites] = useState<Set<string>>(new Set());
-  const [showFilters, setShowFilters] = useState(false);
-  
-  // Filter and sort businesses
-  const filteredBusinesses = useMemo(() => {
-    let results = DEMO_BUSINESSES.filter(b => {
-      const cityMatch = selectedCity === 'All Cities' || b.city === selectedCity;
-      const categoryMatch = selectedCategory === 'All' || b.category === selectedCategory;
-      const priceMatch = selectedPrice === 'All' || b.priceRange === selectedPrice;
-      const matchScorePass = b.matchScore >= minMatch;
-      const openMatch = !showOpenOnly || b.openNow;
-      
-      return cityMatch && categoryMatch && priceMatch && matchScorePass && openMatch;
-    });
-    
-    // Sort
-    if (sortBy === 'Best Match') {
-      results.sort((a, b) => b.matchScore - a.matchScore);
-    } else if (sortBy === 'Highest Rated') {
-      results.sort((a, b) => b.rating - a.rating);
-    } else if (sortBy === 'Most Reviews') {
-      results.sort((a, b) => b.reviews - a.reviews);
-    } else if (sortBy === 'Nearest') {
-      results.sort((a, b) => parseFloat(a.distance) - parseFloat(b.distance));
-    }
-    
-    return results;
-  }, [selectedCity, selectedCategory, selectedPrice, minMatch, showOpenOnly, sortBy]);
-  
-  const toggleFavorite = (id: string) => {
-    setFavorites(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(id)) {
-        newSet.delete(id);
-      } else {
-        newSet.add(id);
+function useCodeMap() {
+  return useMemo(() => {
+    const m = new Map<string, Code>();
+    for (const c of CULTURAL_CODES) m.set(c.id, c);
+    return m;
+  }, []);
+}
+
+function cn(...xs: Array<string | false | undefined | null>) {
+  return xs.filter(Boolean).join(' ');
+}
+
+/* =========================
+   BACKGROUND (constant, transcendent)
+========================= */
+
+function ConstantBackground() {
+  return (
+    <div className="pointer-events-none absolute inset-0 overflow-hidden">
+      {/* calm ambient glow */}
+      <div className="absolute inset-0 bg-[radial-gradient(900px_circle_at_50%_18%,rgba(255,255,255,0.08),transparent_55%),radial-gradient(1200px_circle_at_20%_80%,rgba(168,85,247,0.10),transparent_60%),radial-gradient(1200px_circle_at_85%_70%,rgba(59,130,246,0.08),transparent_60%)]" />
+
+      {/* slow wave lines (not linked to scroll) */}
+      <motion.svg
+        className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 opacity-[0.20]"
+        width="1400"
+        height="900"
+        viewBox="0 0 1400 900"
+        fill="none"
+        aria-hidden
+        initial={{ y: 0 }}
+        animate={{ y: [0, 12, 0] }}
+        transition={{ duration: 12, repeat: Infinity, ease: 'easeInOut' }}
+      >
+        <path d="M-50 520 C 200 430, 420 640, 700 520 C 980 400, 1120 610, 1450 500" stroke="rgba(255,255,255,0.32)" strokeWidth="1" />
+        <path d="M-70 585 C 190 485, 430 710, 700 590 C 980 470, 1140 690, 1470 560" stroke="rgba(255,255,255,0.20)" strokeWidth="1" />
+        <path d="M-90 455 C 210 380, 410 570, 700 450 C 990 330, 1110 560, 1490 430" stroke="rgba(255,255,255,0.16)" strokeWidth="1" />
+      </motion.svg>
+
+      {/* grain */}
+      <div
+        className="absolute inset-0 opacity-[0.09]"
+        style={{
+          backgroundImage:
+            'url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%27240%27 height=%27240%27%3E%3Cfilter id=%27n%27 x=%270%27 y=%270%27%3E%3CfeTurbulence type=%27fractalNoise%27 baseFrequency=%270.8%27 numOctaves=%273%27 stitchTiles=%27stitch%27/%3E%3C/filter%3E%3Crect width=%27240%27 height=%27240%27 filter=%27url(%23n)%27 opacity=%270.55%27/%3E%3C/svg%3E")',
+        }}
+      />
+
+      <div className="absolute inset-0 bg-gradient-to-b from-black/18 via-black/35 to-black" />
+    </div>
+  );
+}
+
+/* =========================
+   PAGE
+========================= */
+
+export default function LandingPage() {
+  const reduceMotion = useReducedMotion();
+  const codeMap = useCodeMap();
+
+  const rootRef = useRef<HTMLDivElement | null>(null);
+  const trackRef = useRef<HTMLDivElement | null>(null);
+  const cardRefs = useRef<(HTMLButtonElement | null)[]>([]);
+
+  const [activeIndex, setActiveIndex] = useState(2);
+  const [openEnvId, setOpenEnvId] = useState<string | null>(null);
+
+  const openEnv = openEnvId ? ENVIRONMENTS.find((e) => e.id === openEnvId) : null;
+
+  // subtle spotlight that tracks cursor (kept ultra-quiet)
+  const onPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    const el = rootRef.current;
+    if (!el) return;
+    const r = el.getBoundingClientRect();
+    const x = clamp(((e.clientX - r.left) / r.width) * 100, 0, 100);
+    const y = clamp(((e.clientY - r.top) / r.height) * 100, 0, 100);
+    el.style.setProperty('--mx', `${x}%`);
+    el.style.setProperty('--my', `${y}%`);
+  };
+
+  // keep activeIndex synced to whichever card is closest to center
+  useEffect(() => {
+    const track = trackRef.current;
+    if (!track) return;
+
+    let raf = 0;
+
+    const computeActive = () => {
+      const rect = track.getBoundingClientRect();
+      const centerX = rect.left + rect.width / 2;
+
+      let best = 0;
+      let bestDist = Number.POSITIVE_INFINITY;
+
+      for (let i = 0; i < ENVIRONMENTS.length; i++) {
+        const el = cardRefs.current[i];
+        if (!el) continue;
+        const r = el.getBoundingClientRect();
+        const cx = r.left + r.width / 2;
+        const d = Math.abs(cx - centerX);
+        if (d < bestDist) {
+          bestDist = d;
+          best = i;
+        }
       }
-      return newSet;
+
+      setActiveIndex(best);
+    };
+
+    const onScroll = () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(computeActive);
+    };
+
+    track.addEventListener('scroll', onScroll, { passive: true });
+    computeActive();
+
+    return () => {
+      cancelAnimationFrame(raf);
+      track.removeEventListener('scroll', onScroll as any);
+    };
+  }, []);
+
+  const scrollToIndex = (i: number) => {
+    const el = cardRefs.current[i];
+    if (!el) return;
+    el.scrollIntoView({
+      behavior: reduceMotion ? 'auto' : 'smooth',
+      inline: 'center',
+      block: 'nearest',
     });
   };
-  
-  if (!codeData) {
-    return (
-      <div className="min-h-screen bg-[#0a0a14] flex items-center justify-center text-white">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold mb-4">Code not found</h1>
-          <button onClick={() => router.push('/')} className="px-6 py-3 bg-white text-black rounded-full font-semibold">
-            Back to Home
+
+  const prev = () => scrollToIndex(Math.max(0, activeIndex - 1));
+  const next = () => scrollToIndex(Math.min(ENVIRONMENTS.length - 1, activeIndex + 1));
+
+  // keyboard navigation (investor demo polish)
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowLeft') prev();
+      if (e.key === 'ArrowRight') next();
+      if (e.key === 'Enter') {
+        const env = ENVIRONMENTS[activeIndex];
+        if (env) setOpenEnvId(env.id);
+      }
+      if (e.key === 'Escape') setOpenEnvId(null);
+    };
+
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeIndex]);
+
+  return (
+    <div
+      ref={rootRef}
+      onPointerMove={onPointerMove}
+      className="relative min-h-screen bg-[#070710] text-white overflow-hidden"
+      style={{
+        // very subtle cursor halo—doesn't change the background identity, just adds life
+        background:
+          'radial-gradient(700px circle at var(--mx, 50%) var(--my, 35%), rgba(255,255,255,0.05), transparent 55%), #070710',
+      }}
+    >
+      <ConstantBackground />
+
+      {/* CORNER UI (minimal, confident) */}
+      <div className="absolute inset-0 z-20 pointer-events-none">
+        {/* top-left brand */}
+        <div className="absolute left-5 top-5 md:left-8 md:top-7 pointer-events-auto">
+          <div className="flex items-center gap-2 text-white/90">
+            <Sparkles className="h-6 w-6 text-purple-200" />
+            <span className="text-sm md:text-base font-medium tracking-tight">AVIRAGE</span>
+          </div>
+        </div>
+
+        {/* top-right */}
+        <div className="absolute right-5 top-5 md:right-8 md:top-7 flex items-center gap-2 pointer-events-auto">
+          <button className="px-4 py-2 rounded-full border border-white/12 bg-white/[0.02] backdrop-blur-md text-white/78 hover:bg-white/[0.05] transition text-sm">
+            Sign in
+          </button>
+          <button className="px-4 py-2 rounded-full bg-white text-black font-semibold hover:bg-white/90 transition text-sm">
+            Get started
           </button>
         </div>
+
+        {/* bottom-left microcopy */}
+        <div className="absolute left-5 bottom-6 md:left-8 md:bottom-8 max-w-[260px] md:max-w-[380px] pointer-events-auto">
+          <div className="text-[11px] uppercase tracking-[0.22em] text-white/50">Choose a lens</div>
+          <div className="mt-2 text-sm md:text-base text-white/78 leading-[1.55]">
+            Explore how different minds interpret the same world.
+            <span className="text-white/52"> Curiosity first. Meaning second.</span>
+          </div>
+        </div>
+
+        {/* bottom-right CTA */}
+        <div className="absolute right-5 bottom-6 md:right-8 md:bottom-8 pointer-events-auto">
+          <Link href="/quiz">
+            <button className="px-4 py-2 rounded-full border border-white/12 bg-white/[0.02] backdrop-blur-md text-white/78 hover:bg-white/[0.05] transition text-sm">
+              Find my code
+            </button>
+          </Link>
+        </div>
       </div>
-    );
-  }
-  
-  return (
-    <div className="min-h-screen bg-[#0a0a14] text-white">
-      {/* Top Bar */}
-      <header className="sticky top-0 z-50 backdrop-blur-xl bg-black/60 border-b border-white/10">
-        <div className="max-w-[1800px] mx-auto px-4 sm:px-6 py-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <button
-                onClick={() => router.push('/')}
-                className="flex items-center gap-2 text-white/70 hover:text-white transition"
-              >
-                <ArrowLeft className="w-4 h-4" />
-                <span className="text-sm hidden sm:inline">Home</span>
-              </button>
-              
-              <div className="h-6 w-px bg-white/10" />
-              
-              <div>
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full" style={{ backgroundColor: codeData.color }} />
-                  <h1 className="text-sm font-semibold">{codeData.name}</h1>
-                </div>
-                <p className="text-xs text-white/50 hidden sm:block">{codeData.tagline}</p>
-              </div>
+
+      {/* CENTER STAGE */}
+      <main className="relative z-10 min-h-screen flex items-center justify-center px-4">
+        <div className="w-full max-w-6xl">
+          {/* quiet headline (minimal but premium) */}
+          <motion.div
+            initial={reduceMotion ? { opacity: 1 } : { opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, ease: 'easeOut' }}
+            className="text-center mb-4 md:mb-6"
+          >
+            <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] backdrop-blur-md px-3 py-1.5 text-white/68">
+              <span className="text-[11px] uppercase tracking-[0.22em]">Swipe to choose • Enter to reveal</span>
             </div>
-            
+          </motion.div>
+
+          {/* controls (desktop only) */}
+          <div className="hidden md:flex items-center justify-between mb-3 px-2">
             <button
-              onClick={() => setShowFilters(!showFilters)}
-              className="lg:hidden flex items-center gap-2 px-3 py-1.5 rounded-lg border border-white/20 bg-white/5"
+              onClick={prev}
+              className="h-10 w-10 rounded-full border border-white/12 bg-white/[0.03] backdrop-blur-md hover:bg-white/[0.06] transition flex items-center justify-center"
+              aria-label="Previous"
             >
-              <SlidersHorizontal className="w-4 h-4" />
-              <span className="text-sm">Filters</span>
+              <ArrowLeft className="h-4 w-4 text-white/80" />
+            </button>
+
+            <div className="text-xs text-white/50">{ENVIRONMENTS[activeIndex]?.title}</div>
+
+            <button
+              onClick={next}
+              className="h-10 w-10 rounded-full border border-white/12 bg-white/[0.03] backdrop-blur-md hover:bg-white/[0.06] transition flex items-center justify-center"
+              aria-label="Next"
+            >
+              <ArrowRight className="h-4 w-4 text-white/80" />
             </button>
           </div>
-        </div>
-      </header>
-      
-      {/* Code Info Banner */}
-      <div className={`bg-gradient-to-r ${codeData.gradient} border-b border-white/10`}>
-        <div className="max-w-[1800px] mx-auto px-4 sm:px-6 py-6">
-          <div className="flex items-start justify-between gap-4">
-            <div className="flex-1">
-              <h2 className="text-lg font-semibold mb-1">Why {codeData.name} matches these places</h2>
-              <p className="text-sm text-white/80 max-w-3xl leading-relaxed">
-                Every space here resonates with {codeData.tagline.toLowerCase()}. We've analyzed atmosphere, values, 
-                and cultural alignment to find places where you'll feel understood — not just accommodated.
-              </p>
-            </div>
-            <div className="text-right">
-              <div className="text-2xl font-bold">{filteredBusinesses.length}</div>
-              <div className="text-xs text-white/70">places match</div>
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      <div className="max-w-[1800px] mx-auto flex">
-        {/* Left Sidebar Filters */}
-        <aside className={`
-          lg:sticky lg:top-[73px] lg:block h-[calc(100vh-73px)] overflow-y-auto
-          border-r border-white/10 bg-black/20
-          ${showFilters ? 'fixed inset-0 z-40 block' : 'hidden'}
-          lg:w-72 w-full
-        `}>
-          <div className="p-4 space-y-6">
-            {/* Mobile close */}
-            <div className="lg:hidden flex items-center justify-between mb-4">
-              <h3 className="font-semibold">Filters</h3>
-              <button onClick={() => setShowFilters(false)}>
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            
-            {/* Location */}
-            <div>
-              <label className="text-xs uppercase tracking-wider text-white/50 mb-2 block">Location</label>
-              <select
-                value={selectedCity}
-                onChange={(e) => setSelectedCity(e.target.value)}
-                className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-sm focus:outline-none focus:border-white/30"
-              >
-                {CITIES.map(city => (
-                  <option key={city} value={city} className="bg-gray-900">{city}</option>
-                ))}
-              </select>
-            </div>
-            
-            {/* Category */}
-            <div>
-              <label className="text-xs uppercase tracking-wider text-white/50 mb-2 block">Category</label>
-              <div className="space-y-1">
-                {CATEGORIES.map(cat => (
-                  <button
-                    key={cat}
-                    onClick={() => setSelectedCategory(cat)}
-                    className={`w-full text-left px-3 py-2 rounded-lg text-sm transition ${
-                      selectedCategory === cat
-                        ? 'bg-white text-black font-medium'
-                        : 'text-white/70 hover:bg-white/5'
-                    }`}
-                  >
-                    {cat}
-                  </button>
-                ))}
-              </div>
-            </div>
-            
-            {/* Price Range */}
-            <div>
-              <label className="text-xs uppercase tracking-wider text-white/50 mb-2 block">Price Range</label>
-              <div className="flex gap-2">
-                {PRICE_RANGES.map(price => (
-                  <button
-                    key={price}
-                    onClick={() => setSelectedPrice(price)}
-                    className={`flex-1 px-2 py-1.5 rounded-lg text-xs transition ${
-                      selectedPrice === price
-                        ? 'bg-white text-black font-medium'
-                        : 'bg-white/5 text-white/70 hover:bg-white/10'
-                    }`}
-                  >
-                    {price}
-                  </button>
-                ))}
-              </div>
-            </div>
-            
-            {/* Match Score */}
-            <div>
-              <label className="text-xs uppercase tracking-wider text-white/50 mb-2 block">
-                Min Match: {minMatch}%
-              </label>
-              <input
-                type="range"
-                min="70"
-                max="100"
-                value={minMatch}
-                onChange={(e) => setMinMatch(Number(e.target.value))}
-                className="w-full accent-white"
-                style={{ accentColor: codeData.color }}
-              />
-            </div>
-            
-            {/* Open Now Toggle */}
-            <div>
-              <button
-                onClick={() => setShowOpenOnly(!showOpenOnly)}
-                className="flex items-center justify-between w-full px-3 py-2 rounded-lg bg-white/5 hover:bg-white/10 transition"
-              >
-                <span className="text-sm">Open now only</span>
-                <div className={`w-10 h-5 rounded-full transition ${showOpenOnly ? 'bg-white' : 'bg-white/20'}`}>
-                  <div className={`w-4 h-4 mt-0.5 rounded-full bg-black transition-transform ${showOpenOnly ? 'translate-x-5' : 'translate-x-0.5'}`} />
-                </div>
-              </button>
-            </div>
-            
-            {/* Reset */}
-            <button
-              onClick={() => {
-                setSelectedCity('All Cities');
-                setSelectedCategory('All');
-                setSelectedPrice('All');
-                setMinMatch(80);
-                setShowOpenOnly(false);
+
+          {/* slider */}
+          <div className="relative">
+            {/* edge fades */}
+            <div aria-hidden className="pointer-events-none absolute left-0 top-0 bottom-0 w-12 bg-gradient-to-r from-black/55 to-transparent z-10" />
+            <div aria-hidden className="pointer-events-none absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-black/55 to-transparent z-10" />
+
+            {/* shelf shadow (investor-grade polish) */}
+            <div
+              aria-hidden
+              className="pointer-events-none absolute left-1/2 -translate-x-1/2 top-[72%] md:top-[76%] w-[520px] md:w-[560px] h-[120px] blur-2xl opacity-70"
+              style={{
+                background:
+                  'radial-gradient(closest-side, rgba(0,0,0,0.55), transparent 70%)',
               }}
-              className="w-full px-3 py-2 text-sm text-white/50 hover:text-white transition"
+            />
+
+            <div
+              ref={trackRef}
+              className="flex gap-5 md:gap-6 overflow-x-auto pb-6 scroll-smooth snap-x snap-mandatory"
+              style={{ WebkitOverflowScrolling: 'touch' }}
             >
-              Reset all filters
-            </button>
-          </div>
-        </aside>
-        
-        {/* Main Content */}
-        <main className="flex-1 min-w-0">
-          {/* Sort bar */}
-          <div className="sticky top-[73px] z-30 bg-black/40 backdrop-blur-xl border-b border-white/10 px-4 sm:px-6 py-3">
-            <div className="flex items-center justify-between gap-4">
-              <p className="text-sm text-white/60">
-                {filteredBusinesses.length} result{filteredBusinesses.length !== 1 ? 's' : ''}
-              </p>
-              
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-                className="px-3 py-1.5 bg-white/5 border border-white/10 rounded-lg text-sm focus:outline-none focus:border-white/30"
-              >
-                {SORT_OPTIONS.map(opt => (
-                  <option key={opt} value={opt} className="bg-gray-900">{opt}</option>
-                ))}
-              </select>
-            </div>
-          </div>
-          
-          {/* Business Grid */}
-          <div className="p-4 sm:p-6">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-              {filteredBusinesses.map((business) => (
-                <motion.div
-                  key={business.id}
-                  layout
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="group relative"
-                >
-                  <button
-                    onClick={() => setSelectedBusiness(business)}
-                    className="w-full text-left"
+              {/* spacers so first/last can center */}
+              <div className="shrink-0 w-[10vw] md:w-[14vw]" aria-hidden />
+
+              {ENVIRONMENTS.map((env, i) => {
+                const hero = codeMap.get(env.heroCodeId);
+                const heroImg = hero?.image ?? '/images/codes/ALETHIR-frontpage.jpeg';
+
+                const isActive = i === activeIndex;
+                const distance = Math.abs(i - activeIndex);
+
+                // Taller + slimmer editorial silhouette
+                // Active feels like an object; sides feel peripheral
+                const scale = isActive ? 1 : distance === 1 ? 0.92 : 0.86;
+                const opacity = isActive ? 1 : distance === 1 ? 0.70 : 0.52;
+                const blur = isActive ? 0 : distance === 1 ? 0.7 : 1.4;
+
+                // subtle tilt makes it feel "current" (not a flat carousel)
+                const rotate = isActive ? 0 : (i < activeIndex ? -2.0 : 2.0);
+
+                return (
+                  <motion.button
+                    key={env.id}
+                    ref={(el) => {
+                      cardRefs.current[i] = el;
+                    }}
+                    type="button"
+                    onClick={() => {
+                      if (isActive) setOpenEnvId(env.id);
+                      else scrollToIndex(i);
+                    }}
+                    className={cn(
+                      'snap-center shrink-0 outline-none text-left relative overflow-hidden',
+                      // Taller + slimmer
+                      'w-[72%] sm:w-[420px] md:w-[440px]',
+                      'h-[520px] sm:h-[560px] md:h-[600px]',
+                      // Modern rounded
+                      'rounded-[40px]',
+                      // Premium glass object
+                      'bg-white/[0.03] backdrop-blur-md',
+                      'border border-white/12',
+                      'shadow-[0_30px_120px_rgba(0,0,0,0.55)]',
+                      'ring-1 ring-white/[0.06]',
+                      'transition-[transform,opacity,filter] duration-300 ease-out'
+                    )}
+                    style={{
+                      transform: `scale(${scale}) rotate(${rotate}deg)`,
+                      opacity,
+                      filter: `blur(${blur}px)`,
+                    }}
+                    whileTap={{ scale: Math.max(0.98, scale - 0.02) }}
+                    aria-label={isActive ? `${env.title}. Press Enter to reveal codes.` : `${env.title}. Click to focus.`}
                   >
-                    <div className="relative overflow-hidden rounded-xl bg-white/5 border border-white/10 hover:border-white/20 transition-all">
-                      {/* Image */}
-                      <div className="relative h-40 overflow-hidden">
-                        <Image
-                          src={business.image}
-                          alt={business.name}
-                          fill
-                          className="object-cover group-hover:scale-105 transition-transform duration-500"
-                          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-                        />
-                        
-                        {/* Match badge */}
-                        <div 
-                          className="absolute top-2 left-2 px-2 py-1 rounded-lg backdrop-blur-md text-xs font-bold"
-                          style={{ backgroundColor: `${codeData.color}20`, color: codeData.color, border: `1px solid ${codeData.color}40` }}
-                        >
-                          {business.matchScore}%
+                    {/* image */}
+                    <div className="absolute inset-0">
+                      <Image
+                        src={heroImg}
+                        alt={env.title}
+                        fill
+                        className="object-cover scale-[1.06]"
+                        sizes="(max-width: 768px) 72vw, 440px"
+                      />
+                      {/* readability */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-black/10" />
+                    </div>
+
+                    {/* modern hairline grid (quiet) */}
+                    <div
+                      aria-hidden
+                      className="absolute inset-0 opacity-[0.12]"
+                      style={{
+                        backgroundImage:
+                          'linear-gradient(to right, rgba(255,255,255,0.06) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.06) 1px, transparent 1px)',
+                        backgroundSize: '22px 22px',
+                      }}
+                    />
+
+                    {/* rim highlight (expensive) */}
+                    <div
+                      aria-hidden
+                      className="absolute inset-0"
+                      style={{
+                        background:
+                          'radial-gradient(800px circle at 20% 10%, rgba(255,255,255,0.12), transparent 60%), radial-gradient(800px circle at 85% 20%, rgba(255,255,255,0.08), transparent 60%)',
+                        opacity: 0.7,
+                      }}
+                    />
+
+                    {/* hover spotlight (cards feel alive, background stays constant) */}
+                    <div
+                      aria-hidden
+                      className="absolute inset-0 opacity-0 hover:opacity-100 transition-opacity duration-300"
+                      style={{
+                        background:
+                          'radial-gradient(520px circle at var(--mx, 50%) var(--my, 40%), rgba(255,255,255,0.14), transparent 62%)',
+                      }}
+                    />
+
+                    {/* CONTENT (editorial offset, not “centered template”) */}
+                    <div className="relative h-full px-7 md:px-8 pt-10 pb-8 flex flex-col">
+                      {/* top chip */}
+                      <div className="flex items-center justify-between">
+                        <div className="inline-flex items-center gap-2 rounded-full px-3 py-1.5 bg-black/35 border border-white/12 backdrop-blur-md">
+                          <span className="text-[11px] uppercase tracking-[0.22em] text-white/80">Environment</span>
                         </div>
-                        
-                        {/* Favorite */}
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            toggleFavorite(business.id);
-                          }}
-                          className="absolute top-2 right-2 w-8 h-8 rounded-full bg-black/60 backdrop-blur-md flex items-center justify-center hover:scale-110 transition"
-                        >
-                          <Heart className={`w-4 h-4 ${favorites.has(business.id) ? 'fill-red-500 text-red-500' : 'text-white'}`} />
-                        </button>
+
+                        {/* only readable on active */}
+                        <div className={cn('text-xs', isActive ? 'text-white/55' : 'text-white/0')}>
+                          {env.subtitle}
+                        </div>
                       </div>
-                      
-                      {/* Content */}
-                      <div className="p-3 space-y-2">
-                        <div>
-                          <h3 className="font-semibold text-sm mb-0.5 line-clamp-1">{business.name}</h3>
-                          <div className="flex items-center gap-1 text-xs text-white/50">
-                            <MapPin className="w-3 h-3" />
-                            <span className="line-clamp-1">{business.location}</span>
-                          </div>
+
+                      {/* push content down slightly (modern editorial layout) */}
+                      <div className="mt-auto space-y-2">
+                        <div className="text-[28px] md:text-[32px] font-medium tracking-tight leading-[1.05]">
+                          {env.title}
                         </div>
-                        
-                        <div className="flex items-center justify-between text-xs">
-                          <div className="flex items-center gap-1">
-                            <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
-                            <span className="font-medium">{business.rating}</span>
-                            <span className="text-white/50">({business.reviews})</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            {business.openNow && (
-                              <span className="text-green-400 font-medium">Open</span>
-                            )}
-                            <span className="text-white/50">{business.priceRange}</span>
-                          </div>
+
+                        <div className="text-sm md:text-[15px] text-white/70 leading-[1.55] max-w-[32ch]">
+                          {env.poetic}
                         </div>
-                        
-                        <div className="flex flex-wrap gap-1">
-                          {business.tags.slice(0, 2).map(tag => (
-                            <span key={tag} className="px-2 py-0.5 rounded-full bg-white/10 text-[10px] text-white/60">
-                              {tag}
-                            </span>
-                          ))}
+
+                        <div className="pt-3 text-xs text-white/55">
+                          {isActive ? 'Click to reveal codes' : 'Click to focus'}
                         </div>
                       </div>
                     </div>
-                  </button>
-                </motion.div>
+                  </motion.button>
+                );
+              })}
+
+              <div className="shrink-0 w-[10vw] md:w-[14vw]" aria-hidden />
+            </div>
+
+            {/* dots (minimal, modern) */}
+            <div className="mt-2 flex items-center justify-center gap-2">
+              {ENVIRONMENTS.map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => scrollToIndex(i)}
+                  aria-label={`Go to ${i + 1}`}
+                  className={cn(
+                    'h-1.5 rounded-full transition-all',
+                    i === activeIndex ? 'w-8 bg-white/70' : 'w-3 bg-white/25 hover:bg-white/40'
+                  )}
+                />
               ))}
             </div>
-            
-            {filteredBusinesses.length === 0 && (
-              <div className="text-center py-20">
-                <div className="text-white/40 mb-4">
-                  <Map className="w-12 h-12 mx-auto mb-2" />
-                  <p>No matches found</p>
-                  <p className="text-sm mt-1">Try adjusting your filters</p>
-                </div>
-              </div>
-            )}
+
+            {/* mobile hint */}
+            <div className="mt-3 text-center text-xs text-white/50 md:hidden">
+              Swipe sideways — the center card is the selection.
+            </div>
           </div>
-        </main>
-      </div>
-      
-      {/* Business Detail Modal */}
+        </div>
+      </main>
+
+      {/* MODAL: reveal codes (kept premium and consistent) */}
       <AnimatePresence>
-        {selectedBusiness && (
+        {openEnv && (
           <motion.div
+            className="fixed inset-0 z-[100] bg-black/70 backdrop-blur-md p-4 md:p-8"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4"
-            onClick={() => setSelectedBusiness(null)}
+            onClick={() => setOpenEnvId(null)}
           >
             <motion.div
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+              initial={reduceMotion ? { opacity: 1 } : { opacity: 0, y: 18, scale: 0.985 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 18, scale: 0.985 }}
+              transition={{ type: 'spring', stiffness: 260, damping: 26 }}
               onClick={(e) => e.stopPropagation()}
-              className="relative w-full max-w-4xl max-h-[90vh] overflow-y-auto bg-gradient-to-b from-gray-900 to-black rounded-2xl border border-white/20"
+              className="mx-auto max-w-6xl rounded-[40px] overflow-hidden border border-white/12 bg-white/[0.04] shadow-[0_30px_120px_rgba(0,0,0,0.65)] ring-1 ring-white/[0.06]"
             >
-              <button
-                onClick={() => setSelectedBusiness(null)}
-                className="absolute top-4 right-4 z-10 w-10 h-10 rounded-full bg-black/80 backdrop-blur-md border border-white/20 flex items-center justify-center text-white hover:bg-black transition"
-              >
-                <X className="w-5 h-5" />
-              </button>
-              
-              {/* Hero */}
-              <div className="relative h-72">
-                <Image
-                  src={selectedBusiness.image}
-                  alt={selectedBusiness.name}
-                  fill
-                  className="object-cover"
-                  sizes="100vw"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent" />
-                
-                <div className="absolute bottom-6 left-6 right-6">
-                  <div className="flex items-start justify-between gap-4">
-                    <div>
-                      <div
-                        className="inline-block px-3 py-1 rounded-lg backdrop-blur-md text-sm font-bold mb-3"
-                        style={{ backgroundColor: `${codeData.color}30`, color: codeData.color, border: `1px solid ${codeData.color}60` }}
-                      >
-                        {selectedBusiness.matchScore}% match with {codeData.name}
-                      </div>
-                      <h2 className="text-3xl font-bold mb-1">{selectedBusiness.name}</h2>
-                      <div className="flex items-center gap-3 text-sm text-white/70">
-                        <div className="flex items-center gap-1">
-                          <MapPin className="w-4 h-4" />
-                          <span>{selectedBusiness.location}</span>
-                        </div>
-                        <span>•</span>
-                        <span>{selectedBusiness.category}</span>
-                      </div>
-                    </div>
-                    
+              <div className="relative p-7 md:p-10">
+                <div className="absolute inset-0">
+                  <Image
+                    src={(codeMap.get(openEnv.heroCodeId)?.image) ?? '/images/codes/ALETHIR-frontpage.jpeg'}
+                    alt={openEnv.title}
+                    fill
+                    className="object-cover opacity-[0.22]"
+                    sizes="100vw"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/35 to-black/15" />
+                </div>
+
+                <div className="relative">
+                  <div className="text-xs uppercase tracking-[0.22em] text-white/70">Environment</div>
+                  <div className="mt-2 text-3xl md:text-4xl font-medium tracking-tight">{openEnv.title}</div>
+                  <div className="mt-2 text-white/70 max-w-2xl leading-[1.55]">{openEnv.poetic}</div>
+
+                  <div className="mt-6 flex items-center gap-2">
                     <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        toggleFavorite(selectedBusiness.id);
-                      }}
-                      className="w-12 h-12 rounded-full bg-black/60 backdrop-blur-md border border-white/20 flex items-center justify-center hover:scale-110 transition"
+                      onClick={() => setOpenEnvId(null)}
+                      className="px-4 py-2 rounded-full border border-white/14 bg-white/[0.03] hover:bg-white/[0.06] transition text-white/85 text-sm"
                     >
-                      <Heart className={`w-6 h-6 ${favorites.has(selectedBusiness.id) ? 'fill-red-500 text-red-500' : 'text-white'}`} />
+                      Close
                     </button>
+                    <Link href="/quiz">
+                      <button className="px-4 py-2 rounded-full bg-white text-black font-semibold text-sm">
+                        Find my code
+                      </button>
+                    </Link>
                   </div>
                 </div>
               </div>
-              
-              {/* Content */}
-              <div className="p-8 space-y-6">
-                {/* Stats */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                  <div className="text-center p-4 rounded-xl bg-white/5 border border-white/10">
-                    <Star className="w-5 h-5 fill-yellow-400 text-yellow-400 mx-auto mb-1" />
-                    <div className="text-2xl font-bold">{selectedBusiness.rating}</div>
-                    <div className="text-xs text-white/50">{selectedBusiness.reviews} reviews</div>
-                  </div>
-                  <div className="text-center p-4 rounded-xl bg-white/5 border border-white/10">
-                    <DollarSign className="w-5 h-5 mx-auto mb-1 text-white/70" />
-                    <div className="text-2xl font-bold">{selectedBusiness.priceRange}</div>
-                    <div className="text-xs text-white/50">Price</div>
-                  </div>
-                  <div className="text-center p-4 rounded-xl bg-white/5 border border-white/10">
-                    <MapPin className="w-5 h-5 mx-auto mb-1 text-white/70" />
-                    <div className="text-lg font-bold">{selectedBusiness.distance}</div>
-                    <div className="text-xs text-white/50">Distance</div>
-                  </div>
-                  <div className="text-center p-4 rounded-xl bg-white/5 border border-white/10">
-                    <Clock className="w-5 h-5 mx-auto mb-1 text-white/70" />
-                    <div className="text-lg font-bold">{selectedBusiness.openNow ? 'Open' : 'Closed'}</div>
-                    <div className="text-xs text-white/50">Status</div>
-                  </div>
+
+              <div className="p-7 md:p-10 pt-0">
+                <div className="text-sm text-white/65 mb-4">Codes in this space</div>
+
+                {/* horizontal code cards */}
+                <div className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory" style={{ WebkitOverflowScrolling: 'touch' }}>
+                  {openEnv.codeIds.map((id) => {
+                    const c = codeMap.get(id);
+                    if (!c) return null;
+
+                    return (
+                      <Link key={c.id} href={`/explore/${c.id}`} className="snap-center shrink-0 w-[78%] sm:w-[340px]">
+                        <motion.div
+                          whileHover={reduceMotion ? undefined : { y: -4 }}
+                          transition={{ type: 'spring', stiffness: 260, damping: 24 }}
+                          className="group relative overflow-hidden rounded-3xl border border-white/12 bg-white/[0.03] shadow-[0_18px_60px_rgba(0,0,0,0.45)] ring-1 ring-white/[0.05]"
+                        >
+                          <div className="relative h-[200px]">
+                            <Image
+                              src={c.image}
+                              alt={c.name}
+                              fill
+                              className="object-cover opacity-[0.92] group-hover:scale-[1.06] transition-transform duration-700"
+                              sizes="(max-width: 768px) 78vw, 340px"
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+                          </div>
+
+                          <div className="p-4">
+                            <div className="text-base font-medium tracking-tight">{c.name}</div>
+                            <div className="text-xs text-white/65 mt-1">{c.tagline}</div>
+                          </div>
+                        </motion.div>
+                      </Link>
+                    );
+                  })}
                 </div>
-                
-                {/* Why this matches */}
-                <div className="p-6 rounded-xl border border-white/10" style={{ backgroundColor: `${codeData.color}10` }}>
-                  <h3 className="text-sm font-semibold uppercase tracking-wider mb-2" style={{ color: codeData.color }}>
-                    Why this matches you
-                  </h3>
-                  <p className="text-white/90 leading-relaxed">
-                    This {selectedBusiness.category.toLowerCase()} embodies {codeData.tagline.toLowerCase()}. 
-                    The atmosphere, values, and cultural approach align with how {codeData.name} navigates the world. 
-                    You'll find resonance here — not just service.
-                  </p>
-                </div>
-                
-                {/* Vibe */}
-                <div>
-                  <h3 className="text-sm font-semibold uppercase tracking-wider text-white/50 mb-3">Vibe & Atmosphere</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {[...selectedBusiness.tags, ...selectedBusiness.vibe].map(tag => (
-                      <span key={tag} className="px-3 py-1.5 rounded-full bg-white/10 border border-white/10 text-sm">
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-                
-                {/* Actions */}
-                <div className="flex gap-3 pt-4">
-                  <button className="flex-1 px-6 py-3 bg-white text-black rounded-xl font-semibold hover:bg-white/90 transition">
-                    Book / Reserve
-                  </button>
-                  <button className="px-6 py-3 border border-white/20 rounded-xl font-semibold hover:bg-white/10 transition">
-                    Directions
-                  </button>
-                  <button className="px-6 py-3 border border-white/20 rounded-xl font-semibold hover:bg-white/10 transition">
-                    Share
-                  </button>
-                </div>
+
+                <div className="mt-2 text-xs text-white/55">Swipe sideways to browse.</div>
               </div>
             </motion.div>
           </motion.div>
