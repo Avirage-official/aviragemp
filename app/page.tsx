@@ -3,11 +3,11 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { ArrowLeft, ArrowRight, Sparkles } from 'lucide-react';
 
 /* =========================
-   Data (keep your IDs/images)
+   DATA (keep your IDs/images)
 ========================= */
 
 type Code = {
@@ -101,8 +101,12 @@ const ENVIRONMENTS: Environment[] = [
 ];
 
 /* =========================
-   Helpers
+   HELPERS
 ========================= */
+
+function clamp(n: number, min: number, max: number) {
+  return Math.max(min, Math.min(max, n));
+}
 
 function useCodeMap() {
   return useMemo(() => {
@@ -112,19 +116,23 @@ function useCodeMap() {
   }, []);
 }
 
-function clamp(n: number, min: number, max: number) {
-  return Math.max(min, Math.min(max, n));
+function cn(...xs: Array<string | false | undefined | null>) {
+  return xs.filter(Boolean).join(' ');
 }
 
-function WaveBackground() {
+/* =========================
+   BACKGROUND (constant, transcendent)
+========================= */
+
+function ConstantBackground() {
   return (
     <div className="pointer-events-none absolute inset-0 overflow-hidden">
-      {/* calm glow (constant) */}
+      {/* calm ambient glow */}
       <div className="absolute inset-0 bg-[radial-gradient(900px_circle_at_50%_18%,rgba(255,255,255,0.08),transparent_55%),radial-gradient(1200px_circle_at_20%_80%,rgba(168,85,247,0.10),transparent_60%),radial-gradient(1200px_circle_at_85%_70%,rgba(59,130,246,0.08),transparent_60%)]" />
 
-      {/* slow wave (constant, not tied to slider) */}
+      {/* slow wave lines (not linked to scroll) */}
       <motion.svg
-        className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 opacity-[0.22]"
+        className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 opacity-[0.20]"
         width="1400"
         height="900"
         viewBox="0 0 1400 900"
@@ -132,26 +140,14 @@ function WaveBackground() {
         aria-hidden
         initial={{ y: 0 }}
         animate={{ y: [0, 12, 0] }}
-        transition={{ duration: 11, repeat: Infinity, ease: 'easeInOut' }}
+        transition={{ duration: 12, repeat: Infinity, ease: 'easeInOut' }}
       >
-        <path
-          d="M-50 520 C 200 430, 420 640, 700 520 C 980 400, 1120 610, 1450 500"
-          stroke="rgba(255,255,255,0.34)"
-          strokeWidth="1"
-        />
-        <path
-          d="M-70 585 C 190 485, 430 710, 700 590 C 980 470, 1140 690, 1470 560"
-          stroke="rgba(255,255,255,0.20)"
-          strokeWidth="1"
-        />
-        <path
-          d="M-90 455 C 210 380, 410 570, 700 450 C 990 330, 1110 560, 1490 430"
-          stroke="rgba(255,255,255,0.16)"
-          strokeWidth="1"
-        />
+        <path d="M-50 520 C 200 430, 420 640, 700 520 C 980 400, 1120 610, 1450 500" stroke="rgba(255,255,255,0.32)" strokeWidth="1" />
+        <path d="M-70 585 C 190 485, 430 710, 700 590 C 980 470, 1140 690, 1470 560" stroke="rgba(255,255,255,0.20)" strokeWidth="1" />
+        <path d="M-90 455 C 210 380, 410 570, 700 450 C 990 330, 1110 560, 1490 430" stroke="rgba(255,255,255,0.16)" strokeWidth="1" />
       </motion.svg>
 
-      {/* gentlemanly grain */}
+      {/* grain */}
       <div
         className="absolute inset-0 opacity-[0.09]"
         style={{
@@ -166,22 +162,23 @@ function WaveBackground() {
 }
 
 /* =========================
-   Page
+   PAGE
 ========================= */
 
 export default function LandingPage() {
+  const reduceMotion = useReducedMotion();
   const codeMap = useCodeMap();
 
   const rootRef = useRef<HTMLDivElement | null>(null);
   const trackRef = useRef<HTMLDivElement | null>(null);
   const cardRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
-  const [activeIndex, setActiveIndex] = useState(2); // start centered nicely
+  const [activeIndex, setActiveIndex] = useState(2);
   const [openEnvId, setOpenEnvId] = useState<string | null>(null);
 
   const openEnv = openEnvId ? ENVIRONMENTS.find((e) => e.id === openEnvId) : null;
 
-  // Subtle spotlight on cards only (optional, feels “alive” but still minimalist)
+  // subtle spotlight that tracks cursor (kept ultra-quiet)
   const onPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
     const el = rootRef.current;
     if (!el) return;
@@ -192,7 +189,7 @@ export default function LandingPage() {
     el.style.setProperty('--my', `${y}%`);
   };
 
-  // Snap-to-center + keep activeIndex in sync while user scrolls/swipes
+  // keep activeIndex synced to whichever card is closest to center
   useEffect(() => {
     const track = trackRef.current;
     if (!track) return;
@@ -227,7 +224,6 @@ export default function LandingPage() {
     };
 
     track.addEventListener('scroll', onScroll, { passive: true });
-    // initial
     computeActive();
 
     return () => {
@@ -237,36 +233,61 @@ export default function LandingPage() {
   }, []);
 
   const scrollToIndex = (i: number) => {
-    const track = trackRef.current;
     const el = cardRefs.current[i];
-    if (!track || !el) return;
-    el.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+    if (!el) return;
+    el.scrollIntoView({
+      behavior: reduceMotion ? 'auto' : 'smooth',
+      inline: 'center',
+      block: 'nearest',
+    });
   };
 
   const prev = () => scrollToIndex(Math.max(0, activeIndex - 1));
   const next = () => scrollToIndex(Math.min(ENVIRONMENTS.length - 1, activeIndex + 1));
+
+  // keyboard navigation (investor demo polish)
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowLeft') prev();
+      if (e.key === 'ArrowRight') next();
+      if (e.key === 'Enter') {
+        const env = ENVIRONMENTS[activeIndex];
+        if (env) setOpenEnvId(env.id);
+      }
+      if (e.key === 'Escape') setOpenEnvId(null);
+    };
+
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeIndex]);
 
   return (
     <div
       ref={rootRef}
       onPointerMove={onPointerMove}
       className="relative min-h-screen bg-[#070710] text-white overflow-hidden"
+      style={{
+        // very subtle cursor halo—doesn't change the background identity, just adds life
+        background:
+          'radial-gradient(700px circle at var(--mx, 50%) var(--my, 35%), rgba(255,255,255,0.05), transparent 55%), #070710',
+      }}
     >
-      <WaveBackground />
+      <ConstantBackground />
 
-      {/* Corner UI (minimal, quiet) */}
+      {/* CORNER UI (minimal, confident) */}
       <div className="absolute inset-0 z-20 pointer-events-none">
         {/* top-left brand */}
         <div className="absolute left-5 top-5 md:left-8 md:top-7 pointer-events-auto">
           <div className="flex items-center gap-2 text-white/90">
-            <Sparkles className="h-6 w-6 text-purple-300" />
-            <span className="text-sm md:text-base font-semibold tracking-tight">AVIRAGE</span>
+            <Sparkles className="h-6 w-6 text-purple-200" />
+            <span className="text-sm md:text-base font-medium tracking-tight">AVIRAGE</span>
           </div>
         </div>
 
-        {/* top-right auth */}
+        {/* top-right */}
         <div className="absolute right-5 top-5 md:right-8 md:top-7 flex items-center gap-2 pointer-events-auto">
-          <button className="px-4 py-2 rounded-full border border-white/14 bg-white/[0.02] backdrop-blur-md text-white/80 hover:bg-white/[0.05] transition text-sm">
+          <button className="px-4 py-2 rounded-full border border-white/12 bg-white/[0.02] backdrop-blur-md text-white/78 hover:bg-white/[0.05] transition text-sm">
             Sign in
           </button>
           <button className="px-4 py-2 rounded-full bg-white text-black font-semibold hover:bg-white/90 transition text-sm">
@@ -275,40 +296,40 @@ export default function LandingPage() {
         </div>
 
         {/* bottom-left microcopy */}
-        <div className="absolute left-5 bottom-6 md:left-8 md:bottom-8 max-w-[260px] md:max-w-[360px] pointer-events-auto">
-          <div className="text-[11px] uppercase tracking-[0.22em] text-white/55">Choose a lens</div>
-          <div className="mt-2 text-sm md:text-base text-white/80 leading-relaxed">
-            Curiosity-first.
-            <span className="text-white/55"> Explore how different minds interpret the same world.</span>
+        <div className="absolute left-5 bottom-6 md:left-8 md:bottom-8 max-w-[260px] md:max-w-[380px] pointer-events-auto">
+          <div className="text-[11px] uppercase tracking-[0.22em] text-white/50">Choose a lens</div>
+          <div className="mt-2 text-sm md:text-base text-white/78 leading-[1.55]">
+            Explore how different minds interpret the same world.
+            <span className="text-white/52"> Curiosity first. Meaning second.</span>
           </div>
         </div>
 
         {/* bottom-right CTA */}
         <div className="absolute right-5 bottom-6 md:right-8 md:bottom-8 pointer-events-auto">
           <Link href="/quiz">
-            <button className="px-4 py-2 rounded-full border border-white/14 bg-white/[0.02] backdrop-blur-md text-white/80 hover:bg-white/[0.05] transition text-sm">
+            <button className="px-4 py-2 rounded-full border border-white/12 bg-white/[0.02] backdrop-blur-md text-white/78 hover:bg-white/[0.05] transition text-sm">
               Find my code
             </button>
           </Link>
         </div>
       </div>
 
-      {/* Center Stage */}
+      {/* CENTER STAGE */}
       <main className="relative z-10 min-h-screen flex items-center justify-center px-4">
         <div className="w-full max-w-6xl">
-          {/* Tiny top hint (centered) */}
+          {/* quiet headline (minimal but premium) */}
           <motion.div
-            initial={{ opacity: 0, y: 10 }}
+            initial={reduceMotion ? { opacity: 1 } : { opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, ease: 'easeOut' }}
             className="text-center mb-4 md:mb-6"
           >
-            <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] backdrop-blur-md px-3 py-1.5 text-white/70">
-              <span className="text-[11px] uppercase tracking-[0.22em]">Swipe to choose • Click to enter</span>
+            <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] backdrop-blur-md px-3 py-1.5 text-white/68">
+              <span className="text-[11px] uppercase tracking-[0.22em]">Swipe to choose • Enter to reveal</span>
             </div>
           </motion.div>
 
-          {/* Slider controls (desktop) */}
+          {/* controls (desktop only) */}
           <div className="hidden md:flex items-center justify-between mb-3 px-2">
             <button
               onClick={prev}
@@ -318,9 +339,7 @@ export default function LandingPage() {
               <ArrowLeft className="h-4 w-4 text-white/80" />
             </button>
 
-            <div className="text-xs text-white/50">
-              {ENVIRONMENTS[activeIndex]?.title}
-            </div>
+            <div className="text-xs text-white/50">{ENVIRONMENTS[activeIndex]?.title}</div>
 
             <button
               onClick={next}
@@ -331,19 +350,29 @@ export default function LandingPage() {
             </button>
           </div>
 
-          {/* Track */}
+          {/* slider */}
           <div className="relative">
             {/* edge fades */}
             <div aria-hidden className="pointer-events-none absolute left-0 top-0 bottom-0 w-12 bg-gradient-to-r from-black/55 to-transparent z-10" />
             <div aria-hidden className="pointer-events-none absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-black/55 to-transparent z-10" />
 
+            {/* shelf shadow (investor-grade polish) */}
+            <div
+              aria-hidden
+              className="pointer-events-none absolute left-1/2 -translate-x-1/2 top-[72%] md:top-[76%] w-[520px] md:w-[560px] h-[120px] blur-2xl opacity-70"
+              style={{
+                background:
+                  'radial-gradient(closest-side, rgba(0,0,0,0.55), transparent 70%)',
+              }}
+            />
+
             <div
               ref={trackRef}
-              className="flex gap-5 md:gap-6 overflow-x-auto pb-4 scroll-smooth snap-x snap-mandatory"
+              className="flex gap-5 md:gap-6 overflow-x-auto pb-6 scroll-smooth snap-x snap-mandatory"
               style={{ WebkitOverflowScrolling: 'touch' }}
             >
-              {/* spacer to allow first card to center */}
-              <div className="shrink-0 w-[8vw] md:w-[12vw]" aria-hidden />
+              {/* spacers so first/last can center */}
+              <div className="shrink-0 w-[10vw] md:w-[14vw]" aria-hidden />
 
               {ENVIRONMENTS.map((env, i) => {
                 const hero = codeMap.get(env.heroCodeId);
@@ -352,10 +381,14 @@ export default function LandingPage() {
                 const isActive = i === activeIndex;
                 const distance = Math.abs(i - activeIndex);
 
-                // Side cards feel peripheral (like your reference)
+                // Taller + slimmer editorial silhouette
+                // Active feels like an object; sides feel peripheral
                 const scale = isActive ? 1 : distance === 1 ? 0.92 : 0.86;
-                const opacity = isActive ? 1 : distance === 1 ? 0.72 : 0.55;
-                const blurPx = isActive ? 0 : distance === 1 ? 0.8 : 1.6;
+                const opacity = isActive ? 1 : distance === 1 ? 0.70 : 0.52;
+                const blur = isActive ? 0 : distance === 1 ? 0.7 : 1.4;
+
+                // subtle tilt makes it feel "current" (not a flat carousel)
+                const rotate = isActive ? 0 : (i < activeIndex ? -2.0 : 2.0);
 
                 return (
                   <motion.button
@@ -368,14 +401,27 @@ export default function LandingPage() {
                       if (isActive) setOpenEnvId(env.id);
                       else scrollToIndex(i);
                     }}
-                    className="snap-center shrink-0 w-[84%] sm:w-[520px] md:w-[560px] h-[420px] sm:h-[460px] rounded-[34px] overflow-hidden border border-white/12 bg-white/[0.03] shadow-[0_22px_90px_rgba(0,0,0,0.60)] text-left relative outline-none"
+                    className={cn(
+                      'snap-center shrink-0 outline-none text-left relative overflow-hidden',
+                      // Taller + slimmer
+                      'w-[72%] sm:w-[420px] md:w-[440px]',
+                      'h-[520px] sm:h-[560px] md:h-[600px]',
+                      // Modern rounded
+                      'rounded-[40px]',
+                      // Premium glass object
+                      'bg-white/[0.03] backdrop-blur-md',
+                      'border border-white/12',
+                      'shadow-[0_30px_120px_rgba(0,0,0,0.55)]',
+                      'ring-1 ring-white/[0.06]',
+                      'transition-[transform,opacity,filter] duration-300 ease-out'
+                    )}
                     style={{
-                      transform: `scale(${scale})`,
+                      transform: `scale(${scale}) rotate(${rotate}deg)`,
                       opacity,
-                      filter: `blur(${blurPx}px)`,
-                      transition: 'transform 320ms ease, opacity 320ms ease, filter 320ms ease',
+                      filter: `blur(${blur}px)`,
                     }}
                     whileTap={{ scale: Math.max(0.98, scale - 0.02) }}
+                    aria-label={isActive ? `${env.title}. Press Enter to reveal codes.` : `${env.title}. Click to focus.`}
                   >
                     {/* image */}
                     <div className="absolute inset-0">
@@ -384,15 +430,16 @@ export default function LandingPage() {
                         alt={env.title}
                         fill
                         className="object-cover scale-[1.06]"
-                        sizes="(max-width: 768px) 84vw, 560px"
+                        sizes="(max-width: 768px) 72vw, 440px"
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-black/10" />
+                      {/* readability */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-black/10" />
                     </div>
 
-                    {/* quiet hairline grid */}
+                    {/* modern hairline grid (quiet) */}
                     <div
                       aria-hidden
-                      className="absolute inset-0 opacity-[0.13]"
+                      className="absolute inset-0 opacity-[0.12]"
                       style={{
                         backgroundImage:
                           'linear-gradient(to right, rgba(255,255,255,0.06) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.06) 1px, transparent 1px)',
@@ -400,34 +447,52 @@ export default function LandingPage() {
                       }}
                     />
 
-                    {/* subtle spotlight only on hover (cards feel alive, background stays constant) */}
+                    {/* rim highlight (expensive) */}
+                    <div
+                      aria-hidden
+                      className="absolute inset-0"
+                      style={{
+                        background:
+                          'radial-gradient(800px circle at 20% 10%, rgba(255,255,255,0.12), transparent 60%), radial-gradient(800px circle at 85% 20%, rgba(255,255,255,0.08), transparent 60%)',
+                        opacity: 0.7,
+                      }}
+                    />
+
+                    {/* hover spotlight (cards feel alive, background stays constant) */}
                     <div
                       aria-hidden
                       className="absolute inset-0 opacity-0 hover:opacity-100 transition-opacity duration-300"
                       style={{
                         background:
-                          'radial-gradient(520px circle at var(--mx, 50%) var(--my, 40%), rgba(255,255,255,0.16), transparent 62%)',
+                          'radial-gradient(520px circle at var(--mx, 50%) var(--my, 40%), rgba(255,255,255,0.14), transparent 62%)',
                       }}
                     />
 
-                    {/* content */}
-                    <div className="relative h-full p-7 md:p-8 flex flex-col justify-between">
+                    {/* CONTENT (editorial offset, not “centered template”) */}
+                    <div className="relative h-full px-7 md:px-8 pt-10 pb-8 flex flex-col">
+                      {/* top chip */}
                       <div className="flex items-center justify-between">
                         <div className="inline-flex items-center gap-2 rounded-full px-3 py-1.5 bg-black/35 border border-white/12 backdrop-blur-md">
                           <span className="text-[11px] uppercase tracking-[0.22em] text-white/80">Environment</span>
                         </div>
 
-                        {/* Only show subtitle clearly on active card */}
-                        <div className={isActive ? 'text-xs text-white/55' : 'text-xs text-white/0'}>
+                        {/* only readable on active */}
+                        <div className={cn('text-xs', isActive ? 'text-white/55' : 'text-white/0')}>
                           {env.subtitle}
                         </div>
                       </div>
 
-                      <div className="space-y-2">
-                        <div className="text-2xl md:text-3xl font-semibold tracking-tight">{env.title}</div>
-                        <div className="text-sm md:text-base text-white/75 max-w-[54ch]">{env.poetic}</div>
+                      {/* push content down slightly (modern editorial layout) */}
+                      <div className="mt-auto space-y-2">
+                        <div className="text-[28px] md:text-[32px] font-medium tracking-tight leading-[1.05]">
+                          {env.title}
+                        </div>
 
-                        <div className="pt-2 text-xs text-white/55">
+                        <div className="text-sm md:text-[15px] text-white/70 leading-[1.55] max-w-[32ch]">
+                          {env.poetic}
+                        </div>
+
+                        <div className="pt-3 text-xs text-white/55">
                           {isActive ? 'Click to reveal codes' : 'Click to focus'}
                         </div>
                       </div>
@@ -436,18 +501,33 @@ export default function LandingPage() {
                 );
               })}
 
-              {/* spacer to allow last card to center */}
-              <div className="shrink-0 w-[8vw] md:w-[12vw]" aria-hidden />
+              <div className="shrink-0 w-[10vw] md:w-[14vw]" aria-hidden />
             </div>
 
-            <div className="mt-2 text-center text-xs text-white/50 md:hidden">
+            {/* dots (minimal, modern) */}
+            <div className="mt-2 flex items-center justify-center gap-2">
+              {ENVIRONMENTS.map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => scrollToIndex(i)}
+                  aria-label={`Go to ${i + 1}`}
+                  className={cn(
+                    'h-1.5 rounded-full transition-all',
+                    i === activeIndex ? 'w-8 bg-white/70' : 'w-3 bg-white/25 hover:bg-white/40'
+                  )}
+                />
+              ))}
+            </div>
+
+            {/* mobile hint */}
+            <div className="mt-3 text-center text-xs text-white/50 md:hidden">
               Swipe sideways — the center card is the selection.
             </div>
           </div>
         </div>
       </main>
 
-      {/* Modal: environment -> codes (still minimal) */}
+      {/* MODAL: reveal codes (kept premium and consistent) */}
       <AnimatePresence>
         {openEnv && (
           <motion.div
@@ -458,12 +538,12 @@ export default function LandingPage() {
             onClick={() => setOpenEnvId(null)}
           >
             <motion.div
-              initial={{ opacity: 0, y: 18, scale: 0.985 }}
+              initial={reduceMotion ? { opacity: 1 } : { opacity: 0, y: 18, scale: 0.985 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 18, scale: 0.985 }}
+              exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 18, scale: 0.985 }}
               transition={{ type: 'spring', stiffness: 260, damping: 26 }}
               onClick={(e) => e.stopPropagation()}
-              className="mx-auto max-w-6xl rounded-[34px] overflow-hidden border border-white/12 bg-white/[0.04] shadow-[0_30px_120px_rgba(0,0,0,0.65)]"
+              className="mx-auto max-w-6xl rounded-[40px] overflow-hidden border border-white/12 bg-white/[0.04] shadow-[0_30px_120px_rgba(0,0,0,0.65)] ring-1 ring-white/[0.06]"
             >
               <div className="relative p-7 md:p-10">
                 <div className="absolute inset-0">
@@ -479,8 +559,8 @@ export default function LandingPage() {
 
                 <div className="relative">
                   <div className="text-xs uppercase tracking-[0.22em] text-white/70">Environment</div>
-                  <div className="mt-2 text-3xl md:text-4xl font-semibold tracking-tight">{openEnv.title}</div>
-                  <div className="mt-2 text-white/70 max-w-2xl">{openEnv.poetic}</div>
+                  <div className="mt-2 text-3xl md:text-4xl font-medium tracking-tight">{openEnv.title}</div>
+                  <div className="mt-2 text-white/70 max-w-2xl leading-[1.55]">{openEnv.poetic}</div>
 
                   <div className="mt-6 flex items-center gap-2">
                     <button
@@ -501,8 +581,8 @@ export default function LandingPage() {
               <div className="p-7 md:p-10 pt-0">
                 <div className="text-sm text-white/65 mb-4">Codes in this space</div>
 
-                {/* Horizontal code cards (consistent with template) */}
-                <div className="flex gap-4 overflow-x-auto pb-3 snap-x snap-mandatory" style={{ WebkitOverflowScrolling: 'touch' }}>
+                {/* horizontal code cards */}
+                <div className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory" style={{ WebkitOverflowScrolling: 'touch' }}>
                   {openEnv.codeIds.map((id) => {
                     const c = codeMap.get(id);
                     if (!c) return null;
@@ -510,11 +590,11 @@ export default function LandingPage() {
                     return (
                       <Link key={c.id} href={`/explore/${c.id}`} className="snap-center shrink-0 w-[78%] sm:w-[340px]">
                         <motion.div
-                          whileHover={{ y: -4 }}
+                          whileHover={reduceMotion ? undefined : { y: -4 }}
                           transition={{ type: 'spring', stiffness: 260, damping: 24 }}
-                          className="group relative overflow-hidden rounded-2xl border border-white/12 bg-white/[0.03] shadow-[0_18px_60px_rgba(0,0,0,0.45)]"
+                          className="group relative overflow-hidden rounded-3xl border border-white/12 bg-white/[0.03] shadow-[0_18px_60px_rgba(0,0,0,0.45)] ring-1 ring-white/[0.05]"
                         >
-                          <div className="relative h-[180px]">
+                          <div className="relative h-[200px]">
                             <Image
                               src={c.image}
                               alt={c.name}
@@ -524,8 +604,9 @@ export default function LandingPage() {
                             />
                             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
                           </div>
+
                           <div className="p-4">
-                            <div className="text-base font-semibold tracking-tight">{c.name}</div>
+                            <div className="text-base font-medium tracking-tight">{c.name}</div>
                             <div className="text-xs text-white/65 mt-1">{c.tagline}</div>
                           </div>
                         </motion.div>
