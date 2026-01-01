@@ -443,4 +443,20 @@ export default function LandingPage() {
                           </div>
                           <div className="p-4">
                             <div className="text-base font-semibold tracking-tight">{c.name}</div>
-                            <div className="text-xs text-white/65
+                            <div className="text-xs text-white/65 mt-1">{c.tagline}</div>
+                          </div>
+                        </motion.div>
+                      </Link>
+                    );
+                  })}
+                </div>
+
+                <div className="mt-2 text-xs text-white/55">Swipe sideways to browse.</div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
