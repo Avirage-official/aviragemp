@@ -123,7 +123,11 @@ function clamp(n: number, min: number, max: number) {
    Components
 ====================================================== */
 
-function SpotlightLayer({ containerRef }: { containerRef: React.RefObject<HTMLDivElement> }) {
+function SpotlightLayer({
+  containerRef,
+}: {
+  containerRef: React.RefObject<HTMLDivElement | null>;
+}) {
   return (
     <div
       aria-hidden
