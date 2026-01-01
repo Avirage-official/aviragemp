@@ -13,14 +13,13 @@ import {
   Clock,
   DollarSign,
   Users,
-  Coffee,
-  Briefcase,
-  Home,
-  Dumbbell,
-  ShoppingBag,
   Map,
   SlidersHorizontal,
-  Check
+  Music,
+  Lightbulb,
+  Volume2,
+  BookOpen,
+  ChevronRight
 } from 'lucide-react';
 
 // Cultural Code data
@@ -55,7 +54,12 @@ const DEMO_BUSINESSES = [
     category: 'Café',
     location: 'Shibuya, Tokyo',
     city: 'Tokyo',
-    image: 'https://images.unsplash.com/photo-1501492693086-291f65a61ea4?w=800',
+    images: [
+      { url: 'https://images.unsplash.com/photo-1501492693086-291f65a61ea4?w=800', label: 'Main Space' },
+      { url: 'https://images.unsplash.com/photo-1442512595331-e89e73853f31?w=800', label: 'Counter' },
+      { url: 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=800', label: 'Seating' },
+      { url: 'https://images.unsplash.com/photo-1453614512568-c4024d13c247?w=800', label: 'Details' },
+    ],
     matchScore: 94,
     priceRange: '$$',
     rating: 4.8,
@@ -64,7 +68,14 @@ const DEMO_BUSINESSES = [
     vibe: ['Contemplative', 'Focused', 'Clean'],
     openNow: true,
     distance: '1.2 km',
-    codeId: 'shokunin',
+    compatibleCodes: ['shokunin', 'jaejin', 'lhumir'],
+    musicStyle: 'Ambient instrumental, no vocals, 60-80 BPM',
+    atmosphere: 'Minimal conversation, natural materials, indirect lighting',
+    lighting: 'Soft natural light during day, warm Edison bulbs at night',
+    noiseLevel: 'Very quiet (30-40 dB)',
+    bestFor: ['Solo work', 'Reading', 'Quiet conversations'],
+    seating: '18 seats, mostly solo tables',
+    ownerStory: 'Founded by former architect Yuki Tanaka who believes coffee spaces should mirror meditation halls — designed for presence, not productivity.',
   },
   {
     id: '2',
@@ -72,7 +83,12 @@ const DEMO_BUSINESSES = [
     category: 'Restaurant',
     location: 'Cape Town CBD',
     city: 'Cape Town',
-    image: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800',
+    images: [
+      { url: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800', label: 'Dining Room' },
+      { url: 'https://images.unsplash.com/photo-1552566626-52f8b828add9?w=800', label: 'Kitchen' },
+      { url: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=800', label: 'Community Table' },
+      { url: 'https://images.unsplash.com/photo-1559339352-11d035aa65de?w=800', label: 'Atmosphere' },
+    ],
     matchScore: 91,
     priceRange: '$$$',
     rating: 4.9,
@@ -81,7 +97,14 @@ const DEMO_BUSINESSES = [
     vibe: ['Communal', 'Lively', 'Welcoming'],
     openNow: true,
     distance: '2.8 km',
-    codeId: 'kayori',
+    compatibleCodes: ['kayori', 'wohaka', 'karayni'],
+    musicStyle: 'Live Afrobeat and jazz, 100-120 BPM, Thursday-Sunday evenings',
+    atmosphere: 'Shared tables, storytelling encouraged, communal dining experience',
+    lighting: 'Warm pendant lights over shared tables, candles',
+    noiseLevel: 'Moderate to lively (65-75 dB)',
+    bestFor: ['Group dinners', 'Meeting new people', 'Celebrations'],
+    seating: '48 seats, mostly communal tables of 8-12',
+    ownerStory: 'Chef Naledi grew up in a township where meals were never eaten alone. Ubuntu Kitchen recreates that spirit of radical togetherness.',
   },
   {
     id: '3',
@@ -89,7 +112,12 @@ const DEMO_BUSINESSES = [
     category: 'Wellness',
     location: 'Merzouga, Morocco',
     city: 'Merzouga',
-    image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800',
+    images: [
+      { url: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800', label: 'Desert View' },
+      { url: 'https://images.unsplash.com/photo-1519681393784-d120267933ba?w=800', label: 'Meditation Space' },
+      { url: 'https://images.unsplash.com/photo-1473496169904-658ba7c44d8a?w=800', label: 'Tent Interior' },
+      { url: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=800', label: 'Sunset' },
+    ],
     matchScore: 96,
     priceRange: '$$$$',
     rating: 5.0,
@@ -98,7 +126,14 @@ const DEMO_BUSINESSES = [
     vibe: ['Silent', 'Introspective', 'Sacred'],
     openNow: false,
     distance: '45 km',
-    codeId: 'sahen',
+    compatibleCodes: ['sahen', 'lhumir', 'siljoa'],
+    musicStyle: 'Complete silence, occasional Tuareg singing bowls at sunset',
+    atmosphere: 'Noble silence practice, minimal eye contact, solitude honored',
+    lighting: 'Sunrise/sunset natural light, no artificial lighting after dark',
+    noiseLevel: 'Near-silent (10-20 dB), wind and natural sounds only',
+    bestFor: ['Solo retreat', 'Deep contemplation', 'Digital detox'],
+    seating: 'Private tents, 12 guests maximum',
+    ownerStory: 'Aziz, a former trader, walked into the desert at 40 and never came back to the city. He built this space for others seeking the same radical quiet.',
   },
   {
     id: '4',
@@ -106,7 +141,12 @@ const DEMO_BUSINESSES = [
     category: 'Workspace',
     location: 'Old Quarter, Hanoi',
     city: 'Hanoi',
-    image: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=800',
+    images: [
+      { url: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=800', label: 'Main Floor' },
+      { url: 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=800', label: 'Work Areas' },
+      { url: 'https://images.unsplash.com/photo-1524758631624-e2822e304c36?w=800', label: 'Natural Light' },
+      { url: 'https://images.unsplash.com/photo-1511467687858-23d96c32e4ae?w=800', label: 'Flexible Seating' },
+    ],
     matchScore: 89,
     priceRange: '$',
     rating: 4.7,
@@ -115,149 +155,20 @@ const DEMO_BUSINESSES = [
     vibe: ['Flowing', 'Peaceful', 'Adaptive'],
     openNow: true,
     distance: '0.8 km',
-    codeId: 'namsea',
-  },
-  {
-    id: '5',
-    name: 'Mountain Lodge Lhasa',
-    category: 'Accommodation',
-    location: 'Lhasa, Tibet',
-    city: 'Lhasa',
-    image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800',
-    matchScore: 93,
-    priceRange: '$$$',
-    rating: 4.9,
-    reviews: 78,
-    tags: ['Peaceful', 'Panoramic', 'Meditative'],
-    vibe: ['Still', 'Elevated', 'Contemplative'],
-    openNow: true,
-    distance: '5.3 km',
-    codeId: 'lhumir',
-  },
-  {
-    id: '6',
-    name: 'Steppe Nomad Tours',
-    category: 'Experience',
-    location: 'Terelj, Mongolia',
-    city: 'Ulaanbaatar',
-    image: 'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=800',
-    matchScore: 97,
-    priceRange: '$$',
-    rating: 4.8,
-    reviews: 134,
-    tags: ['Adventure', 'Freedom', 'Authentic'],
-    vibe: ['Nomadic', 'Expansive', 'Wild'],
-    openNow: true,
-    distance: '68 km',
-    codeId: 'khoruun',
-  },
-  {
-    id: '7',
-    name: 'Agora Philosophy Café',
-    category: 'Café',
-    location: 'Plaka, Athens',
-    city: 'Athens',
-    image: 'https://images.unsplash.com/photo-1445116572660-236099ec97a0?w=800',
-    matchScore: 92,
-    priceRange: '$$',
-    rating: 4.6,
-    reviews: 201,
-    tags: ['Discussion', 'Intellectual', 'Historic'],
-    vibe: ['Dialogic', 'Questioning', 'Classical'],
-    openNow: true,
-    distance: '1.5 km',
-    codeId: 'alethir',
-  },
-  {
-    id: '8',
-    name: 'Precision Workshop',
-    category: 'Workspace',
-    location: 'Gion, Kyoto',
-    city: 'Kyoto',
-    image: 'https://images.unsplash.com/photo-1504253163759-c23fccaebb55?w=800',
-    matchScore: 95,
-    priceRange: '$$$',
-    rating: 5.0,
-    reviews: 67,
-    tags: ['Craftsmanship', 'Detail-oriented', 'Traditional'],
-    vibe: ['Focused', 'Perfectionist', 'Refined'],
-    openNow: false,
-    distance: '3.2 km',
-    codeId: 'shokunin',
-  },
-  {
-    id: '9',
-    name: 'Collective Garden',
-    category: 'Restaurant',
-    location: 'Brooklyn, NYC',
-    city: 'New York',
-    image: 'https://images.unsplash.com/photo-1466978913421-dad2ebd01d17?w=800',
-    matchScore: 88,
-    priceRange: '$$',
-    rating: 4.5,
-    reviews: 312,
-    tags: ['Community', 'Organic', 'Shared-tables'],
-    vibe: ['Collaborative', 'Warm', 'Inclusive'],
-    openNow: true,
-    distance: '2.1 km',
-    codeId: 'wohaka',
-  },
-  {
-    id: '10',
-    name: 'Arctic Sauna House',
-    category: 'Wellness',
-    location: 'Tromsø, Norway',
-    city: 'Tromsø',
-    image: 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=800',
-    matchScore: 90,
-    priceRange: '$$',
-    rating: 4.7,
-    reviews: 98,
-    tags: ['Cold', 'Resilient', 'Natural'],
-    vibe: ['Hardy', 'Elemental', 'Purifying'],
-    openNow: true,
-    distance: '4.7 km',
-    codeId: 'siljoa',
-  },
-  {
-    id: '11',
-    name: 'Ritual Coffee House',
-    category: 'Café',
-    location: 'Lagos Island',
-    city: 'Lagos',
-    image: 'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=800',
-    matchScore: 93,
-    priceRange: '$',
-    rating: 4.8,
-    reviews: 178,
-    tags: ['Vibrant', 'Music', 'Storytelling'],
-    vibe: ['Expressive', 'Rhythmic', 'Ancestral'],
-    openNow: true,
-    distance: '1.1 km',
-    codeId: 'kayori',
-  },
-  {
-    id: '12',
-    name: 'Silent Forest Gym',
-    category: 'Fitness',
-    location: 'Portland, Oregon',
-    city: 'Portland',
-    image: 'https://images.unsplash.com/photo-1571902943202-507ec2618e8f?w=800',
-    matchScore: 87,
-    priceRange: '$$',
-    rating: 4.6,
-    reviews: 145,
-    tags: ['Nature', 'Mindful', 'Small-groups'],
-    vibe: ['Grounded', 'Intentional', 'Quiet'],
-    openNow: true,
-    distance: '3.5 km',
-    codeId: 'lhumir',
+    compatibleCodes: ['namsea', 'renara', 'karayni'],
+    musicStyle: 'Vietnamese ca trù and water sounds, 50-70 BPM',
+    atmosphere: 'No fixed seats, cushions and low tables, movement encouraged',
+    lighting: 'Floor-to-ceiling windows, rice paper diffusers, daylight-focused',
+    noiseLevel: 'Soft background (40-50 dB)',
+    bestFor: ['Creative work', 'Flexible schedules', 'Movement breaks'],
+    seating: '30 flexible positions, no assigned desks',
+    ownerStory: 'Linh designed this space after realizing she worked best when she could move like water — flowing between sitting, standing, and walking.',
   },
 ];
 
 type Business = typeof DEMO_BUSINESSES[0];
 
-const CITIES = ['All Cities', 'Tokyo', 'Cape Town', 'Hanoi', 'Athens', 'New York', 'Kyoto', 'Lagos', 'Portland', 'Tromsø', 'Lhasa', 'Ulaanbaatar', 'Merzouga'];
+const CITIES = ['All Cities', 'Tokyo', 'Cape Town', 'Hanoi', 'Merzouga'];
 const CATEGORIES = ['All', 'Café', 'Restaurant', 'Workspace', 'Wellness', 'Experience', 'Accommodation', 'Fitness'];
 const PRICE_RANGES = ['All', '$', '$$', '$$$', '$$$$'];
 const SORT_OPTIONS = ['Best Match', 'Highest Rated', 'Most Reviews', 'Nearest'];
@@ -291,7 +202,6 @@ export default function MarketplacePage() {
       return cityMatch && categoryMatch && priceMatch && matchScorePass && openMatch;
     });
     
-    // Sort
     if (sortBy === 'Best Match') {
       results.sort((a, b) => b.matchScore - a.matchScore);
     } else if (sortBy === 'Highest Rated') {
@@ -395,7 +305,6 @@ export default function MarketplacePage() {
           lg:w-72 w-full
         `}>
           <div className="p-4 space-y-6">
-            {/* Mobile close */}
             <div className="lg:hidden flex items-center justify-between mb-4">
               <h3 className="font-semibold">Filters</h3>
               <button onClick={() => setShowFilters(false)}>
@@ -403,7 +312,6 @@ export default function MarketplacePage() {
               </button>
             </div>
             
-            {/* Location */}
             <div>
               <label className="text-xs uppercase tracking-wider text-white/50 mb-2 block">Location</label>
               <select
@@ -417,7 +325,6 @@ export default function MarketplacePage() {
               </select>
             </div>
             
-            {/* Category */}
             <div>
               <label className="text-xs uppercase tracking-wider text-white/50 mb-2 block">Category</label>
               <div className="space-y-1">
@@ -437,7 +344,6 @@ export default function MarketplacePage() {
               </div>
             </div>
             
-            {/* Price Range */}
             <div>
               <label className="text-xs uppercase tracking-wider text-white/50 mb-2 block">Price Range</label>
               <div className="flex gap-2">
@@ -457,7 +363,6 @@ export default function MarketplacePage() {
               </div>
             </div>
             
-            {/* Match Score */}
             <div>
               <label className="text-xs uppercase tracking-wider text-white/50 mb-2 block">
                 Min Match: {minMatch}%
@@ -473,7 +378,6 @@ export default function MarketplacePage() {
               />
             </div>
             
-            {/* Open Now Toggle */}
             <div>
               <button
                 onClick={() => setShowOpenOnly(!showOpenOnly)}
@@ -486,7 +390,6 @@ export default function MarketplacePage() {
               </button>
             </div>
             
-            {/* Reset */}
             <button
               onClick={() => {
                 setSelectedCity('All Cities');
@@ -504,7 +407,6 @@ export default function MarketplacePage() {
         
         {/* Main Content */}
         <main className="flex-1 min-w-0">
-          {/* Sort bar */}
           <div className="sticky top-[73px] z-30 bg-black/40 backdrop-blur-xl border-b border-white/10 px-4 sm:px-6 py-3">
             <div className="flex items-center justify-between gap-4">
               <p className="text-sm text-white/60">
@@ -523,7 +425,6 @@ export default function MarketplacePage() {
             </div>
           </div>
           
-          {/* Business Grid */}
           <div className="p-4 sm:p-6">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
               {filteredBusinesses.map((business) => (
@@ -539,17 +440,15 @@ export default function MarketplacePage() {
                     className="w-full text-left"
                   >
                     <div className="relative overflow-hidden rounded-xl bg-white/5 border border-white/10 hover:border-white/20 transition-all">
-                      {/* Image */}
                       <div className="relative h-40 overflow-hidden">
                         <Image
-                          src={business.image}
+                          src={business.images[0].url}
                           alt={business.name}
                           fill
                           className="object-cover group-hover:scale-105 transition-transform duration-500"
                           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
                         />
                         
-                        {/* Match badge */}
                         <div 
                           className="absolute top-2 left-2 px-2 py-1 rounded-lg backdrop-blur-md text-xs font-bold"
                           style={{ backgroundColor: `${codeData.color}20`, color: codeData.color, border: `1px solid ${codeData.color}40` }}
@@ -557,7 +456,6 @@ export default function MarketplacePage() {
                           {business.matchScore}%
                         </div>
                         
-                        {/* Favorite */}
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
@@ -569,7 +467,6 @@ export default function MarketplacePage() {
                         </button>
                       </div>
                       
-                      {/* Content */}
                       <div className="p-3 space-y-2">
                         <div>
                           <h3 className="font-semibold text-sm mb-0.5 line-clamp-1">{business.name}</h3>
@@ -627,7 +524,7 @@ export default function MarketplacePage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4"
+            className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto"
             onClick={() => setSelectedBusiness(null)}
           >
             <motion.div
@@ -636,7 +533,7 @@ export default function MarketplacePage() {
               exit={{ scale: 0.95, opacity: 0 }}
               transition={{ type: 'spring', stiffness: 300, damping: 30 }}
               onClick={(e) => e.stopPropagation()}
-              className="relative w-full max-w-4xl max-h-[90vh] overflow-y-auto bg-gradient-to-b from-gray-900 to-black rounded-2xl border border-white/20"
+              className="relative w-full max-w-5xl my-8 bg-gradient-to-b from-gray-900 to-black rounded-2xl border border-white/20 overflow-hidden"
             >
               <button
                 onClick={() => setSelectedBusiness(null)}
@@ -645,70 +542,80 @@ export default function MarketplacePage() {
                 <X className="w-5 h-5" />
               </button>
               
-              {/* Hero */}
-              <div className="relative h-72">
-                <Image
-                  src={selectedBusiness.image}
-                  alt={selectedBusiness.name}
-                  fill
-                  className="object-cover"
-                  sizes="100vw"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent" />
-                
-                <div className="absolute bottom-6 left-6 right-6">
-                  <div className="flex items-start justify-between gap-4">
-                    <div>
-                      <div
-                        className="inline-block px-3 py-1 rounded-lg backdrop-blur-md text-sm font-bold mb-3"
-                        style={{ backgroundColor: `${codeData.color}30`, color: codeData.color, border: `1px solid ${codeData.color}60` }}
-                      >
-                        {selectedBusiness.matchScore}% match with {codeData.name}
-                      </div>
-                      <h2 className="text-3xl font-bold mb-1">{selectedBusiness.name}</h2>
-                      <div className="flex items-center gap-3 text-sm text-white/70">
-                        <div className="flex items-center gap-1">
-                          <MapPin className="w-4 h-4" />
-                          <span>{selectedBusiness.location}</span>
-                        </div>
-                        <span>•</span>
-                        <span>{selectedBusiness.category}</span>
+              {/* Image Grid */}
+              <div className="grid grid-cols-2 gap-2 p-4 bg-black/40">
+                {selectedBusiness.images.map((img, idx) => (
+                  <div key={idx} className="relative group overflow-hidden rounded-lg">
+                    <div className={`relative ${idx === 0 ? 'col-span-2 h-80' : 'h-48'}`}>
+                      <Image
+                        src={img.url}
+                        alt={img.label}
+                        fill
+                        className="object-cover group-hover:scale-105 transition-transform duration-500"
+                        sizes="(max-width: 768px) 100vw, 50vw"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                      <div className="absolute bottom-2 left-2 px-2 py-1 rounded-md bg-black/60 backdrop-blur-sm text-xs font-medium opacity-0 group-hover:opacity-100 transition-opacity">
+                        {img.label}
                       </div>
                     </div>
-                    
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        toggleFavorite(selectedBusiness.id);
-                      }}
-                      className="w-12 h-12 rounded-full bg-black/60 backdrop-blur-md border border-white/20 flex items-center justify-center hover:scale-110 transition"
-                    >
-                      <Heart className={`w-6 h-6 ${favorites.has(selectedBusiness.id) ? 'fill-red-500 text-red-500' : 'text-white'}`} />
-                    </button>
                   </div>
-                </div>
+                ))}
               </div>
               
               {/* Content */}
-              <div className="p-8 space-y-6">
+              <div className="p-6 sm:p-8 space-y-6 max-h-[60vh] overflow-y-auto">
+                {/* Header */}
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex-1">
+                    <div
+                      className="inline-block px-3 py-1 rounded-lg backdrop-blur-md text-sm font-bold mb-3"
+                      style={{ backgroundColor: `${codeData.color}30`, color: codeData.color, border: `1px solid ${codeData.color}60` }}
+                    >
+                      {selectedBusiness.matchScore}% match with {codeData.name}
+                    </div>
+                    <h2 className="text-3xl font-bold mb-2">{selectedBusiness.name}</h2>
+                    <div className="flex flex-wrap items-center gap-3 text-sm text-white/70">
+                      <div className="flex items-center gap-1">
+                        <MapPin className="w-4 h-4" />
+                        <span>{selectedBusiness.location}</span>
+                      </div>
+                      <span>•</span>
+                      <span>{selectedBusiness.category}</span>
+                      <span>•</span>
+                      <span>{selectedBusiness.distance}</span>
+                    </div>
+                  </div>
+                  
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleFavorite(selectedBusiness.id);
+                    }}
+                    className="w-12 h-12 rounded-full bg-white/10 border border-white/20 flex items-center justify-center hover:scale-110 transition"
+                  >
+                    <Heart className={`w-6 h-6 ${favorites.has(selectedBusiness.id) ? 'fill-red-500 text-red-500' : 'text-white'}`} />
+                  </button>
+                </div>
+                
                 {/* Stats */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                  <div className="text-center p-4 rounded-xl bg-white/5 border border-white/10">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  <div className="text-center p-3 rounded-xl bg-white/5 border border-white/10">
                     <Star className="w-5 h-5 fill-yellow-400 text-yellow-400 mx-auto mb-1" />
-                    <div className="text-2xl font-bold">{selectedBusiness.rating}</div>
+                    <div className="text-xl font-bold">{selectedBusiness.rating}</div>
                     <div className="text-xs text-white/50">{selectedBusiness.reviews} reviews</div>
                   </div>
-                  <div className="text-center p-4 rounded-xl bg-white/5 border border-white/10">
+                  <div className="text-center p-3 rounded-xl bg-white/5 border border-white/10">
                     <DollarSign className="w-5 h-5 mx-auto mb-1 text-white/70" />
-                    <div className="text-2xl font-bold">{selectedBusiness.priceRange}</div>
+                    <div className="text-xl font-bold">{selectedBusiness.priceRange}</div>
                     <div className="text-xs text-white/50">Price</div>
                   </div>
-                  <div className="text-center p-4 rounded-xl bg-white/5 border border-white/10">
-                    <MapPin className="w-5 h-5 mx-auto mb-1 text-white/70" />
-                    <div className="text-lg font-bold">{selectedBusiness.distance}</div>
-                    <div className="text-xs text-white/50">Distance</div>
+                  <div className="text-center p-3 rounded-xl bg-white/5 border border-white/10">
+                    <Users className="w-5 h-5 mx-auto mb-1 text-white/70" />
+                    <div className="text-sm font-bold">{selectedBusiness.seating}</div>
+                    <div className="text-xs text-white/50">Capacity</div>
                   </div>
-                  <div className="text-center p-4 rounded-xl bg-white/5 border border-white/10">
+                  <div className="text-center p-3 rounded-xl bg-white/5 border border-white/10">
                     <Clock className="w-5 h-5 mx-auto mb-1 text-white/70" />
                     <div className="text-lg font-bold">{selectedBusiness.openNow ? 'Open' : 'Closed'}</div>
                     <div className="text-xs text-white/50">Status</div>
@@ -716,20 +623,101 @@ export default function MarketplacePage() {
                 </div>
                 
                 {/* Why this matches */}
-                <div className="p-6 rounded-xl border border-white/10" style={{ backgroundColor: `${codeData.color}10` }}>
-                  <h3 className="text-sm font-semibold uppercase tracking-wider mb-2" style={{ color: codeData.color }}>
+                <div className="p-4 rounded-xl border border-white/10" style={{ backgroundColor: `${codeData.color}10` }}>
+                  <h3 className="text-sm font-semibold uppercase tracking-wider mb-2 flex items-center gap-2" style={{ color: codeData.color }}>
+                    <ChevronRight className="w-4 h-4" />
                     Why this matches you
                   </h3>
-                  <p className="text-white/90 leading-relaxed">
+                  <p className="text-white/90 leading-relaxed text-sm">
                     This {selectedBusiness.category.toLowerCase()} embodies {codeData.tagline.toLowerCase()}. 
-                    The atmosphere, values, and cultural approach align with how {codeData.name} navigates the world. 
-                    You'll find resonance here — not just service.
+                    The atmosphere, values, and cultural approach align with how {codeData.name} navigates the world.
                   </p>
                 </div>
                 
-                {/* Vibe */}
+                {/* Compatible Codes */}
                 <div>
-                  <h3 className="text-sm font-semibold uppercase tracking-wider text-white/50 mb-3">Vibe & Atmosphere</h3>
+                  <h3 className="text-sm font-semibold uppercase tracking-wider text-white/50 mb-3">Also loved by these codes</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedBusiness.compatibleCodes.map(code => {
+                      const c = CULTURAL_CODES[code as keyof typeof CULTURAL_CODES];
+                      return (
+                        <span 
+                          key={code} 
+                          className="px-3 py-1.5 rounded-full border text-sm font-medium"
+                          style={{ 
+                            borderColor: `${c.color}40`, 
+                            backgroundColor: `${c.color}10`,
+                            color: c.color 
+                          }}
+                        >
+                          {c.name}
+                        </span>
+                      );
+                    })}
+                  </div>
+                </div>
+                
+                {/* Atmosphere Details */}
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div className="p-4 rounded-xl bg-white/5 border border-white/10">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Music className="w-4 h-4 text-white/70" />
+                      <h4 className="text-xs font-semibold uppercase tracking-wider text-white/50">Music</h4>
+                    </div>
+                    <p className="text-sm text-white/80">{selectedBusiness.musicStyle}</p>
+                  </div>
+                  
+                  <div className="p-4 rounded-xl bg-white/5 border border-white/10">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Lightbulb className="w-4 h-4 text-white/70" />
+                      <h4 className="text-xs font-semibold uppercase tracking-wider text-white/50">Lighting</h4>
+                    </div>
+                    <p className="text-sm text-white/80">{selectedBusiness.lighting}</p>
+                  </div>
+                  
+                  <div className="p-4 rounded-xl bg-white/5 border border-white/10">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Volume2 className="w-4 h-4 text-white/70" />
+                      <h4 className="text-xs font-semibold uppercase tracking-wider text-white/50">Noise Level</h4>
+                    </div>
+                    <p className="text-sm text-white/80">{selectedBusiness.noiseLevel}</p>
+                  </div>
+                  
+                  <div className="p-4 rounded-xl bg-white/5 border border-white/10">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Users className="w-4 h-4 text-white/70" />
+                      <h4 className="text-xs font-semibold uppercase tracking-wider text-white/50">Atmosphere</h4>
+                    </div>
+                    <p className="text-sm text-white/80">{selectedBusiness.atmosphere}</p>
+                  </div>
+                </div>
+                
+                {/* Best For */}
+                <div>
+                  <h3 className="text-sm font-semibold uppercase tracking-wider text-white/50 mb-3">Best for</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedBusiness.bestFor.map(item => (
+                      <span key={item} className="px-3 py-1.5 rounded-full bg-white/10 border border-white/10 text-sm">
+                        {item}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+                
+                {/* Owner Story */}
+                <div className="p-4 rounded-xl bg-white/5 border border-white/10">
+                  <div className="flex items-center gap-2 mb-2">
+                    <BookOpen className="w-4 h-4 text-white/70" />
+                    <h4 className="text-xs font-semibold uppercase tracking-wider text-white/50">Story</h4>
+                  </div>
+                  <p className="text-sm text-white/80 leading-relaxed italic">
+                    {selectedBusiness.ownerStory}
+                  </p>
+                </div>
+                
+                {/* Vibe Tags */}
+                <div>
+                  <h3 className="text-sm font-semibold uppercase tracking-wider text-white/50 mb-3">Vibe</h3>
                   <div className="flex flex-wrap gap-2">
                     {[...selectedBusiness.tags, ...selectedBusiness.vibe].map(tag => (
                       <span key={tag} className="px-3 py-1.5 rounded-full bg-white/10 border border-white/10 text-sm">
