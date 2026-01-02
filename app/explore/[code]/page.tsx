@@ -18,8 +18,22 @@ import {
   Music,
   Lightbulb,
   Volume2,
-  BookOpen,
-  ChevronRight
+  Wifi,
+  Zap,
+  Baby,
+  Car,
+  CreditCard,
+  ExternalLink,
+  Phone,
+  Mail,
+  Calendar,
+  Navigation,
+  Accessibility,
+  PawPrint,
+  Trees,
+  Utensils,
+  Info,
+  Sparkles
 } from 'lucide-react';
 
 // Cultural Code data
@@ -55,17 +69,16 @@ const DEMO_BUSINESSES = [
     location: 'Shibuya, Tokyo',
     city: 'Tokyo',
     images: [
-      { url: '/images/businesses/minimalist-cafe-space.jpg', label: 'Main Space' },
+      { url: '/images/businesses/minimalist-cafe-space.jpg', label: 'Space' },
       { url: '/images/businesses/minimalist-cafe-counter.jpg', label: 'Counter' },
       { url: '/images/businesses/minimalist-cafe-seating.jpg', label: 'Seating' },
-      { url: '/images/businesses/minimalist-cafe-details.jpg', label: 'Details' },
+      { url: '/images/businesses/minimalist-cafe-details.jpg', label: 'Vibe' },
     ],
     matchScore: 94,
     priceRange: '$$',
     rating: 4.8,
     reviews: 127,
     tags: ['Quiet', 'Solo-friendly', 'Minimalist'],
-    vibe: ['Contemplative', 'Focused', 'Clean'],
     openNow: true,
     distance: '1.2 km',
     compatibleCodes: ['shokunin', 'jaejin', 'lhumir'],
@@ -74,8 +87,30 @@ const DEMO_BUSINESSES = [
     lighting: 'Soft natural light during day, warm Edison bulbs at night',
     noiseLevel: 'Very quiet (30-40 dB)',
     bestFor: ['Solo work', 'Reading', 'Quiet conversations'],
-    seating: '18 seats, mostly solo tables',
+    seating: 18,
     ownerStory: 'Founded by former architect Yuki Tanaka who believes coffee spaces should mirror meditation halls — designed for presence, not productivity.',
+    amenities: {
+      powerOutlets: true,
+      wifi: '100 Mbps',
+      kidsArea: false,
+      outdoorSeating: false,
+      wheelchairAccessible: true,
+      parking: false,
+      petFriendly: false,
+    },
+    menu: {
+      hasDigitalMenu: true,
+      menuLink: 'https://menu.example.com',
+      specialties: ['Pour-over coffee', 'Matcha latte', 'Minimal pastries'],
+      dietary: ['Vegan options', 'Gluten-free available'],
+    },
+    practical: {
+      payment: ['Cash', 'Card', 'Mobile pay'],
+      hours: 'Mon-Fri 7am-7pm, Sat-Sun 8am-6pm',
+      bookingRequired: false,
+      phone: '+81-3-1234-5678',
+      email: 'hello@minimalistcafe.jp',
+    },
   },
   {
     id: '2',
@@ -84,92 +119,55 @@ const DEMO_BUSINESSES = [
     location: 'Cape Town CBD',
     city: 'Cape Town',
     images: [
-      { url: '/images/businesses/ubuntu-kitchen-dining.jpg', label: 'Dining Room' },
+      { url: '/images/businesses/ubuntu-kitchen-dining.jpg', label: 'Dining' },
       { url: '/images/businesses/ubuntu-kitchen-kitchen.jpg', label: 'Kitchen' },
-      { url: '/images/businesses/ubuntu-kitchen-table.jpg', label: 'Community Table' },
-      { url: '/images/businesses/ubuntu-kitchen-atmosphere.jpg', label: 'Atmosphere' },
+      { url: '/images/businesses/ubuntu-kitchen-table.jpg', label: 'Community' },
+      { url: '/images/businesses/ubuntu-kitchen-atmosphere.jpg', label: 'Vibe' },
     ],
     matchScore: 91,
     priceRange: '$$$',
     rating: 4.9,
     reviews: 203,
     tags: ['Community', 'Family-style', 'Warm'],
-    vibe: ['Communal', 'Lively', 'Welcoming'],
     openNow: true,
     distance: '2.8 km',
     compatibleCodes: ['kayori', 'wohaka', 'karayni'],
     musicStyle: 'Afrobeats, Highlife, Amapiano, Live Jazz Thu-Sun',
-    atmosphere: 'Shared tables, storytelling encouraged, communal dining experience',
-    lighting: 'Warm pendant lights over shared tables, candles',
+    atmosphere: 'Shared tables, storytelling encouraged, communal dining',
+    lighting: 'Warm pendant lights, candles',
     noiseLevel: 'Moderate to lively (65-75 dB)',
-    bestFor: ['Group dinners', 'Meeting new people', 'Celebrations'],
-    seating: '48 seats, mostly communal tables of 8-12',
+    bestFor: ['Group dinners', 'Meeting people', 'Celebrations'],
+    seating: 48,
     ownerStory: 'Chef Naledi grew up in a township where meals were never eaten alone. Ubuntu Kitchen recreates that spirit of radical togetherness.',
-  },
-  {
-    id: '3',
-    name: 'Desert Silence Retreat',
-    category: 'Wellness',
-    location: 'Merzouga, Morocco',
-    city: 'Merzouga',
-    images: [
-      { url: '/images/businesses/desert-retreat-view.jpg', label: 'Desert View' },
-      { url: '/images/businesses/desert-retreat-meditation.jpg', label: 'Meditation Space' },
-      { url: '/images/businesses/desert-retreat-tent.jpg', label: 'Tent Interior' },
-      { url: '/images/businesses/desert-retreat-sunset.jpg', label: 'Sunset' },
-    ],
-    matchScore: 96,
-    priceRange: '$$$$',
-    rating: 5.0,
-    reviews: 89,
-    tags: ['Contemplative', 'Remote', 'Transformative'],
-    vibe: ['Silent', 'Introspective', 'Sacred'],
-    openNow: false,
-    distance: '45 km',
-    compatibleCodes: ['sahen', 'lhumir', 'siljoa'],
-    musicStyle: 'Silence only, Occasional traditional Tuareg singing bowls',
-    atmosphere: 'Noble silence practice, minimal eye contact, solitude honored',
-    lighting: 'Sunrise/sunset natural light, no artificial lighting after dark',
-    noiseLevel: 'Near-silent (10-20 dB), wind and natural sounds only',
-    bestFor: ['Solo retreat', 'Deep contemplation', 'Digital detox'],
-    seating: 'Private tents, 12 guests maximum',
-    ownerStory: 'Aziz, a former trader, walked into the desert at 40 and never came back to the city. He built this space for others seeking the same radical quiet.',
-  },
-  {
-    id: '4',
-    name: 'Flow State Studio',
-    category: 'Workspace',
-    location: 'Old Quarter, Hanoi',
-    city: 'Hanoi',
-    images: [
-      { url: '/images/businesses/flow-studio-main.jpg', label: 'Main Floor' },
-      { url: '/images/businesses/flow-studio-work.jpg', label: 'Work Areas' },
-      { url: '/images/businesses/flow-studio-light.jpg', label: 'Natural Light' },
-      { url: '/images/businesses/flow-studio-seating.jpg', label: 'Flexible Seating' },
-    ],
-    matchScore: 89,
-    priceRange: '$',
-    rating: 4.7,
-    reviews: 156,
-    tags: ['Calm', 'Natural light', 'Flexible'],
-    vibe: ['Flowing', 'Peaceful', 'Adaptive'],
-    openNow: true,
-    distance: '0.8 km',
-    compatibleCodes: ['namsea', 'renara', 'karayni'],
-    musicStyle: 'Chillhop, Trip-hop, Downtempo',
-    atmosphere: 'No fixed seats, cushions and low tables, movement encouraged',
-    lighting: 'Floor-to-ceiling windows, rice paper diffusers, daylight-focused',
-    noiseLevel: 'Soft background (40-50 dB)',
-    bestFor: ['Creative work', 'Flexible schedules', 'Movement breaks'],
-    seating: '30 flexible positions, no assigned desks',
-    ownerStory: 'Linh designed this space after realizing she worked best when she could move like water — flowing between sitting, standing, and walking.',
+    amenities: {
+      powerOutlets: false,
+      wifi: '50 Mbps',
+      kidsArea: true,
+      outdoorSeating: true,
+      wheelchairAccessible: true,
+      parking: true,
+      petFriendly: true,
+    },
+    menu: {
+      hasDigitalMenu: true,
+      menuLink: 'https://menu.example.com',
+      specialties: ['Family-style platters', 'Traditional Cape cuisine', 'Communal desserts'],
+      dietary: ['Vegetarian', 'Halal options'],
+    },
+    practical: {
+      payment: ['Card', 'Mobile pay'],
+      hours: 'Tue-Sun 5pm-11pm, Closed Mondays',
+      bookingRequired: true,
+      phone: '+27-21-123-4567',
+      email: 'info@ubuntukitchen.co.za',
+    },
   },
 ];
 
 type Business = typeof DEMO_BUSINESSES[0];
 
-const CITIES = ['All Cities', 'Tokyo', 'Cape Town', 'Hanoi', 'Merzouga'];
-const CATEGORIES = ['All', 'Café', 'Restaurant', 'Workspace', 'Wellness', 'Experience', 'Accommodation', 'Fitness'];
+const CITIES = ['All Cities', 'Tokyo', 'Cape Town'];
+const CATEGORIES = ['All', 'Café', 'Restaurant', 'Workspace', 'Wellness'];
 const PRICE_RANGES = ['All', '$', '$$', '$$$', '$$$$'];
 const SORT_OPTIONS = ['Best Match', 'Highest Rated', 'Most Reviews', 'Nearest'];
 
@@ -182,6 +180,7 @@ export default function MarketplacePage() {
   
   const [selectedBusiness, setSelectedBusiness] = useState<Business | null>(null);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [selectedTab, setSelectedTab] = useState<'overview' | 'atmosphere' | 'amenities' | 'menu' | 'practical'>('overview');
   const [selectedCity, setSelectedCity] = useState('All Cities');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedPrice, setSelectedPrice] = useState('All');
@@ -191,7 +190,6 @@ export default function MarketplacePage() {
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [showFilters, setShowFilters] = useState(false);
   
-  // Filter and sort businesses
   const filteredBusinesses = useMemo(() => {
     let results = DEMO_BUSINESSES.filter(b => {
       const cityMatch = selectedCity === 'All Cities' || b.city === selectedCity;
@@ -203,15 +201,10 @@ export default function MarketplacePage() {
       return cityMatch && categoryMatch && priceMatch && matchScorePass && openMatch;
     });
     
-    if (sortBy === 'Best Match') {
-      results.sort((a, b) => b.matchScore - a.matchScore);
-    } else if (sortBy === 'Highest Rated') {
-      results.sort((a, b) => b.rating - a.rating);
-    } else if (sortBy === 'Most Reviews') {
-      results.sort((a, b) => b.reviews - a.reviews);
-    } else if (sortBy === 'Nearest') {
-      results.sort((a, b) => parseFloat(a.distance) - parseFloat(b.distance));
-    }
+    if (sortBy === 'Best Match') results.sort((a, b) => b.matchScore - a.matchScore);
+    else if (sortBy === 'Highest Rated') results.sort((a, b) => b.rating - a.rating);
+    else if (sortBy === 'Most Reviews') results.sort((a, b) => b.reviews - a.reviews);
+    else if (sortBy === 'Nearest') results.sort((a, b) => parseFloat(a.distance) - parseFloat(b.distance));
     
     return results;
   }, [selectedCity, selectedCategory, selectedPrice, minMatch, showOpenOnly, sortBy]);
@@ -219,11 +212,8 @@ export default function MarketplacePage() {
   const toggleFavorite = (id: string) => {
     setFavorites(prev => {
       const newSet = new Set(prev);
-      if (newSet.has(id)) {
-        newSet.delete(id);
-      } else {
-        newSet.add(id);
-      }
+      if (newSet.has(id)) newSet.delete(id);
+      else newSet.add(id);
       return newSet;
     });
   };
@@ -248,10 +238,7 @@ export default function MarketplacePage() {
         <div className="max-w-[1800px] mx-auto px-4 sm:px-6 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <button
-                onClick={() => router.push('/')}
-                className="flex items-center gap-2 text-white/70 hover:text-white transition"
-              >
+              <button onClick={() => router.push('/')} className="flex items-center gap-2 text-white/70 hover:text-white transition">
                 <ArrowLeft className="w-4 h-4" />
                 <span className="text-sm hidden sm:inline">Home</span>
               </button>
@@ -267,10 +254,7 @@ export default function MarketplacePage() {
               </div>
             </div>
             
-            <button
-              onClick={() => setShowFilters(!showFilters)}
-              className="lg:hidden flex items-center gap-2 px-3 py-1.5 rounded-lg border border-white/20 bg-white/5"
-            >
+            <button onClick={() => setShowFilters(!showFilters)} className="lg:hidden flex items-center gap-2 px-3 py-1.5 rounded-lg border border-white/20 bg-white/5">
               <SlidersHorizontal className="w-4 h-4" />
               <span className="text-sm">Filters</span>
             </button>
@@ -283,46 +267,32 @@ export default function MarketplacePage() {
         <div className="max-w-[1800px] mx-auto px-4 sm:px-6 py-6">
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1">
-              <h2 className="text-lg font-semibold mb-1">Why {codeData.name} matches these places</h2>
+              <h2 className="text-lg font-semibold mb-1">Spaces for {codeData.name}</h2>
               <p className="text-sm text-white/80 max-w-3xl leading-relaxed">
-                Every space here resonates with {codeData.tagline.toLowerCase()}. We've analyzed atmosphere, values, 
-                and cultural alignment to find places where you'll feel understood — not just accommodated.
+                Curated environments where {codeData.tagline.toLowerCase()} comes naturally.
               </p>
             </div>
             <div className="text-right">
               <div className="text-2xl font-bold">{filteredBusinesses.length}</div>
-              <div className="text-xs text-white/70">places match</div>
+              <div className="text-xs text-white/70">matches</div>
             </div>
           </div>
         </div>
       </div>
       
       <div className="max-w-[1800px] mx-auto flex">
-        {/* Left Sidebar Filters */}
-        <aside className={`
-          lg:sticky lg:top-[73px] lg:block h-[calc(100vh-73px)] overflow-y-auto
-          border-r border-white/10 bg-black/20
-          ${showFilters ? 'fixed inset-0 z-40 block' : 'hidden'}
-          lg:w-72 w-full
-        `}>
+        {/* Left Sidebar */}
+        <aside className={`lg:sticky lg:top-[73px] lg:block h-[calc(100vh-73px)] overflow-y-auto border-r border-white/10 bg-black/20 ${showFilters ? 'fixed inset-0 z-40 block' : 'hidden'} lg:w-72 w-full`}>
           <div className="p-4 space-y-6">
             <div className="lg:hidden flex items-center justify-between mb-4">
               <h3 className="font-semibold">Filters</h3>
-              <button onClick={() => setShowFilters(false)}>
-                <X className="w-5 h-5" />
-              </button>
+              <button onClick={() => setShowFilters(false)}><X className="w-5 h-5" /></button>
             </div>
             
             <div>
               <label className="text-xs uppercase tracking-wider text-white/50 mb-2 block">Location</label>
-              <select
-                value={selectedCity}
-                onChange={(e) => setSelectedCity(e.target.value)}
-                className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-sm focus:outline-none focus:border-white/30"
-              >
-                {CITIES.map(city => (
-                  <option key={city} value={city} className="bg-gray-900">{city}</option>
-                ))}
+              <select value={selectedCity} onChange={(e) => setSelectedCity(e.target.value)} className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-sm focus:outline-none focus:border-white/30">
+                {CITIES.map(city => <option key={city} value={city} className="bg-gray-900">{city}</option>)}
               </select>
             </div>
             
@@ -330,15 +300,7 @@ export default function MarketplacePage() {
               <label className="text-xs uppercase tracking-wider text-white/50 mb-2 block">Category</label>
               <div className="space-y-1">
                 {CATEGORIES.map(cat => (
-                  <button
-                    key={cat}
-                    onClick={() => setSelectedCategory(cat)}
-                    className={`w-full text-left px-3 py-2 rounded-lg text-sm transition ${
-                      selectedCategory === cat
-                        ? 'bg-white text-black font-medium'
-                        : 'text-white/70 hover:bg-white/5'
-                    }`}
-                  >
+                  <button key={cat} onClick={() => setSelectedCategory(cat)} className={`w-full text-left px-3 py-2 rounded-lg text-sm transition ${selectedCategory === cat ? 'bg-white text-black font-medium' : 'text-white/70 hover:bg-white/5'}`}>
                     {cat}
                   </button>
                 ))}
@@ -346,18 +308,10 @@ export default function MarketplacePage() {
             </div>
             
             <div>
-              <label className="text-xs uppercase tracking-wider text-white/50 mb-2 block">Price Range</label>
+              <label className="text-xs uppercase tracking-wider text-white/50 mb-2 block">Price</label>
               <div className="flex gap-2">
                 {PRICE_RANGES.map(price => (
-                  <button
-                    key={price}
-                    onClick={() => setSelectedPrice(price)}
-                    className={`flex-1 px-2 py-1.5 rounded-lg text-xs transition ${
-                      selectedPrice === price
-                        ? 'bg-white text-black font-medium'
-                        : 'bg-white/5 text-white/70 hover:bg-white/10'
-                    }`}
-                  >
+                  <button key={price} onClick={() => setSelectedPrice(price)} className={`flex-1 px-2 py-1.5 rounded-lg text-xs transition ${selectedPrice === price ? 'bg-white text-black font-medium' : 'bg-white/5 text-white/70 hover:bg-white/10'}`}>
                     {price}
                   </button>
                 ))}
@@ -365,63 +319,30 @@ export default function MarketplacePage() {
             </div>
             
             <div>
-              <label className="text-xs uppercase tracking-wider text-white/50 mb-2 block">
-                Min Match: {minMatch}%
-              </label>
-              <input
-                type="range"
-                min="70"
-                max="100"
-                value={minMatch}
-                onChange={(e) => setMinMatch(Number(e.target.value))}
-                className="w-full accent-white"
-                style={{ accentColor: codeData.color }}
-              />
+              <label className="text-xs uppercase tracking-wider text-white/50 mb-2 block">Min Match: {minMatch}%</label>
+              <input type="range" min="70" max="100" value={minMatch} onChange={(e) => setMinMatch(Number(e.target.value))} className="w-full accent-white" style={{ accentColor: codeData.color }} />
             </div>
             
-            <div>
-              <button
-                onClick={() => setShowOpenOnly(!showOpenOnly)}
-                className="flex items-center justify-between w-full px-3 py-2 rounded-lg bg-white/5 hover:bg-white/10 transition"
-              >
-                <span className="text-sm">Open now only</span>
-                <div className={`w-10 h-5 rounded-full transition ${showOpenOnly ? 'bg-white' : 'bg-white/20'}`}>
-                  <div className={`w-4 h-4 mt-0.5 rounded-full bg-black transition-transform ${showOpenOnly ? 'translate-x-5' : 'translate-x-0.5'}`} />
-                </div>
-              </button>
-            </div>
+            <button onClick={() => setShowOpenOnly(!showOpenOnly)} className="flex items-center justify-between w-full px-3 py-2 rounded-lg bg-white/5 hover:bg-white/10 transition">
+              <span className="text-sm">Open now only</span>
+              <div className={`w-10 h-5 rounded-full transition ${showOpenOnly ? 'bg-white' : 'bg-white/20'}`}>
+                <div className={`w-4 h-4 mt-0.5 rounded-full bg-black transition-transform ${showOpenOnly ? 'translate-x-5' : 'translate-x-0.5'}`} />
+              </div>
+            </button>
             
-            <button
-              onClick={() => {
-                setSelectedCity('All Cities');
-                setSelectedCategory('All');
-                setSelectedPrice('All');
-                setMinMatch(80);
-                setShowOpenOnly(false);
-              }}
-              className="w-full px-3 py-2 text-sm text-white/50 hover:text-white transition"
-            >
-              Reset all filters
+            <button onClick={() => { setSelectedCity('All Cities'); setSelectedCategory('All'); setSelectedPrice('All'); setMinMatch(80); setShowOpenOnly(false); }} className="w-full px-3 py-2 text-sm text-white/50 hover:text-white transition">
+              Reset filters
             </button>
           </div>
         </aside>
         
-        {/* Main Content */}
+        {/* Main */}
         <main className="flex-1 min-w-0">
           <div className="sticky top-[73px] z-30 bg-black/40 backdrop-blur-xl border-b border-white/10 px-4 sm:px-6 py-3">
             <div className="flex items-center justify-between gap-4">
-              <p className="text-sm text-white/60">
-                {filteredBusinesses.length} result{filteredBusinesses.length !== 1 ? 's' : ''}
-              </p>
-              
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-                className="px-3 py-1.5 bg-white/5 border border-white/10 rounded-lg text-sm focus:outline-none focus:border-white/30"
-              >
-                {SORT_OPTIONS.map(opt => (
-                  <option key={opt} value={opt} className="bg-gray-900">{opt}</option>
-                ))}
+              <p className="text-sm text-white/60">{filteredBusinesses.length} result{filteredBusinesses.length !== 1 ? 's' : ''}</p>
+              <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="px-3 py-1.5 bg-white/5 border border-white/10 rounded-lg text-sm focus:outline-none focus:border-white/30">
+                {SORT_OPTIONS.map(opt => <option key={opt} value={opt} className="bg-gray-900">{opt}</option>)}
               </select>
             </div>
           </div>
@@ -429,41 +350,15 @@ export default function MarketplacePage() {
           <div className="p-4 sm:p-6">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
               {filteredBusinesses.map((business) => (
-                <motion.div
-                  key={business.id}
-                  layout
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="group relative"
-                >
-                  <button
-                    onClick={() => setSelectedBusiness(business)}
-                    className="w-full text-left"
-                  >
-                    <div className="relative overflow-hidden rounded-xl bg-white/5 border border-white/10 hover:border-white/20 transition-all">
+                <motion.div key={business.id} layout initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="group">
+                  <button onClick={() => { setSelectedBusiness(business); setSelectedTab('overview'); setSelectedImageIndex(0); }} className="w-full text-left">
+                    <div className="relative overflow-hidden rounded-xl bg-white/5 border border-white/10 hover:border-white/20 transition-all hover:scale-[1.02]">
                       <div className="relative h-40 overflow-hidden">
-                        <Image
-                          src={business.images[0].url}
-                          alt={business.name}
-                          fill
-                          className="object-cover group-hover:scale-105 transition-transform duration-500"
-                          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-                        />
-                        
-                        <div 
-                          className="absolute top-2 left-2 px-2 py-1 rounded-lg backdrop-blur-md text-xs font-bold"
-                          style={{ backgroundColor: `${codeData.color}20`, color: codeData.color, border: `1px solid ${codeData.color}40` }}
-                        >
+                        <Image src={business.images[0].url} alt={business.name} fill className="object-cover group-hover:scale-105 transition-transform duration-500" sizes="(max-width: 640px) 100vw, 25vw" />
+                        <div className="absolute top-2 left-2 px-2 py-1 rounded-lg backdrop-blur-md text-xs font-bold" style={{ backgroundColor: `${codeData.color}20`, color: codeData.color, border: `1px solid ${codeData.color}40` }}>
                           {business.matchScore}%
                         </div>
-                        
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            toggleFavorite(business.id);
-                          }}
-                          className="absolute top-2 right-2 w-8 h-8 rounded-full bg-black/60 backdrop-blur-md flex items-center justify-center hover:scale-110 transition"
-                        >
+                        <button onClick={(e) => { e.stopPropagation(); toggleFavorite(business.id); }} className="absolute top-2 right-2 w-8 h-8 rounded-full bg-black/60 backdrop-blur-md flex items-center justify-center hover:scale-110 transition">
                           <Heart className={`w-4 h-4 ${favorites.has(business.id) ? 'fill-red-500 text-red-500' : 'text-white'}`} />
                         </button>
                       </div>
@@ -484,19 +379,9 @@ export default function MarketplacePage() {
                             <span className="text-white/50">({business.reviews})</span>
                           </div>
                           <div className="flex items-center gap-2">
-                            {business.openNow && (
-                              <span className="text-green-400 font-medium">Open</span>
-                            )}
+                            {business.openNow && <span className="text-green-400 font-medium">Open</span>}
                             <span className="text-white/50">{business.priceRange}</span>
                           </div>
-                        </div>
-                        
-                        <div className="flex flex-wrap gap-1">
-                          {business.tags.slice(0, 2).map(tag => (
-                            <span key={tag} className="px-2 py-0.5 rounded-full bg-white/10 text-[10px] text-white/60">
-                              {tag}
-                            </span>
-                          ))}
                         </div>
                       </div>
                     </div>
@@ -504,113 +389,39 @@ export default function MarketplacePage() {
                 </motion.div>
               ))}
             </div>
-            
-            {filteredBusinesses.length === 0 && (
-              <div className="text-center py-20">
-                <div className="text-white/40 mb-4">
-                  <Map className="w-12 h-12 mx-auto mb-2" />
-                  <p>No matches found</p>
-                  <p className="text-sm mt-1">Try adjusting your filters</p>
-                </div>
-              </div>
-            )}
           </div>
         </main>
       </div>
       
-      {/* Business Detail Modal */}
+      {/* Futuristic Detail Modal */}
       <AnimatePresence>
         {selectedBusiness && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto"
-            onClick={() => setSelectedBusiness(null)}
-          >
-            <motion.div
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-              onClick={(e) => {
-                e.stopPropagation();
-              }}
-              onAnimationStart={() => setSelectedImageIndex(0)}
-              className="relative w-full max-w-5xl my-8 bg-gradient-to-b from-gray-900 to-black rounded-2xl border border-white/20 overflow-hidden"
-            >
-              <button
-                onClick={() => setSelectedBusiness(null)}
-                className="absolute top-4 right-4 z-10 w-10 h-10 rounded-full bg-black/80 backdrop-blur-md border border-white/20 flex items-center justify-center text-white hover:bg-black transition"
-              >
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-xl flex items-center justify-center p-4" onClick={() => setSelectedBusiness(null)}>
+            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} transition={{ type: 'spring', stiffness: 300, damping: 30 }} onClick={(e) => e.stopPropagation()} className="relative w-full max-w-6xl max-h-[95vh] bg-gradient-to-b from-gray-900/95 to-black/95 rounded-3xl border border-white/20 overflow-hidden backdrop-blur-2xl">
+              
+              {/* Close Button */}
+              <button onClick={() => setSelectedBusiness(null)} className="absolute top-4 right-4 z-50 w-10 h-10 rounded-full bg-black/80 backdrop-blur-md border border-white/20 flex items-center justify-center text-white hover:bg-black transition">
                 <X className="w-5 h-5" />
               </button>
               
-              {/* Tabbed Image Viewer */}
-              <div className="bg-black/40 border-b border-white/10">
-                {/* Tabs */}
-                <div className="flex gap-2 px-4 pt-4 overflow-x-auto">
-                  {selectedBusiness.images.map((img, idx) => (
-                    <button
-                      key={idx}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setSelectedImageIndex(idx);
-                      }}
-                      className={`px-4 py-2 rounded-t-lg text-sm font-medium transition whitespace-nowrap ${
-                        selectedImageIndex === idx
-                          ? 'bg-white/10 text-white border-t border-x border-white/20'
-                          : 'text-white/50 hover:text-white/80'
-                      }`}
-                    >
-                      {img.label}
-                    </button>
-                  ))}
-                </div>
-                
-                {/* Image Display */}
-                <div className="relative h-96 bg-black">
-                  <AnimatePresence mode="wait">
-                    <motion.div
-                      key={selectedImageIndex}
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      transition={{ duration: 0.3 }}
-                      className="absolute inset-0"
-                    >
-                      <Image
-                        src={selectedBusiness.images[selectedImageIndex].url}
-                        alt={selectedBusiness.images[selectedImageIndex].label}
-                        fill
-                        className="object-contain"
-                        sizes="100vw"
-                        priority
-                      />
-                    </motion.div>
-                  </AnimatePresence>
-                  
-                  {/* Image label overlay */}
-                  <div className="absolute bottom-4 left-4 px-3 py-1.5 rounded-lg bg-black/60 backdrop-blur-md border border-white/20">
-                    <span className="text-sm font-medium">{selectedBusiness.images[selectedImageIndex].label}</span>
-                  </div>
-                </div>
-              </div>
-              
-              {/* Content */}
-              <div className="p-6 sm:p-8 space-y-6 max-h-[60vh] overflow-y-auto">
-                {/* Header */}
+              {/* Futuristic Header */}
+              <div className="relative p-6 border-b border-white/10 bg-gradient-to-r from-white/5 to-transparent">
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1">
-                    <div
-                      className="inline-block px-3 py-1 rounded-lg backdrop-blur-md text-sm font-bold mb-3"
-                      style={{ backgroundColor: `${codeData.color}30`, color: codeData.color, border: `1px solid ${codeData.color}60` }}
-                    >
-                      {selectedBusiness.matchScore}% match with {codeData.name}
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="px-3 py-1 rounded-full backdrop-blur-md text-xs font-bold border" style={{ backgroundColor: `${codeData.color}20`, color: codeData.color, borderColor: `${codeData.color}40` }}>
+                        {selectedBusiness.matchScore}% MATCH
+                      </div>
+                      {selectedBusiness.openNow && (
+                        <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-green-500/20 border border-green-500/40">
+                          <div className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+                          <span className="text-xs font-medium text-green-400">OPEN NOW</span>
+                        </div>
+                      )}
                     </div>
-                    <h2 className="text-3xl font-bold mb-2">{selectedBusiness.name}</h2>
-                    <div className="flex flex-wrap items-center gap-3 text-sm text-white/70">
-                      <div className="flex items-center gap-1">
+                    <h2 className="text-3xl font-bold mb-2 bg-gradient-to-r from-white to-white/60 bg-clip-text text-transparent">{selectedBusiness.name}</h2>
+                    <div className="flex flex-wrap items-center gap-3 text-sm text-white/60">
+                      <div className="flex items-center gap-1.5">
                         <MapPin className="w-4 h-4" />
                         <span>{selectedBusiness.location}</span>
                       </div>
@@ -621,167 +432,365 @@ export default function MarketplacePage() {
                     </div>
                   </div>
                   
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      toggleFavorite(selectedBusiness.id);
-                    }}
-                    className="w-12 h-12 rounded-full bg-white/10 border border-white/20 flex items-center justify-center hover:scale-110 transition"
-                  >
-                    <Heart className={`w-6 h-6 ${favorites.has(selectedBusiness.id) ? 'fill-red-500 text-red-500' : 'text-white'}`} />
-                  </button>
-                </div>
-                
-                {/* Stats */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                  <div className="text-center p-3 rounded-xl bg-white/5 border border-white/10">
-                    <Star className="w-5 h-5 fill-yellow-400 text-yellow-400 mx-auto mb-1" />
-                    <div className="text-xl font-bold">{selectedBusiness.rating}</div>
-                    <div className="text-xs text-white/50">{selectedBusiness.reviews} reviews</div>
-                  </div>
-                  <div className="text-center p-3 rounded-xl bg-white/5 border border-white/10">
-                    <DollarSign className="w-5 h-5 mx-auto mb-1 text-white/70" />
-                    <div className="text-xl font-bold">{selectedBusiness.priceRange}</div>
-                    <div className="text-xs text-white/50">Price</div>
-                  </div>
-                  <div className="text-center p-3 rounded-xl bg-white/5 border border-white/10">
-                    <Users className="w-5 h-5 mx-auto mb-1 text-white/70" />
-                    <div className="text-sm font-bold">{selectedBusiness.seating}</div>
-                    <div className="text-xs text-white/50">Capacity</div>
-                  </div>
-                  <div className="text-center p-3 rounded-xl bg-white/5 border border-white/10">
-                    <Clock className="w-5 h-5 mx-auto mb-1 text-white/70" />
-                    <div className="text-lg font-bold">{selectedBusiness.openNow ? 'Open' : 'Closed'}</div>
-                    <div className="text-xs text-white/50">Status</div>
-                  </div>
-                </div>
-                
-                {/* Business Main Code */}
-                <div className="p-4 rounded-xl border border-white/10" style={{ backgroundColor: `${CULTURAL_CODES[selectedBusiness.compatibleCodes[0] as keyof typeof CULTURAL_CODES].color}10` }}>
-                  <h3 className="text-xs font-semibold uppercase tracking-wider mb-2 text-white/50">Cultural Identity</h3>
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-white/70">This is a</span>
-                    <span 
-                      className="px-3 py-1.5 rounded-full border text-base font-bold"
-                      style={{ 
-                        borderColor: `${CULTURAL_CODES[selectedBusiness.compatibleCodes[0] as keyof typeof CULTURAL_CODES].color}60`, 
-                        backgroundColor: `${CULTURAL_CODES[selectedBusiness.compatibleCodes[0] as keyof typeof CULTURAL_CODES].color}20`,
-                        color: CULTURAL_CODES[selectedBusiness.compatibleCodes[0] as keyof typeof CULTURAL_CODES].color 
-                      }}
-                    >
-                      {CULTURAL_CODES[selectedBusiness.compatibleCodes[0] as keyof typeof CULTURAL_CODES].name}
-                    </span>
-                    <span className="text-sm text-white/70">space</span>
-                  </div>
-                </div>
-                
-                {/* Also Loved By */}
-                {/* Also Loved By */}
-                <div>
-                  <h3 className="text-sm font-semibold uppercase tracking-wider text-white/50 mb-3">Also loved by</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {selectedBusiness.compatibleCodes.slice(1).map(code => {
-                      const c = CULTURAL_CODES[code as keyof typeof CULTURAL_CODES];
-                      return (
-                        <span 
-                          key={code} 
-                          className="px-3 py-1.5 rounded-full border text-sm font-medium"
-                          style={{ 
-                            borderColor: `${c.color}40`, 
-                            backgroundColor: `${c.color}10`,
-                            color: c.color 
-                          }}
-                        >
-                          {c.name}
-                        </span>
-                      );
-                    })}
-                  </div>
-                </div>
-                
-                {/* Atmosphere Details */}
-                <div className="grid sm:grid-cols-2 gap-4">
-                  <div className="p-4 rounded-xl bg-white/5 border border-white/10">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Music className="w-4 h-4 text-white/70" />
-                      <h4 className="text-xs font-semibold uppercase tracking-wider text-white/50">Music</h4>
+                  <div className="flex items-center gap-3">
+                    <div className="text-right">
+                      <div className="flex items-center gap-1 mb-1">
+                        <Star className="w-5 h-5 fill-yellow-400 text-yellow-400" />
+                        <span className="text-2xl font-bold">{selectedBusiness.rating}</span>
+                      </div>
+                      <div className="text-xs text-white/50">{selectedBusiness.reviews} reviews</div>
                     </div>
-                    <p className="text-sm text-white/80">{selectedBusiness.musicStyle}</p>
-                  </div>
-                  
-                  <div className="p-4 rounded-xl bg-white/5 border border-white/10">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Lightbulb className="w-4 h-4 text-white/70" />
-                      <h4 className="text-xs font-semibold uppercase tracking-wider text-white/50">Lighting</h4>
-                    </div>
-                    <p className="text-sm text-white/80">{selectedBusiness.lighting}</p>
-                  </div>
-                  
-                  <div className="p-4 rounded-xl bg-white/5 border border-white/10">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Volume2 className="w-4 h-4 text-white/70" />
-                      <h4 className="text-xs font-semibold uppercase tracking-wider text-white/50">Noise Level</h4>
-                    </div>
-                    <p className="text-sm text-white/80">{selectedBusiness.noiseLevel}</p>
-                  </div>
-                  
-                  <div className="p-4 rounded-xl bg-white/5 border border-white/10">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Users className="w-4 h-4 text-white/70" />
-                      <h4 className="text-xs font-semibold uppercase tracking-wider text-white/50">Atmosphere</h4>
-                    </div>
-                    <p className="text-sm text-white/80">{selectedBusiness.atmosphere}</p>
+                    
+                    <button onClick={(e) => { e.stopPropagation(); toggleFavorite(selectedBusiness.id); }} className="w-12 h-12 rounded-full bg-white/10 border border-white/20 flex items-center justify-center hover:scale-110 transition">
+                      <Heart className={`w-6 h-6 ${favorites.has(selectedBusiness.id) ? 'fill-red-500 text-red-500' : 'text-white'}`} />
+                    </button>
                   </div>
                 </div>
-                
-                {/* Best For */}
-                <div>
-                  <h3 className="text-sm font-semibold uppercase tracking-wider text-white/50 mb-3">Best for</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {selectedBusiness.bestFor.map(item => (
-                      <span key={item} className="px-3 py-1.5 rounded-full bg-white/10 border border-white/10 text-sm">
-                        {item}
-                      </span>
-                    ))}
-                  </div>
+              </div>
+              
+              {/* Futuristic Tabs */}
+              <div className="border-b border-white/10 bg-black/40 backdrop-blur-xl">
+                <div className="flex gap-1 px-6 overflow-x-auto">
+                  {[
+                    { id: 'overview', label: 'Overview', icon: Info },
+                    { id: 'atmosphere', label: 'Atmosphere', icon: Sparkles },
+                    { id: 'amenities', label: 'Amenities', icon: Zap },
+                    { id: 'menu', label: 'Menu', icon: Utensils },
+                    { id: 'practical', label: 'Practical', icon: Phone },
+                  ].map((tab) => {
+                    const Icon = tab.icon;
+                    return (
+                      <button
+                        key={tab.id}
+                        onClick={() => setSelectedTab(tab.id as any)}
+                        className={`relative px-4 py-3 text-sm font-medium transition whitespace-nowrap flex items-center gap-2 ${
+                          selectedTab === tab.id
+                            ? 'text-white'
+                            : 'text-white/50 hover:text-white/80'
+                        }`}
+                      >
+                        <Icon className="w-4 h-4" />
+                        {tab.label}
+                        {selectedTab === tab.id && (
+                          <motion.div layoutId="activeTab" className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-white to-transparent" transition={{ type: 'spring', stiffness: 500, damping: 30 }} />
+                        )}
+                      </button>
+                    );
+                  })}
                 </div>
-                
-                {/* Owner Story */}
-                <div className="p-4 rounded-xl bg-white/5 border border-white/10">
-                  <div className="flex items-center gap-2 mb-2">
-                    <BookOpen className="w-4 h-4 text-white/70" />
-                    <h4 className="text-xs font-semibold uppercase tracking-wider text-white/50">Story</h4>
-                  </div>
-                  <p className="text-sm text-white/80 leading-relaxed italic">
-                    {selectedBusiness.ownerStory}
-                  </p>
-                </div>
-                
-                {/* Vibe Tags */}
-                <div>
-                  <h3 className="text-sm font-semibold uppercase tracking-wider text-white/50 mb-3">Vibe</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {[...selectedBusiness.tags, ...selectedBusiness.vibe].map(tag => (
-                      <span key={tag} className="px-3 py-1.5 rounded-full bg-white/10 border border-white/10 text-sm">
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-                
-                {/* Actions */}
-                <div className="flex gap-3 pt-4">
+              </div>
+              
+              {/* Tab Content */}
+              <div className="overflow-y-auto max-h-[calc(95vh-240px)]">
+                <AnimatePresence mode="wait">
+                  <motion.div key={selectedTab} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2 }} className="p-6">
+                    
+                    {/* OVERVIEW TAB */}
+                    {selectedTab === 'overview' && (
+                      <div className="space-y-6">
+                        {/* Tabbed Image Viewer */}
+                        <div className="rounded-2xl overflow-hidden border border-white/10 bg-black/40">
+                          <div className="flex gap-2 p-3 bg-white/5 border-b border-white/10">
+                            {selectedBusiness.images.map((img, idx) => (
+                              <button key={idx} onClick={() => setSelectedImageIndex(idx)} className={`px-3 py-1.5 rounded-lg text-xs font-medium transition ${selectedImageIndex === idx ? 'bg-white/20 text-white' : 'text-white/50 hover:text-white/80'}`}>
+                                {img.label}
+                              </button>
+                            ))}
+                          </div>
+                          <div className="relative h-96 bg-black">
+                            <AnimatePresence mode="wait">
+                              <motion.div key={selectedImageIndex} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }} className="absolute inset-0">
+                                <Image src={selectedBusiness.images[selectedImageIndex].url} alt={selectedBusiness.images[selectedImageIndex].label} fill className="object-contain" sizes="100vw" priority />
+                              </motion.div>
+                            </AnimatePresence>
+                          </div>
+                        </div>
+                        
+                        {/* Cultural Identity */}
+                        <div className="p-5 rounded-2xl border" style={{ backgroundColor: `${CULTURAL_CODES[selectedBusiness.compatibleCodes[0] as keyof typeof CULTURAL_CODES].color}10`, borderColor: `${CULTURAL_CODES[selectedBusiness.compatibleCodes[0] as keyof typeof CULTURAL_CODES].color}30` }}>
+                          <div className="text-xs uppercase tracking-wider mb-3" style={{ color: `${CULTURAL_CODES[selectedBusiness.compatibleCodes[0] as keyof typeof CULTURAL_CODES].color}` }}>Cultural Identity</div>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="text-sm text-white/70">This is a</span>
+                            <span className="px-4 py-2 rounded-full border text-lg font-bold" style={{ borderColor: `${CULTURAL_CODES[selectedBusiness.compatibleCodes[0] as keyof typeof CULTURAL_CODES].color}60`, backgroundColor: `${CULTURAL_CODES[selectedBusiness.compatibleCodes[0] as keyof typeof CULTURAL_CODES].color}20`, color: CULTURAL_CODES[selectedBusiness.compatibleCodes[0] as keyof typeof CULTURAL_CODES].color }}>
+                              {CULTURAL_CODES[selectedBusiness.compatibleCodes[0] as keyof typeof CULTURAL_CODES].name}
+                            </span>
+                            <span className="text-sm text-white/70">space</span>
+                          </div>
+                        </div>
+                        
+                        {/* Also Loved By */}
+                        <div>
+                          <h3 className="text-xs uppercase tracking-wider text-white/50 mb-3">Also loved by</h3>
+                          <div className="flex flex-wrap gap-2">
+                            {selectedBusiness.compatibleCodes.slice(1).map(code => {
+                              const c = CULTURAL_CODES[code as keyof typeof CULTURAL_CODES];
+                              return (
+                                <span key={code} className="px-3 py-1.5 rounded-full border text-sm font-medium" style={{ borderColor: `${c.color}40`, backgroundColor: `${c.color}10`, color: c.color }}>
+                                  {c.name}
+                                </span>
+                              );
+                            })}
+                          </div>
+                        </div>
+                        
+                        {/* Owner Story */}
+                        <div className="p-5 rounded-2xl bg-white/5 border border-white/10">
+                          <div className="text-xs uppercase tracking-wider text-white/50 mb-3">Story</div>
+                          <p className="text-sm text-white/80 leading-relaxed italic">{selectedBusiness.ownerStory}</p>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* ATMOSPHERE TAB */}
+                    {selectedTab === 'atmosphere' && (
+                      <div className="grid sm:grid-cols-2 gap-4">
+                        <div className="p-5 rounded-2xl bg-white/5 border border-white/10">
+                          <div className="flex items-center gap-2 mb-3">
+                            <Music className="w-5 h-5" style={{ color: codeData.color }} />
+                            <h4 className="text-xs uppercase tracking-wider text-white/50">Music</h4>
+                          </div>
+                          <p className="text-sm text-white/90">{selectedBusiness.musicStyle}</p>
+                        </div>
+                        
+                        <div className="p-5 rounded-2xl bg-white/5 border border-white/10">
+                          <div className="flex items-center gap-2 mb-3">
+                            <Lightbulb className="w-5 h-5" style={{ color: codeData.color }} />
+                            <h4 className="text-xs uppercase tracking-wider text-white/50">Lighting</h4>
+                          </div>
+                          <p className="text-sm text-white/90">{selectedBusiness.lighting}</p>
+                        </div>
+                        
+                        <div className="p-5 rounded-2xl bg-white/5 border border-white/10">
+                          <div className="flex items-center gap-2 mb-3">
+                            <Volume2 className="w-5 h-5" style={{ color: codeData.color }} />
+                            <h4 className="text-xs uppercase tracking-wider text-white/50">Noise Level</h4>
+                          </div>
+                          <p className="text-sm text-white/90">{selectedBusiness.noiseLevel}</p>
+                        </div>
+                        
+                        <div className="p-5 rounded-2xl bg-white/5 border border-white/10">
+                          <div className="flex items-center gap-2 mb-3">
+                            <Users className="w-5 h-5" style={{ color: codeData.color }} />
+                            <h4 className="text-xs uppercase tracking-wider text-white/50">Capacity</h4>
+                          </div>
+                          <p className="text-sm text-white/90">{selectedBusiness.seating} seats</p>
+                        </div>
+                        
+                        <div className="sm:col-span-2 p-5 rounded-2xl bg-white/5 border border-white/10">
+                          <div className="text-xs uppercase tracking-wider text-white/50 mb-3">Best For</div>
+                          <div className="flex flex-wrap gap-2">
+                            {selectedBusiness.bestFor.map(item => (
+                              <span key={item} className="px-3 py-1.5 rounded-full bg-white/10 border border-white/10 text-sm">{item}</span>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* AMENITIES TAB */}
+                    {selectedTab === 'amenities' && (
+                      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div className={`p-4 rounded-xl border ${selectedBusiness.amenities.powerOutlets ? 'bg-green-500/10 border-green-500/30' : 'bg-white/5 border-white/10'}`}>
+                          <div className="flex items-center gap-3">
+                            <Zap className={`w-5 h-5 ${selectedBusiness.amenities.powerOutlets ? 'text-green-400' : 'text-white/30'}`} />
+                            <div>
+                              <div className="text-sm font-medium">Power Outlets</div>
+                              <div className="text-xs text-white/50">{selectedBusiness.amenities.powerOutlets ? 'Available' : 'Not available'}</div>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className={`p-4 rounded-xl border ${selectedBusiness.amenities.wifi ? 'bg-blue-500/10 border-blue-500/30' : 'bg-white/5 border-white/10'}`}>
+                          <div className="flex items-center gap-3">
+                            <Wifi className={`w-5 h-5 ${selectedBusiness.amenities.wifi ? 'text-blue-400' : 'text-white/30'}`} />
+                            <div>
+                              <div className="text-sm font-medium">WiFi</div>
+                              <div className="text-xs text-white/50">{selectedBusiness.amenities.wifi || 'Not available'}</div>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className={`p-4 rounded-xl border ${selectedBusiness.amenities.kidsArea ? 'bg-purple-500/10 border-purple-500/30' : 'bg-white/5 border-white/10'}`}>
+                          <div className="flex items-center gap-3">
+                            <Baby className={`w-5 h-5 ${selectedBusiness.amenities.kidsArea ? 'text-purple-400' : 'text-white/30'}`} />
+                            <div>
+                              <div className="text-sm font-medium">Kids Area</div>
+                              <div className="text-xs text-white/50">{selectedBusiness.amenities.kidsArea ? 'Available' : 'Not available'}</div>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className={`p-4 rounded-xl border ${selectedBusiness.amenities.outdoorSeating ? 'bg-green-500/10 border-green-500/30' : 'bg-white/5 border-white/10'}`}>
+                          <div className="flex items-center gap-3">
+                            <Trees className={`w-5 h-5 ${selectedBusiness.amenities.outdoorSeating ? 'text-green-400' : 'text-white/30'}`} />
+                            <div>
+                              <div className="text-sm font-medium">Outdoor Seating</div>
+                              <div className="text-xs text-white/50">{selectedBusiness.amenities.outdoorSeating ? 'Available' : 'Not available'}</div>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className={`p-4 rounded-xl border ${selectedBusiness.amenities.wheelchairAccessible ? 'bg-blue-500/10 border-blue-500/30' : 'bg-white/5 border-white/10'}`}>
+                          <div className="flex items-center gap-3">
+                            <Accessibility className={`w-5 h-5 ${selectedBusiness.amenities.wheelchairAccessible ? 'text-blue-400' : 'text-white/30'}`} />
+                            <div>
+                              <div className="text-sm font-medium">Accessible</div>
+                              <div className="text-xs text-white/50">{selectedBusiness.amenities.wheelchairAccessible ? 'Wheelchair friendly' : 'Not accessible'}</div>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className={`p-4 rounded-xl border ${selectedBusiness.amenities.parking ? 'bg-yellow-500/10 border-yellow-500/30' : 'bg-white/5 border-white/10'}`}>
+                          <div className="flex items-center gap-3">
+                            <Car className={`w-5 h-5 ${selectedBusiness.amenities.parking ? 'text-yellow-400' : 'text-white/30'}`} />
+                            <div>
+                              <div className="text-sm font-medium">Parking</div>
+                              <div className="text-xs text-white/50">{selectedBusiness.amenities.parking ? 'Available' : 'Not available'}</div>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className={`p-4 rounded-xl border ${selectedBusiness.amenities.petFriendly ? 'bg-pink-500/10 border-pink-500/30' : 'bg-white/5 border-white/10'}`}>
+                          <div className="flex items-center gap-3">
+                            <PawPrint className={`w-5 h-5 ${selectedBusiness.amenities.petFriendly ? 'text-pink-400' : 'text-white/30'}`} />
+                            <div>
+                              <div className="text-sm font-medium">Pet Friendly</div>
+                              <div className="text-xs text-white/50">{selectedBusiness.amenities.petFriendly ? 'Pets welcome' : 'No pets'}</div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* MENU TAB */}
+                    {selectedTab === 'menu' && (
+                      <div className="space-y-4">
+                        {selectedBusiness.menu.hasDigitalMenu && (
+                          <a href={selectedBusiness.menu.menuLink} target="_blank" rel="noopener noreferrer" className="block p-5 rounded-2xl bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-500/30 hover:border-blue-500/50 transition group">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-3">
+                                <div className="w-12 h-12 rounded-xl bg-blue-500/20 flex items-center justify-center">
+                                  <ExternalLink className="w-6 h-6 text-blue-400" />
+                                </div>
+                                <div>
+                                  <div className="font-semibold mb-1">View Digital Menu</div>
+                                  <div className="text-xs text-white/50">Full menu with prices</div>
+                                </div>
+                              </div>
+                              <ExternalLink className="w-5 h-5 text-white/30 group-hover:text-white/60 transition" />
+                            </div>
+                          </a>
+                        )}
+                        
+                        <div className="p-5 rounded-2xl bg-white/5 border border-white/10">
+                          <div className="text-xs uppercase tracking-wider text-white/50 mb-3">Specialties</div>
+                          <div className="space-y-2">
+                            {selectedBusiness.menu.specialties.map((item, idx) => (
+                              <div key={idx} className="flex items-center gap-2">
+                                <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: codeData.color }} />
+                                <span className="text-sm text-white/90">{item}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                        
+                        <div className="p-5 rounded-2xl bg-white/5 border border-white/10">
+                          <div className="text-xs uppercase tracking-wider text-white/50 mb-3">Dietary Options</div>
+                          <div className="flex flex-wrap gap-2">
+                            {selectedBusiness.menu.dietary.map(item => (
+                              <span key={item} className="px-3 py-1.5 rounded-full bg-green-500/10 border border-green-500/30 text-sm text-green-400">{item}</span>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* PRACTICAL TAB */}
+                    {selectedTab === 'practical' && (
+                      <div className="space-y-4">
+                        <div className="grid sm:grid-cols-2 gap-4">
+                          <div className="p-5 rounded-2xl bg-white/5 border border-white/10">
+                            <div className="flex items-center gap-2 mb-3">
+                              <CreditCard className="w-5 h-5" style={{ color: codeData.color }} />
+                              <h4 className="text-xs uppercase tracking-wider text-white/50">Payment</h4>
+                            </div>
+                            <div className="flex flex-wrap gap-2">
+                              {selectedBusiness.practical.payment.map(method => (
+                                <span key={method} className="px-3 py-1.5 rounded-full bg-white/10 border border-white/10 text-xs">{method}</span>
+                              ))}
+                            </div>
+                          </div>
+                          
+                          <div className="p-5 rounded-2xl bg-white/5 border border-white/10">
+                            <div className="flex items-center gap-2 mb-3">
+                              <Clock className="w-5 h-5" style={{ color: codeData.color }} />
+                              <h4 className="text-xs uppercase tracking-wider text-white/50">Hours</h4>
+                            </div>
+                            <p className="text-sm text-white/90">{selectedBusiness.practical.hours}</p>
+                          </div>
+                        </div>
+                        
+                        <div className="p-5 rounded-2xl bg-white/5 border border-white/10">
+                          <div className="flex items-center gap-2 mb-3">
+                            <Calendar className="w-5 h-5" style={{ color: codeData.color }} />
+                            <h4 className="text-xs uppercase tracking-wider text-white/50">Booking</h4>
+                          </div>
+                          <p className="text-sm text-white/90">{selectedBusiness.practical.bookingRequired ? 'Reservation required' : 'Walk-ins welcome'}</p>
+                        </div>
+                        
+                        <div className="grid sm:grid-cols-2 gap-4">
+                          <a href={`tel:${selectedBusiness.practical.phone}`} className="p-5 rounded-2xl bg-white/5 border border-white/10 hover:border-white/20 transition group">
+                            <div className="flex items-center gap-3">
+                              <Phone className="w-5 h-5 text-white/50 group-hover:text-white transition" />
+                              <div>
+                                <div className="text-xs text-white/50 mb-1">Phone</div>
+                                <div className="text-sm text-white/90">{selectedBusiness.practical.phone}</div>
+                              </div>
+                            </div>
+                          </a>
+                          
+                          <a href={`mailto:${selectedBusiness.practical.email}`} className="p-5 rounded-2xl bg-white/5 border border-white/10 hover:border-white/20 transition group">
+                            <div className="flex items-center gap-3">
+                              <Mail className="w-5 h-5 text-white/50 group-hover:text-white transition" />
+                              <div>
+                                <div className="text-xs text-white/50 mb-1">Email</div>
+                                <div className="text-sm text-white/90">{selectedBusiness.practical.email}</div>
+                              </div>
+                            </div>
+                          </a>
+                        </div>
+                        
+                        <button className="w-full p-5 rounded-2xl bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-500/30 hover:border-blue-500/50 transition group">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <Navigation className="w-6 h-6 text-blue-400" />
+                              <div className="text-left">
+                                <div className="font-semibold mb-1">Get Directions</div>
+                                <div className="text-xs text-white/50">{selectedBusiness.distance} away</div>
+                              </div>
+                            </div>
+                            <ExternalLink className="w-5 h-5 text-white/30 group-hover:text-white/60 transition" />
+                          </div>
+                        </button>
+                      </div>
+                    )}
+                    
+                  </motion.div>
+                </AnimatePresence>
+              </div>
+              
+              {/* Bottom Actions */}
+              <div className="p-6 border-t border-white/10 bg-black/40 backdrop-blur-xl">
+                <div className="flex gap-3">
                   <button className="flex-1 px-6 py-3 bg-white text-black rounded-xl font-semibold hover:bg-white/90 transition">
-                    Book / Reserve
-                  </button>
-                  <button className="px-6 py-3 border border-white/20 rounded-xl font-semibold hover:bg-white/10 transition">
-                    Directions
+                    Book Now
                   </button>
                   <button className="px-6 py-3 border border-white/20 rounded-xl font-semibold hover:bg-white/10 transition">
                     Share
                   </button>
                 </div>
               </div>
+              
             </motion.div>
           </motion.div>
         )}
