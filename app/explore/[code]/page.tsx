@@ -69,7 +69,7 @@ const DEMO_BUSINESSES = [
     openNow: true,
     distance: '1.2 km',
     compatibleCodes: ['shokunin', 'jaejin', 'lhumir'],
-    musicStyle: 'Ambient instrumental',
+    musicStyle: 'Lo-fi, Ambient, Minimal Techno',
     atmosphere: 'Minimal conversation, natural materials, indirect lighting',
     lighting: 'Soft natural light during day, warm Edison bulbs at night',
     noiseLevel: 'Very quiet (30-40 dB)',
@@ -98,7 +98,7 @@ const DEMO_BUSINESSES = [
     openNow: true,
     distance: '2.8 km',
     compatibleCodes: ['kayori', 'wohaka', 'karayni'],
-    musicStyle: 'Afrobeat, Jazz, Live Thu-Sun evenings',
+    musicStyle: 'Afrobeats, Highlife, Amapiano, Live Jazz Thu-Sun',
     atmosphere: 'Shared tables, storytelling encouraged, communal dining experience',
     lighting: 'Warm pendant lights over shared tables, candles',
     noiseLevel: 'Moderate to lively (65-75 dB)',
@@ -127,7 +127,7 @@ const DEMO_BUSINESSES = [
     openNow: false,
     distance: '45 km',
     compatibleCodes: ['sahen', 'lhumir', 'siljoa'],
-    musicStyle: 'Silence, occasional Tuareg singing bowls at sunset',
+    musicStyle: 'Silence only, Occasional traditional Tuareg singing bowls',
     atmosphere: 'Noble silence practice, minimal eye contact, solitude honored',
     lighting: 'Sunrise/sunset natural light, no artificial lighting after dark',
     noiseLevel: 'Near-silent (10-20 dB), wind and natural sounds only',
@@ -156,7 +156,7 @@ const DEMO_BUSINESSES = [
     openNow: true,
     distance: '0.8 km',
     compatibleCodes: ['namsea', 'renara', 'karayni'],
-    musicStyle: 'Vietnamese ca trù, Water sounds',
+    musicStyle: 'Chillhop, Trip-hop, Downtempo',
     atmosphere: 'No fixed seats, cushions and low tables, movement encouraged',
     lighting: 'Floor-to-ceiling windows, rice paper diffusers, daylight-focused',
     noiseLevel: 'Soft background (40-50 dB)',
@@ -181,6 +181,7 @@ export default function MarketplacePage() {
   const codeData = CULTURAL_CODES[codeId as keyof typeof CULTURAL_CODES];
   
   const [selectedBusiness, setSelectedBusiness] = useState<Business | null>(null);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [selectedCity, setSelectedCity] = useState('All Cities');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedPrice, setSelectedPrice] = useState('All');
@@ -532,7 +533,10 @@ export default function MarketplacePage() {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
               transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-              onClick={(e) => e.stopPropagation()}
+              onClick={(e) => {
+                e.stopPropagation();
+              }}
+              onAnimationStart={() => setSelectedImageIndex(0)}
               className="relative w-full max-w-5xl my-8 bg-gradient-to-b from-gray-900 to-black rounded-2xl border border-white/20 overflow-hidden"
             >
               <button
@@ -542,25 +546,55 @@ export default function MarketplacePage() {
                 <X className="w-5 h-5" />
               </button>
               
-              {/* Image Grid */}
-              <div className="grid grid-cols-2 gap-2 p-4 bg-black/40">
-                {selectedBusiness.images.map((img, idx) => (
-                  <div key={idx} className="relative group overflow-hidden rounded-lg">
-                    <div className={`relative ${idx === 0 ? 'col-span-2 h-80' : 'h-48'}`}>
+              {/* Tabbed Image Viewer */}
+              <div className="bg-black/40 border-b border-white/10">
+                {/* Tabs */}
+                <div className="flex gap-2 px-4 pt-4 overflow-x-auto">
+                  {selectedBusiness.images.map((img, idx) => (
+                    <button
+                      key={idx}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedImageIndex(idx);
+                      }}
+                      className={`px-4 py-2 rounded-t-lg text-sm font-medium transition whitespace-nowrap ${
+                        selectedImageIndex === idx
+                          ? 'bg-white/10 text-white border-t border-x border-white/20'
+                          : 'text-white/50 hover:text-white/80'
+                      }`}
+                    >
+                      {img.label}
+                    </button>
+                  ))}
+                </div>
+                
+                {/* Image Display */}
+                <div className="relative h-96 bg-black">
+                  <AnimatePresence mode="wait">
+                    <motion.div
+                      key={selectedImageIndex}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.3 }}
+                      className="absolute inset-0"
+                    >
                       <Image
-                        src={img.url}
-                        alt={img.label}
+                        src={selectedBusiness.images[selectedImageIndex].url}
+                        alt={selectedBusiness.images[selectedImageIndex].label}
                         fill
-                        className="object-cover group-hover:scale-105 transition-transform duration-500"
-                        sizes="(max-width: 768px) 100vw, 50vw"
+                        className="object-contain"
+                        sizes="100vw"
+                        priority
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                      <div className="absolute bottom-2 left-2 px-2 py-1 rounded-md bg-black/60 backdrop-blur-sm text-xs font-medium opacity-0 group-hover:opacity-100 transition-opacity">
-                        {img.label}
-                      </div>
-                    </div>
+                    </motion.div>
+                  </AnimatePresence>
+                  
+                  {/* Image label overlay */}
+                  <div className="absolute bottom-4 left-4 px-3 py-1.5 rounded-lg bg-black/60 backdrop-blur-md border border-white/20">
+                    <span className="text-sm font-medium">{selectedBusiness.images[selectedImageIndex].label}</span>
                   </div>
-                ))}
+                </div>
               </div>
               
               {/* Content */}
