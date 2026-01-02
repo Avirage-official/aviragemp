@@ -69,7 +69,7 @@ const DEMO_BUSINESSES = [
     openNow: true,
     distance: '1.2 km',
     compatibleCodes: ['shokunin', 'jaejin', 'lhumir'],
-    musicStyle: 'Ambient instrumental, no vocals, 60-80 BPM',
+    musicStyle: 'Ambient instrumental',
     atmosphere: 'Minimal conversation, natural materials, indirect lighting',
     lighting: 'Soft natural light during day, warm Edison bulbs at night',
     noiseLevel: 'Very quiet (30-40 dB)',
@@ -98,7 +98,7 @@ const DEMO_BUSINESSES = [
     openNow: true,
     distance: '2.8 km',
     compatibleCodes: ['kayori', 'wohaka', 'karayni'],
-    musicStyle: 'Live Afrobeat and jazz, 100-120 BPM, Thursday-Sunday evenings',
+    musicStyle: 'Afrobeat, Jazz, Live Thu-Sun evenings',
     atmosphere: 'Shared tables, storytelling encouraged, communal dining experience',
     lighting: 'Warm pendant lights over shared tables, candles',
     noiseLevel: 'Moderate to lively (65-75 dB)',
@@ -127,7 +127,7 @@ const DEMO_BUSINESSES = [
     openNow: false,
     distance: '45 km',
     compatibleCodes: ['sahen', 'lhumir', 'siljoa'],
-    musicStyle: 'Complete silence, occasional Tuareg singing bowls at sunset',
+    musicStyle: 'Silence, occasional Tuareg singing bowls at sunset',
     atmosphere: 'Noble silence practice, minimal eye contact, solitude honored',
     lighting: 'Sunrise/sunset natural light, no artificial lighting after dark',
     noiseLevel: 'Near-silent (10-20 dB), wind and natural sounds only',
@@ -156,7 +156,7 @@ const DEMO_BUSINESSES = [
     openNow: true,
     distance: '0.8 km',
     compatibleCodes: ['namsea', 'renara', 'karayni'],
-    musicStyle: 'Vietnamese ca trù and water sounds, 50-70 BPM',
+    musicStyle: 'Vietnamese ca trù, Water sounds',
     atmosphere: 'No fixed seats, cushions and low tables, movement encouraged',
     lighting: 'Floor-to-ceiling windows, rice paper diffusers, daylight-focused',
     noiseLevel: 'Soft background (40-50 dB)',
@@ -622,23 +622,31 @@ export default function MarketplacePage() {
                   </div>
                 </div>
                 
-                {/* Why this matches */}
-                <div className="p-4 rounded-xl border border-white/10" style={{ backgroundColor: `${codeData.color}10` }}>
-                  <h3 className="text-sm font-semibold uppercase tracking-wider mb-2 flex items-center gap-2" style={{ color: codeData.color }}>
-                    <ChevronRight className="w-4 h-4" />
-                    Why this matches you
-                  </h3>
-                  <p className="text-white/90 leading-relaxed text-sm">
-                    This {selectedBusiness.category.toLowerCase()} embodies {codeData.tagline.toLowerCase()}. 
-                    The atmosphere, values, and cultural approach align with how {codeData.name} navigates the world.
-                  </p>
+                {/* Business Main Code */}
+                <div className="p-4 rounded-xl border border-white/10" style={{ backgroundColor: `${CULTURAL_CODES[selectedBusiness.compatibleCodes[0] as keyof typeof CULTURAL_CODES].color}10` }}>
+                  <h3 className="text-xs font-semibold uppercase tracking-wider mb-2 text-white/50">Cultural Identity</h3>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-white/70">This is a</span>
+                    <span 
+                      className="px-3 py-1.5 rounded-full border text-base font-bold"
+                      style={{ 
+                        borderColor: `${CULTURAL_CODES[selectedBusiness.compatibleCodes[0] as keyof typeof CULTURAL_CODES].color}60`, 
+                        backgroundColor: `${CULTURAL_CODES[selectedBusiness.compatibleCodes[0] as keyof typeof CULTURAL_CODES].color}20`,
+                        color: CULTURAL_CODES[selectedBusiness.compatibleCodes[0] as keyof typeof CULTURAL_CODES].color 
+                      }}
+                    >
+                      {CULTURAL_CODES[selectedBusiness.compatibleCodes[0] as keyof typeof CULTURAL_CODES].name}
+                    </span>
+                    <span className="text-sm text-white/70">space</span>
+                  </div>
                 </div>
                 
-                {/* Compatible Codes */}
+                {/* Also Loved By */}
+                {/* Also Loved By */}
                 <div>
-                  <h3 className="text-sm font-semibold uppercase tracking-wider text-white/50 mb-3">Also loved by these codes</h3>
+                  <h3 className="text-sm font-semibold uppercase tracking-wider text-white/50 mb-3">Also loved by</h3>
                   <div className="flex flex-wrap gap-2">
-                    {selectedBusiness.compatibleCodes.map(code => {
+                    {selectedBusiness.compatibleCodes.slice(1).map(code => {
                       const c = CULTURAL_CODES[code as keyof typeof CULTURAL_CODES];
                       return (
                         <span 
