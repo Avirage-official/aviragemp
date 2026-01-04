@@ -132,7 +132,7 @@ function ConstantBackground() {
 
       {/* slow wave lines (not linked to scroll) */}
       <motion.svg
-        className="absolute left-1/2 -1/2 -translate-x-1/2 -translate-y-1/2 opacity-[0.20]"
+        className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 opacity-[0.20]"
         width="1400"
         height="900"
         viewBox="0 0 1400 900"
@@ -174,11 +174,11 @@ export default function LandingPage() {
   const cardRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
   const [activeIndex, setActiveIndex] = useState(2);
-  const [openEnvId, seenEnvId] = useState<string | null>(null);
+  const [openEnvId, setOpenEnvId] = useState<string | null>(null);
 
   const openEnv = openEnvId ? ENVIRONMENTS.find((e) => e.id === openEnvId) : null;
 
-  // subtle spotlight that tracks cursor (kept ultra-quiet)
+  // subtle spotlight that tracks cursor
   const onPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
     const el = rootRef.current;
     if (!el) return;
@@ -245,7 +245,7 @@ export default function LandingPage() {
   const prev = () => scrollToIndex(Math.max(0, activeIndex - 1));
   const next = () => scrollToIndex(Math.min(ENVIRONMENTS.length - 1, activeIndex + 1));
 
-  // keyboard navigation (investor demo polish)
+  // keyboard navigation (ArrowLeft/ArrowRight/Enter/Escape)
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'ArrowLeft') prev();
@@ -268,26 +268,23 @@ export default function LandingPage() {
       onPointerMove={onPointerMove}
       className="relative min-h-screen bg-[#070710] text-white overflow-hidden"
       style={{
-        // very subtle cursor halo—doesn't change the background identity, just adds life
         background:
           'radial-gradient(700px circle at var(--mx, 50%) var(--my, 35%), rgba(255,255,255,0.05), transparent 55%), #070710',
       }}
     >
       <ConstantBackground />
 
-      {/* CORNER UI (minimal, confident) */}
+      {/* CORNER UI */}
       <div className="absolute inset-0 z-20 pointer-events-none">
-       {/* top-left brand */}
+        {/* top-left brand (ETHOS + circular icon badge) */}
         <div className="absolute left-5 top-5 md:left-8 md:top-7 pointer-events-auto">
-        <div className="flex items-center gap-3 text-white/90">
-         {/* Circular icon badge */}
-         <div className="h-10 w-10 rounded-full border border-white/12 bg-white/[0.04] backdrop-blur-md flex items-center justify-center shadow-[0_12px_40px_rgba(0,0,0,0.45)] ring-1 ring-white/[0.06]">
-         <Sparkles className="h-5 w-5 text-purple-200" />
-       </div>
-
-         <span className="text-sm md:text-base font-medium tracking-tight">ETHOS</span>
-         </div>
-       </div>
+          <div className="flex items-center gap-3 text-white/90">
+            <div className="h-10 w-10 rounded-full border border-white/12 bg-white/[0.04] backdrop-blur-md flex items-center justify-center shadow-[0_12px_40px_rgba(0,0,0,0.45)] ring-1 ring-white/[0.06]">
+              <Sparkles className="h-5 w-5 text-purple-200" />
+            </div>
+            <span className="text-sm md:text-base font-medium tracking-tight">ETHOS</span>
+          </div>
+        </div>
 
         {/* top-right */}
         <div className="absolute right-5 top-5 md:right-8 md:top-7 flex items-center gap-2 pointer-events-auto">
@@ -321,7 +318,6 @@ export default function LandingPage() {
       {/* CENTER STAGE */}
       <main className="relative z-10 min-h-screen flex items-center justify-center px-4">
         <div className="w-full max-w-6xl">
-          {/* quiet headline (minimal but premium) */}
           <motion.div
             initial={reduceMotion ? { opacity: 1 } : { opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -333,7 +329,7 @@ export default function LandingPage() {
             </div>
           </motion.div>
 
-          {/* controls (desktop only) */}
+          {/* desktop controls */}
           <div className="hidden md:flex items-center justify-between mb-3 px-2">
             <button
               onClick={prev}
@@ -356,18 +352,14 @@ export default function LandingPage() {
 
           {/* slider */}
           <div className="relative">
-            {/* edge fades */}
             <div aria-hidden className="pointer-events-none absolute left-0 top-0 bottom-0 w-12 bg-gradient-to-r from-black/55 to-transparent z-10" />
             <div aria-hidden className="pointer-events-none absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-black/55 to-transparent z-10" />
 
-            {/* shelf shadow (investor-grade polish) */}
+            {/* shelf shadow */}
             <div
               aria-hidden
-              className="pointer-events-none absolute left-1/2 -translate-x-1/2 top-[72%] md:top-[76%] w-[520px] md:w-[560px] h-[120px] blur-2xl opacity-70"
-              style={{
-                background:
-                  'radial-gradient(closest-side, rgba(0,0,0,0.55), transparent 70%)',
-              }}
+              className="pointer-events-none absolute left-1/2 -translate-x-1/2 top-[74%] md:top-[78%] w-[460px] md:w-[500px] h-[130px] blur-2xl opacity-70"
+              style={{ background: 'radial-gradient(closest-side, rgba(0,0,0,0.55), transparent 72%)' }}
             />
 
             <div
@@ -375,7 +367,6 @@ export default function LandingPage() {
               className="flex gap-5 md:gap-6 overflow-x-auto pb-6 scroll-smooth snap-x snap-mandatory"
               style={{ WebkitOverflowScrolling: 'touch' }}
             >
-              {/* spacers so first/last can center */}
               <div className="shrink-0 w-[10vw] md:w-[14vw]" aria-hidden />
 
               {ENVIRONMENTS.map((env, i) => {
@@ -385,14 +376,11 @@ export default function LandingPage() {
                 const isActive = i === activeIndex;
                 const distance = Math.abs(i - activeIndex);
 
-                // Taller + slimmer editorial silhouette
-                // Active feels like an object; sides feel peripheral
                 const scale = isActive ? 1 : distance === 1 ? 0.92 : 0.86;
                 const opacity = isActive ? 1 : distance === 1 ? 0.70 : 0.52;
                 const blur = isActive ? 0 : distance === 1 ? 0.7 : 1.4;
 
-                // subtle tilt makes it feel "current" (not a flat carousel)
-                const rotate = isActive ? 0 : (i < activeIndex ? -2.0 : 2.0);
+                const rotate = isActive ? 0 : i < activeIndex ? -2.0 : 2.0;
 
                 return (
                   <motion.button
@@ -407,12 +395,9 @@ export default function LandingPage() {
                     }}
                     className={cn(
                       'snap-center shrink-0 outline-none text-left relative overflow-hidden',
-                      // Taller + slimmer
                       'w-[72%] sm:w-[420px] md:w-[440px]',
                       'h-[520px] sm:h-[560px] md:h-[600px]',
-                      // Modern rounded
                       'rounded-[40px]',
-                      // Premium glass object
                       'bg-white/[0.03] backdrop-blur-md',
                       'border border-white/12',
                       'shadow-[0_30px_120px_rgba(0,0,0,0.55)]',
@@ -425,22 +410,13 @@ export default function LandingPage() {
                       filter: `blur(${blur}px)`,
                     }}
                     whileTap={{ scale: Math.max(0.98, scale - 0.02) }}
-                    aria-label={isActive ? `${env.title}. Press Enter to reveal codes.` : `${env.title}. Click to focus.`}
                   >
-                    {/* image */}
                     <div className="absolute inset-0">
-                      <Image
-                        src={heroImg}
-                        alt={env.title}
-                        fill
-                        className="object-cover scale-[1.06]"
-                        sizes="(max-width: 768px) 72vw, 440px"
-                      />
-                      {/* readability */}
+                      <Image src={heroImg} alt={env.title} fill className="object-cover scale-[1.06]" sizes="(max-width: 768px) 72vw, 440px" />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-black/10" />
                     </div>
 
-                    {/* modern hairline grid (quiet) */}
+                    {/* subtle grid */}
                     <div
                       aria-hidden
                       className="absolute inset-0 opacity-[0.12]"
@@ -451,7 +427,7 @@ export default function LandingPage() {
                       }}
                     />
 
-                    {/* rim highlight (expensive) */}
+                    {/* rim highlight */}
                     <div
                       aria-hidden
                       className="absolute inset-0"
@@ -462,43 +438,28 @@ export default function LandingPage() {
                       }}
                     />
 
-                    {/* hover spotlight (cards feel alive, background stays constant) */}
+                    {/* hover spotlight */}
                     <div
                       aria-hidden
                       className="absolute inset-0 opacity-0 hover:opacity-100 transition-opacity duration-300"
                       style={{
-                        background:
-                          'radial-gradient(520px circle at var(--mx, 50%) var(--my, 40%), rgba(255,255,255,0.14), transparent 62%)',
+                        background: 'radial-gradient(520px circle at var(--mx, 50%) var(--my, 40%), rgba(255,255,255,0.14), transparent 62%)',
                       }}
                     />
 
-                    {/* CONTENT (editorial offset, not “centered template”) */}
                     <div className="relative h-full px-7 md:px-8 pt-10 pb-8 flex flex-col">
-                      {/* top chip */}
                       <div className="flex items-center justify-between">
                         <div className="inline-flex items-center gap-2 rounded-full px-3 py-1.5 bg-black/35 border border-white/12 backdrop-blur-md">
                           <span className="text-[11px] uppercase tracking-[0.22em] text-white/80">Environment</span>
                         </div>
 
-                        {/* only readable on active */}
-                        <div className={cn('text-xs', isActive ? 'text-white/55' : 'text-white/0')}>
-                          {env.subtitle}
-                        </div>
+                        <div className={cn('text-xs', isActive ? 'text-white/55' : 'text-white/0')}>{env.subtitle}</div>
                       </div>
 
-                      {/* push content down slightly (modern editorial layout) */}
                       <div className="mt-auto space-y-2">
-                        <div className="text-[28px] md:text-[32px] font-medium tracking-tight leading-[1.05]">
-                          {env.title}
-                        </div>
-
-                        <div className="text-sm md:text-[15px] text-white/70 leading-[1.55] max-w-[32ch]">
-                          {env.poetic}
-                        </div>
-
-                        <div className="pt-3 text-xs text-white/55">
-                          {isActive ? 'Click to reveal codes' : 'Click to focus'}
-                        </div>
+                        <div className="text-[28px] md:text-[32px] font-medium tracking-tight leading-[1.05]">{env.title}</div>
+                        <div className="text-sm md:text-[15px] text-white/70 leading-[1.55] max-w-[32ch]">{env.poetic}</div>
+                        <div className="pt-3 text-xs text-white/55">{isActive ? 'Click to reveal codes' : 'Click to focus'}</div>
                       </div>
                     </div>
                   </motion.button>
@@ -508,30 +469,24 @@ export default function LandingPage() {
               <div className="shrink-0 w-[10vw] md:w-[14vw]" aria-hidden />
             </div>
 
-            {/* dots (minimal, modern) */}
+            {/* dots */}
             <div className="mt-2 flex items-center justify-center gap-2">
               {ENVIRONMENTS.map((_, i) => (
                 <button
                   key={i}
                   onClick={() => scrollToIndex(i)}
                   aria-label={`Go to ${i + 1}`}
-                  className={cn(
-                    'h-1.5 rounded-full transition-all',
-                    i === activeIndex ? 'w-8 bg-white/70' : 'w-3 bg-white/25 hover:bg-white/40'
-                  )}
+                  className={cn('h-1.5 rounded-full transition-all', i === activeIndex ? 'w-8 bg-white/70' : 'w-3 bg-white/25 hover:bg-white/40')}
                 />
               ))}
             </div>
 
-            {/* mobile hint */}
-            <div className="mt-3 text-center text-xs text-white/50 md:hidden">
-              Swipe sideways — the center card is the selection.
-            </div>
+            <div className="mt-3 text-center text-xs text-white/50 md:hidden">Swipe sideways — the center card is the selection.</div>
           </div>
         </div>
       </main>
 
-      {/* MODAL: reveal codes (kept premium and consistent) */}
+      {/* MODAL */}
       <AnimatePresence>
         {openEnv && (
           <motion.div
@@ -574,9 +529,7 @@ export default function LandingPage() {
                       Close
                     </button>
                     <Link href="/quiz">
-                      <button className="px-4 py-2 rounded-full bg-white text-black font-semibold text-sm">
-                        Find my code
-                      </button>
+                      <button className="px-4 py-2 rounded-full bg-white text-black font-semibold text-sm">Find my code</button>
                     </Link>
                   </div>
                 </div>
@@ -585,7 +538,6 @@ export default function LandingPage() {
               <div className="p-7 md:p-10 pt-0">
                 <div className="text-sm text-white/65 mb-4">Codes in this space</div>
 
-                {/* horizontal code cards */}
                 <div className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory" style={{ WebkitOverflowScrolling: 'touch' }}>
                   {openEnv.codeIds.map((id) => {
                     const c = codeMap.get(id);
