@@ -132,7 +132,7 @@ function ConstantBackground() {
 
       {/* slow wave lines (not linked to scroll) */}
       <motion.svg
-        className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 opacity-[0.20]"
+        className="absolute left-1/2 -1/2 -translate-x-1/2 -translate-y-1/2 opacity-[0.20]"
         width="1400"
         height="900"
         viewBox="0 0 1400 900"
@@ -174,7 +174,7 @@ export default function LandingPage() {
   const cardRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
   const [activeIndex, setActiveIndex] = useState(2);
-  const [openEnvId, setOpenEnvId] = useState<string | null>(null);
+  const [openEnvId, seenEnvId] = useState<string | null>(null);
 
   const openEnv = openEnvId ? ENVIRONMENTS.find((e) => e.id === openEnvId) : null;
 
@@ -277,13 +277,17 @@ export default function LandingPage() {
 
       {/* CORNER UI (minimal, confident) */}
       <div className="absolute inset-0 z-20 pointer-events-none">
-        {/* top-left brand */}
+       {/* top-left brand */}
         <div className="absolute left-5 top-5 md:left-8 md:top-7 pointer-events-auto">
-          <div className="flex items-center gap-2 text-white/90">
-            <Sparkles className="h-6 w-6 text-purple-200" />
-            <span className="text-sm md:text-base font-medium tracking-tight">AVIRAGE</span>
-          </div>
-        </div>
+        <div className="flex items-center gap-3 text-white/90">
+         {/* Circular icon badge */}
+         <div className="h-10 w-10 rounded-full border border-white/12 bg-white/[0.04] backdrop-blur-md flex items-center justify-center shadow-[0_12px_40px_rgba(0,0,0,0.45)] ring-1 ring-white/[0.06]">
+         <Sparkles className="h-5 w-5 text-purple-200" />
+       </div>
+
+         <span className="text-sm md:text-base font-medium tracking-tight">ETHOS</span>
+         </div>
+       </div>
 
         {/* top-right */}
         <div className="absolute right-5 top-5 md:right-8 md:top-7 flex items-center gap-2 pointer-events-auto">
