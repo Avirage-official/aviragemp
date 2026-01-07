@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { CSSProperties } from "react";
+import { CSSProperties, useState, useEffect } from "react";
+
 /* ============================
    THEME (matching your existing style)
 ============================ */
@@ -22,68 +23,117 @@ const DISPLAY_FONT = "'Cinzel', serif";
 const BODY_FONT = "'Inter', system-ui, sans-serif";
 
 /* ============================
-   COMPONENT
+   AUTH HOOK (Better than Clerk for this use case)
+============================ */
+
+function useAuth() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // Check for auth token in localStorage or cookies
+    const checkAuth = async () => {
+      try {
+        const token = localStorage.getItem('avirage_auth_token');
+        if (token) {
+          // Optionally verify token with your backend
+          setIsAuthenticated(true);
+        }
+      } catch (error) {
+        console.error('Auth check failed:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    checkAuth();
+  }, []);
+
+  const signIn = () => {
+    // Navigate to sign in page or open modal
+    window.location.href = '/auth/signin';
+  };
+
+  const signOut = () => {
+    localStorage.removeItem('avirage_auth_token');
+    setIsAuthenticated(false);
+    window.location.href = '/';
+  };
+
+  return { isAuthenticated, isLoading, signIn, signOut };
+}
+
+/* ============================
+   NAVIGATION COMPONENT
+============================ */
+
+function Navigation() {
+  const { isAuthenticated, signIn, signOut } = useAuth();
+
+  return (
+    <nav style={navStyle}>
+      <div style={navContainer}>
+        <Link href="/" style={logoStyle}>
+          Avirage
+        </Link>
+
+        <div style={navLinks}>
+          <Link href="/about" style={navLink}>
+            About
+          </Link>
+          <Link href="/codes" style={navLink}>
+            Code Library
+          </Link>
+          <Link href="/faq" style={navLink}>
+            FAQ
+          </Link>
+
+          {isAuthenticated ? (
+            <>
+              <Link href="/dashboard" style={navLink}>
+                Dashboard
+              </Link>
+              <button onClick={signOut} style={signOutBtn}>
+                Sign Out
+              </button>
+            </>
+          ) : (
+            <button onClick={signIn} style={signInBtn}>
+              Sign In
+            </button>
+          )}
+        </div>
+      </div>
+    </nav>
+  );
+}
+
+/* ============================
+   MAIN COMPONENT
 ============================ */
 
 export default function LandingPage() {
   return (
     <main style={mainStyle}>
-      {/* Navigation */}
-      <nav style={navStyle}>
-        <div style={navContainer}>
-          <Link href="/" style={logoStyle}>
-            Avirage
-          </Link>
-
-          <div style={navLinks}>
-            <Link href="/about" style={navLink}>
-              About
-            </Link>
-            <Link href="/codes" style={navLink}>
-              Code Library
-            </Link>
-            <Link href="/faq" style={navLink}>
-              FAQ
-            </Link>
-             <SignedIn>
-  <Link href="/dashboard" style={navLink}>
-    Dashboard
-  </Link>
-</SignedIn>
-            <SignedOut>
-  <SignInButton mode="modal">
-    <button style={signInBtn}>Sign In</button>
-  </SignInButton>
-</SignedOut>
-
-<SignedIn>
-  <UserButton />
-</SignedIn>
-          </div>
-        </div>
-      </nav>
+      <Navigation />
 
       {/* Hero Section */}
       <section style={heroSection}>
         <div style={heroContent}>
-          {/* Kicker */}
           <div style={heroKicker}>Cultural Lens Archive</div>
 
-          {/* Main Headline */}
           <h1 style={h1}>
             Discover Your
             <br />
             <span style={accentText}>Archetypal Tradition</span>
           </h1>
 
-          {/* Subheading */}
           <p style={subheading}>
             Avirage maps the cultural lens through which you naturally experience and navigate the world.
             <br />
             Not a personality test—a lens identification system grounded in behavioral patterns and cultural archetypes.
           </p>
 
-          {/* CTAs */}
           <div style={ctaRow}>
             <Link href="/quiz" style={primaryBtn}>
               Start Free Quiz
@@ -93,7 +143,6 @@ export default function LandingPage() {
             </button>
           </div>
 
-          {/* Trust Badge */}
           <div style={trustBadge}>
             <span style={trustIcon}>✓</span>
             <span style={trustText}>
@@ -113,35 +162,21 @@ export default function LandingPage() {
           </p>
 
           <div style={threeColGrid}>
-            {/* What */}
-            <div style={featureCard}>
-              <div style={featureIcon}>1</div>
-              <h3 style={featureTitle}>What</h3>
-              <p style={featureText}>
-                Maps your archetypal cultural lens—the tradition through which you naturally
-                perceive, decide, and navigate the world.
-              </p>
-            </div>
-
-            {/* How */}
-            <div style={featureCard}>
-              <div style={featureIcon}>2</div>
-              <h3 style={featureTitle}>How</h3>
-              <p style={featureText}>
-                30 questions → 4 frameworks (Big Five, MBTI, Enneagram, Astrology) → 25 behavioral
-                patterns → Your Cultural Code match.
-              </p>
-            </div>
-
-            {/* Why */}
-            <div style={featureCard}>
-              <div style={featureIcon}>3</div>
-              <h3 style={featureTitle}>Why</h3>
-              <p style={featureText}>
-                Self-knowledge, lifestyle alignment, community fit, creative direction, and
-                understanding the lens through which you operate.
-              </p>
-            </div>
+            <ExplainerCard
+              number="1"
+              title="What"
+              description="Maps your archetypal cultural lens—the tradition through which you naturally perceive, decide, and navigate the world."
+            />
+            <ExplainerCard
+              number="2"
+              title="How"
+              description="30 questions → 4 frameworks (Big Five, MBTI, Enneagram, Astrology) → 25 behavioral patterns → Your Cultural Code match."
+            />
+            <ExplainerCard
+              number="3"
+              title="Why"
+              description="Self-knowledge, lifestyle alignment, community fit, creative direction, and understanding the lens through which you operate."
+            />
           </div>
         </div>
       </section>
@@ -201,43 +236,7 @@ export default function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer style={footerStyle}>
-        <div style={footerContainer}>
-          <div style={footerBrand}>
-            <div style={footerLogo}>Avirage</div>
-            <p style={footerTagline}>Cultural lens identification system</p>
-          </div>
-
-          <div style={footerLinks}>
-            <div style={footerCol}>
-              <div style={footerColTitle}>Learn</div>
-              <Link href="/about" style={footerLink}>
-                About
-              </Link>
-              <Link href="/codes" style={footerLink}>
-                Code Library
-              </Link>
-              <Link href="/faq" style={footerLink}>
-                FAQ
-              </Link>
-            </div>
-
-            <div style={footerCol}>
-              <div style={footerColTitle}>Start</div>
-              <Link href="/quiz" style={footerLink}>
-                Take Quiz
-              </Link>
-              <Link href="/quiz" style={footerLink}>
-                Sign In
-              </Link>
-            </div>
-          </div>
-        </div>
-
-        <div style={footerBottom}>
-          <p style={footerCopyright}>© 2025 Avirage. All rights reserved.</p>
-        </div>
-      </footer>
+      <Footer />
     </main>
   );
 }
@@ -245,6 +244,20 @@ export default function LandingPage() {
 /* ============================
    HELPER COMPONENTS
 ============================ */
+
+function ExplainerCard({ number, title, description }: {
+  number: string;
+  title: string;
+  description: string;
+}) {
+  return (
+    <div style={featureCard}>
+      <div style={featureIcon}>{number}</div>
+      <h3 style={featureTitle}>{title}</h3>
+      <p style={featureText}>{description}</p>
+    </div>
+  );
+}
 
 function CodePreviewCard({
   name,
@@ -257,15 +270,61 @@ function CodePreviewCard({
   description: string;
   slug: string;
 }) {
+  const [isHovered, setIsHovered] = useState(false);
+
   return (
-    <Link href={`/codepages/${slug}`} style={codeCard}>
+    <Link
+      href={`/codepages/${slug}`}
+      style={{
+        ...codeCard,
+        ...(isHovered ? codeCardHover : {}),
+      }}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
       <div style={codeCardHeader}>
         <div style={codeCardName}>{name}</div>
         <div style={codeCardOrigin}>{origin}</div>
       </div>
       <p style={codeCardDesc}>{description}</p>
-      <div style={codeCardArrow}>→</div>
+      <div style={{
+        ...codeCardArrow,
+        transform: isHovered ? 'translateX(4px)' : 'translateX(0)',
+        transition: 'transform 0.2s',
+      }}>→</div>
     </Link>
+  );
+}
+
+function Footer() {
+  return (
+    <footer style={footerStyle}>
+      <div style={footerContainer}>
+        <div style={footerBrand}>
+          <div style={footerLogo}>Avirage</div>
+          <p style={footerTagline}>Cultural lens identification system</p>
+        </div>
+
+        <div style={footerLinks}>
+          <div style={footerCol}>
+            <div style={footerColTitle}>Learn</div>
+            <Link href="/about" style={footerLink}>About</Link>
+            <Link href="/codes" style={footerLink}>Code Library</Link>
+            <Link href="/faq" style={footerLink}>FAQ</Link>
+          </div>
+
+          <div style={footerCol}>
+            <div style={footerColTitle}>Start</div>
+            <Link href="/quiz" style={footerLink}>Take Quiz</Link>
+            <Link href="/auth/signin" style={footerLink}>Sign In</Link>
+          </div>
+        </div>
+      </div>
+
+      <div style={footerBottom}>
+        <p style={footerCopyright}>© 2025 Avirage. All rights reserved.</p>
+      </div>
+    </footer>
   );
 }
 
@@ -289,7 +348,7 @@ const navStyle: CSSProperties = {
   position: "sticky",
   top: 0,
   zIndex: 100,
-  background: "rgba(10,13,18,0.92)",
+  background: "rgba(10,13,18,0.95)",
   backdropFilter: "blur(12px)",
   borderBottom: `1px solid ${THEME.softBorder}`,
 };
@@ -309,6 +368,7 @@ const logoStyle: CSSProperties = {
   fontWeight: 900,
   color: THEME.accent,
   textDecoration: "none",
+  letterSpacing: "0.02em",
 };
 
 const navLinks: CSSProperties = {
@@ -327,15 +387,23 @@ const navLink: CSSProperties = {
 };
 
 const signInBtn: CSSProperties = {
-  padding: "8px 20px",
+  padding: "10px 24px",
   borderRadius: 12,
   border: `1px solid ${THEME.softBorder}`,
   background: THEME.panel,
   color: THEME.textPrimary,
-  textDecoration: "none",
   fontSize: 13,
   fontWeight: 700,
   letterSpacing: "0.04em",
+  cursor: "pointer",
+  transition: "all 0.2s",
+};
+
+const signOutBtn: CSSProperties = {
+  ...signInBtn,
+  background: "rgba(201,169,106,0.08)",
+  border: `1px solid rgba(201,169,106,0.3)`,
+  color: THEME.accent,
 };
 
 // Hero
@@ -387,6 +455,7 @@ const ctaRow: CSSProperties = {
   gap: 16,
   justifyContent: "center",
   marginBottom: 24,
+  flexWrap: "wrap",
 };
 
 const primaryBtn: CSSProperties = {
@@ -402,6 +471,7 @@ const primaryBtn: CSSProperties = {
   cursor: "pointer",
   textDecoration: "none",
   display: "inline-block",
+  transition: "all 0.2s",
 };
 
 const secondaryBtn: CSSProperties = {
@@ -414,6 +484,7 @@ const secondaryBtn: CSSProperties = {
   fontSize: 14,
   letterSpacing: "0.04em",
   cursor: "pointer",
+  transition: "all 0.2s",
 };
 
 const trustBadge: CSSProperties = {
@@ -526,8 +597,14 @@ const codeCard: CSSProperties = {
   textDecoration: "none",
   display: "flex",
   flexDirection: "column",
-  transition: "all 0.2s",
+  transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
   cursor: "pointer",
+};
+
+const codeCardHover: CSSProperties = {
+  border: `1px solid ${THEME.border}`,
+  background: THEME.panelStrong,
+  transform: "translateY(-2px)",
 };
 
 const codeCardHeader: CSSProperties = {
@@ -578,6 +655,7 @@ const secondaryBtnLarge: CSSProperties = {
   textDecoration: "none",
   display: "inline-block",
   cursor: "pointer",
+  transition: "all 0.2s",
 };
 
 // Final CTA
@@ -670,6 +748,7 @@ const footerLink: CSSProperties = {
   fontSize: 14,
   color: THEME.textSecondary,
   textDecoration: "none",
+  transition: "color 0.2s",
 };
 
 const footerBottom: CSSProperties = {
