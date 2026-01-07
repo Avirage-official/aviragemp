@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { CSSProperties } from "react";
-import { SignInButton, SignedIn, SignedOut, UserButton } from '@clerk/nextjs'; 
 /* ============================
    THEME (matching your existing style)
 ============================ */
