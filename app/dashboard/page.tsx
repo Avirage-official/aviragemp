@@ -1,36 +1,34 @@
-import { currentUser } from "@clerk/nextjs/server";
+import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
-import { redirect } from "next/navigation";
+import { CodeOverview } from "@/components/dashboard/CodeOverview";
+// import { PersonalityBreakdown } from "@/components/dashboard/PersonalityBreakdown";
+// import { CompatibilityChart } from "@/components/dashboard/CompatibilityChart";
+// import { MonthlyInsights } from "@/components/dashboard/MonthlyInsights";
 
 export default async function DashboardPage() {
-  const clerkUser = await currentUser();
+  const { userId } = await auth();
   
-  if (!clerkUser) {
-    redirect("/sign-in");
+  if (!userId) {
+    return <div>Not authenticated</div>;
   }
   
-  // Get user from database
   const user = await prisma.user.findUnique({
-    where: { clerkId: clerkUser.id }
+    where: { clerkId: userId }
   });
-  
-  // If no user in DB, redirect to onboarding
+
   if (!user) {
-    redirect("/onboarding");
+    return <div>Loading...</div>;
   }
-  
+
   return (
     <div className="space-y-8">
-      <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 border border-white/20">
-        <h2 className="text-3xl font-bold text-white mb-4">
-          Welcome back, {user.name}!
-        </h2>
-        <p className="text-gray-300">
-          Your code: <span className="font-semibold text-white">{user.primaryCode}</span>
-        </p>
-      </div>
+      <CodeOverview code={user.primaryCode!} />
       
-      {/* More components coming next */}
+      {/* <PersonalityBreakdown quizResults={user.quizResults} /> */}
+      
+      {/* <CompatibilityChart userCode={user.primaryCode!} /> */}
+      
+      {/* <MonthlyInsights code={user.primaryCode!} /> */}
     </div>
   );
 }
