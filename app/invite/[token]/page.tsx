@@ -5,13 +5,14 @@ import { prisma } from "@/lib/prisma";
 export default async function InvitePage({ 
   params 
 }: { 
-  params: { token: string } 
+  params: Promise<{ token: string }> 
 }) {
   const { userId } = await auth();
+  const { token } = await params;
   
   if (!userId) {
     // Redirect to sign up with invite token in URL
-    redirect(`/sign-up?invite=${params.token}`);
+    redirect(`/sign-up?invite=${token}`);
   }
   
   const user = await prisma.user.findUnique({
@@ -23,7 +24,7 @@ export default async function InvitePage({
   }
   
   // Extract sender ID from token
-  const senderId = params.token.split("-")[0];
+  const senderId = token.split("-")[0];
   
   // Check if already friends
   const existingFriendship = await prisma.friendship.findFirst({
@@ -44,7 +45,8 @@ export default async function InvitePage({
     data: [
       { userId: user.id, friendId: senderId },
       { userId: senderId, friendId: user.id }
-    ]
+    ],
+    skipDuplicates: true
   });
   
   // Create notification for sender

@@ -1,8 +1,8 @@
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
 import { FriendInviteButton } from "@/components/friends/FriendInviteButton";
-// import { FriendsList } from "@/components/friends/FriendsList";
-// import { MoodSelector } from "@/components/friends/MoodSelector";
+import { FriendsList } from "@/components/friends/FriendsList";
+import { MoodSelector } from "@/components/friends/MoodSelector";
 
 export default async function FriendsPage() {
   const { userId } = await auth();
@@ -47,11 +47,9 @@ export default async function FriendsPage() {
         <FriendInviteButton />
       </div>
       
-      {/* <MoodSelector currentMood={user.currentMood} /> */}
+      <MoodSelector currentMood={user.currentMood} />
       
-      {/* <FriendsList friends={friendsWithData} /> */}
-      
-      <p>Testing FriendInviteButton only...</p>
+      <FriendsList friends={friendsWithData} />
     </div>
   );
 }
