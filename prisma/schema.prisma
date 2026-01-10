@@ -1,0 +1,170 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String   @id @default(cuid())
+  clerkId         String   @unique
+  email           String   @unique
+  name            String?
+  username        String?  @unique
+  avatar          String?
+  
+  type            String   @default("CONSUMER")
+  
+  primaryCode     String?
+  secondaryCode   String?
+  tertiaryCode    String?
+  quizResults     Json?
+  
+  city            String?
+  country         String?
+  timezone        String?
+  
+  currentMood     String?
+  moodUpdatedAt   DateTime?
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  sentFriendRequests     FriendRequest[] @relation("SentRequests")
+  receivedFriendRequests FriendRequest[] @relation("ReceivedRequests")
+  friendships            Friendship[]    @relation("UserFriendships")
+  
+  sentMessages           Message[]       @relation("SentMessages")
+  conversations          ConversationParticipant[]
+  
+  hostedMeetups          Meetup[]        @relation("HostedMeetups")
+  meetupParticipants     MeetupParticipant[]
+  
+  notifications          Notification[]
+  
+  @@index([type])
+  @@index([city])
+  @@index([primaryCode])
+}
+
+model FriendRequest {
+  id          String   @id @default(cuid())
+  senderId    String
+  sender      User     @relation("SentRequests", fields: [senderId], references: [id], onDelete: Cascade)
+  receiverId  String
+  receiver    User     @relation("ReceivedRequests", fields: [receiverId], references: [id], onDelete: Cascade)
+  
+  status      String   @default("PENDING")
+  message     String?
+  
+  createdAt   DateTime @default(now())
+  respondedAt DateTime?
+  
+  @@unique([senderId, receiverId])
+  @@index([receiverId, status])
+}
+
+model Friendship {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation("UserFriendships", fields: [userId], references: [id], onDelete: Cascade)
+  friendId    String
+  
+  createdAt   DateTime @default(now())
+  
+  @@unique([userId, friendId])
+  @@index([userId])
+}
+
+model Conversation {
+  id            String   @id @default(cuid())
+  isGroup       Boolean  @default(false)
+  groupName     String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  participants  ConversationParticipant[]
+  messages      Message[]
+}
+
+model ConversationParticipant {
+  id             String   @id @default(cuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lastRead       DateTime @default(now())
+  createdAt      DateTime @default(now())
+  
+  @@unique([conversationId, userId])
+  @@index([userId])
+}
+
+model Message {
+  id             String   @id @default(cuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  senderId       String
+  sender         User     @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+  content        String
+  attachments    Json?
+  createdAt      DateTime @default(now())
+  
+  @@index([conversationId])
+  @@index([senderId])
+}
+
+model Meetup {
+  id          String   @id @default(cuid())
+  hostId      String
+  host        User     @relation("HostedMeetups", fields: [hostId], references: [id], onDelete: Cascade)
+  title       String
+  description String?
+  venueName   String
+  city        String
+  scheduledAt DateTime
+  isPublic    Boolean  @default(false)
+  maxParticipants Int?
+  status      String   @default("UPCOMING")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  participants MeetupParticipant[]
+  
+  @@index([hostId])
+  @@index([city, isPublic, status])
+  @@index([scheduledAt])
+}
+
+model MeetupParticipant {
+  id          String   @id @default(cuid())
+  meetupId    String
+  meetup      Meetup   @relation(fields: [meetupId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status      String   @default("PENDING")
+  requestMessage String?
+  joinedAt    DateTime @default(now())
+  respondedAt DateTime?
+  
+  @@unique([meetupId, userId])
+  @@index([userId])
+  @@index([meetupId, status])
+}
+
+model Notification {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type        String
+  title       String
+  message     String
+  linkTo      String?
+  isRead      Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  
+  @@index([userId, isRead])
+  @@index([createdAt])
+}
