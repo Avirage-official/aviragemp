@@ -44,7 +44,7 @@ export function MessageInput({ conversationId }: { conversationId: string }) {
           onKeyPress={(e) => e.key === "Enter" && !e.shiftKey && sendMessage(e)}
           placeholder="Type a message..."
           disabled={sending}
-          className="flex-1 p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
+          className="flex-1 p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 text-gray-900"
         />
         <button
           type="submit"

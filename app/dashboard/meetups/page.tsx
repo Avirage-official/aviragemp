@@ -1,5 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
+import { MeetupsList } from "@/components/meetups/MeetupsList";
+import { CreateMeetupButton } from "@/components/meetups/CreateMeetupButton";
 
 export default async function MeetupsPage() {
   const { userId } = await auth();
@@ -16,27 +18,61 @@ export default async function MeetupsPage() {
     return <div>Loading...</div>;
   }
 
+  // Get user's friends for private meetup invites
+  const friendships = await prisma.friendship.findMany({
+    where: { userId: user.id }
+  });
+
+  const friends = await Promise.all(
+    friendships.map(async (friendship) => {
+      const friendUser = await prisma.user.findUnique({
+        where: { id: friendship.friendId }
+      });
+      return friendUser;
+    })
+  );
+
+  // Get all meetups user can see
+  const meetups = await prisma.meetup.findMany({
+    where: {
+      OR: [
+        { isPublic: true }, // Public meetups
+        { hostId: user.id }, // Meetups user created
+        { 
+          participants: {
+            some: { userId: user.id } // Meetups user was invited to
+          }
+        }
+      ],
+      scheduledAt: {
+        gte: new Date() // Only future meetups
+      }
+    },
+    include: {
+      host: true,
+      participants: {
+        include: {
+          user: true
+        }
+      }
+    },
+    orderBy: {
+      scheduledAt: "asc"
+    }
+  });
+
   return (
     <div className="space-y-8">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold">Meetups</h1>
-        <button className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
-          Create Meetup
-        </button>
+        <CreateMeetupButton friends={friends.filter(f => f !== null)} />
       </div>
       
-      <div className="bg-white rounded-lg p-12 shadow text-center">
-        <div className="text-6xl mb-4">📅</div>
-        <h2 className="text-2xl font-bold mb-2">Coming Soon</h2>
-        <p className="text-gray-600 mb-4">
-          Coordinate gatherings with friends and discover public meetups in your city.
-        </p>
-        <div className="flex gap-4 justify-center text-sm text-gray-500">
-          <span>• Private friend meetups</span>
-          <span>• Public discovery</span>
-          <span>• Location-based</span>
-        </div>
-      </div>
+      <MeetupsList 
+        meetups={meetups}
+        currentUserId={user.id}
+        userCode={user.primaryCode}
+      />
     </div>
   );
 }

@@ -12,6 +12,8 @@ export default async function ConversationPage({
   const { userId } = await auth();
   const { id: conversationId } = await params;
   
+  console.log("Loading conversation:", conversationId);
+  
   if (!userId) {
     redirect("/sign-in");
   }
@@ -24,6 +26,8 @@ export default async function ConversationPage({
     redirect("/onboarding");
   }
   
+  console.log("Current user:", user.id);
+  
   const messages = await prisma.message.findMany({
     where: { conversationId },
     include: { sender: true },
@@ -35,19 +39,26 @@ export default async function ConversationPage({
     where: { id: conversationId },
     include: {
       participants: {
-        where: { userId: { not: user.id } },
         include: { user: true }
       }
     }
   });
   
+  console.log("Conversation found:", !!conversation);
+  console.log("Participants:", conversation?.participants.length);
+  
   if (!conversation) {
+    console.log("No conversation found - redirecting");
     redirect("/dashboard/messages");
   }
   
-  const otherUser = conversation.participants[0]?.user;
+  // Find the other user (not current user)
+  const otherUser = conversation.participants.find(p => p.userId !== user.id)?.user;
+  
+  console.log("Other user found:", !!otherUser);
   
   if (!otherUser) {
+    console.log("No other user found - redirecting");
     redirect("/dashboard/messages");
   }
   

@@ -19,14 +19,14 @@ export function FriendsList({ friends }: { friends: Friend[] }) {
   const router = useRouter();
   const [loading, setLoading] = useState<string | null>(null);
   
-  async function startConversation(friendId: string) {
-    setLoading(friendId);
+  async function startConversation(friendUserId: string) {
+    setLoading(friendUserId);
     
     try {
       const response = await fetch("/api/conversations/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ friendId })
+        body: JSON.stringify({ friendId: friendUserId })
       });
       
       if (!response.ok) {
