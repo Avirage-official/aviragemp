@@ -42,6 +42,10 @@ model User {
   hostedMeetups          Meetup[]        @relation("HostedMeetups")
   meetupParticipants     MeetupParticipant[]
   
+  // NEW: Business relations
+  businessProfile        BusinessProfile?
+  bookings               Booking[]
+  
   notifications          Notification[]
   
   @@index([type])
@@ -167,4 +171,145 @@ model Notification {
   
   @@index([userId, isRead])
   @@index([createdAt])
+}
+
+// ============================================================
+// BUSINESS MODELS (NEW)
+// ============================================================
+
+model BusinessProfile {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  businessName    String
+  description     String?
+  category        String
+  logo            String?
+  website         String?
+  
+  contactEmail    String
+  contactPhone    String?
+  
+  stripeAccountId String?
+  
+  subscriptionStatus String @default("TRIAL")
+  subscriptionTier   String @default("basic")
+  subscriptionEndsAt DateTime?
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  listings        Listing[]
+  subscriptions   Subscription[]
+  
+  @@index([subscriptionStatus])
+}
+
+model Listing {
+  id              String   @id @default(cuid())
+  businessId      String
+  business        BusinessProfile @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  
+  title           String
+  description     String
+  category        String
+  subcategory     String?
+  
+  images          String[]
+  
+  price           Float?
+  currency        String   @default("USD")
+  pricingType     String   @default("FIXED")
+  
+  location        String?
+  city            String?
+  
+  targetCodes     String[]
+  
+  bookingType     String   @default("INQUIRY")
+  
+  isActive        Boolean  @default(true)
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  bookings        Booking[]
+  analytics       ListingAnalytics[]
+  
+  @@index([businessId])
+  @@index([category])
+  @@index([isActive])
+  @@index([targetCodes])
+}
+
+model Subscription {
+  id              String   @id @default(cuid())
+  businessId      String
+  business        BusinessProfile @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  
+  stripeSubscriptionId String @unique
+  tier            String
+  billingPeriod   String
+  
+  amount          Float
+  currency        String   @default("USD")
+  
+  status          String
+  
+  currentPeriodStart DateTime
+  currentPeriodEnd   DateTime
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@index([businessId])
+}
+
+model Booking {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  listingId       String
+  listing         Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  
+  bookingDate     DateTime?
+  numberOfPeople  Int      @default(1)
+  specialRequests String?
+  
+  amount          Float
+  currency        String   @default("USD")
+  
+  status          String   @default("PENDING")
+  
+  inquiryMessage  String?
+  businessResponse String?
+  
+  stripePaymentId String?
+  paidAt          DateTime?
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@index([userId])
+  @@index([listingId])
+  @@index([status])
+}
+
+model ListingAnalytics {
+  id          String   @id @default(cuid())
+  listingId   String
+  listing     Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  
+  viewerCode  String?
+  
+  action      String
+  
+  userId      String?
+  
+  timestamp   DateTime @default(now())
+  
+  @@index([listingId])
+  @@index([viewerCode])
+  @@index([action])
 }
