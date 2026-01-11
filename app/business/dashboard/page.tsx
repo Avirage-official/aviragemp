@@ -17,7 +17,16 @@ export default async function BusinessDashboard() {
         include: {
           listings: {
             where: { isActive: true },
-            orderBy: { createdAt: "desc" }
+            orderBy: { createdAt: "desc" },
+            include: {
+              bookings: {
+                where: {
+                  status: {
+                    in: ["INQUIRY", "PENDING"]
+                  }
+                }
+              }
+            }
           }
         }
       }
@@ -36,6 +45,11 @@ export default async function BusinessDashboard() {
   const daysUntilTrialEnd = Math.ceil(
     (new Date(business.subscriptionEndsAt!).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)
   );
+
+  // Calculate total inquiries
+  const totalInquiries = business.listings?.reduce((sum, listing) => {
+    return sum + (listing.bookings?.length || 0);
+  }, 0) || 0;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -70,10 +84,14 @@ export default async function BusinessDashboard() {
             <p className="text-gray-600 text-sm">Total Views</p>
             <p className="text-3xl font-bold mt-2">0</p>
           </div>
-          <div className="bg-white rounded-lg shadow p-6">
-            <p className="text-gray-600 text-sm">Inquiries</p>
-            <p className="text-3xl font-bold mt-2">0</p>
-          </div>
+          <a 
+            href="/business/inquiries"
+            className="bg-white rounded-lg shadow p-6 hover:bg-gray-50 transition cursor-pointer"
+          >
+            <p className="text-gray-600 text-sm">New Inquiries</p>
+            <p className="text-3xl font-bold mt-2 text-blue-600">{totalInquiries}</p>
+            <p className="text-xs text-gray-500 mt-1">Click to view →</p>
+          </a>
         </div>
 
         {/* Listings Section */}

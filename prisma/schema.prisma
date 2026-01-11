@@ -252,7 +252,7 @@ model Subscription {
   tier            String
   billingPeriod   String
   
-  amount          Float
+  amount          Float?
   currency        String   @default("USD")
   
   status          String
@@ -274,10 +274,10 @@ model Booking {
   listing         Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
   
   bookingDate     DateTime?
-  numberOfPeople  Int      @default(1)
+  numberOfPeople  Int?      @default(1)
   specialRequests String?
   
-  amount          Float
+  amount          Float?
   currency        String   @default("USD")
   
   status          String   @default("PENDING")
