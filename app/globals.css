@@ -2,20 +2,94 @@
 @tailwind components;
 @tailwind utilities;
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+:root {
+  /* Instagram Dark 2.0 - Color System */
+  --bg-primary: #000000;
+  --bg-secondary: #0a0a0a;
+  --bg-card: #121212;
+  --bg-hover: #1a1a1a;
+  
+  --border: rgba(255, 255, 255, 0.1);
+  --border-strong: rgba(255, 255, 255, 0.2);
+  
+  --text-primary: #ffffff;
+  --text-secondary: #a8a8a8;
+  --text-muted: #737373;
+  
+  --accent: #3b82f6;
+  --accent-hover: #2563eb;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
 }
 
-body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+@layer base {
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  body {
+    @apply bg-[var(--bg-primary)] text-[var(--text-primary)];
+    font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  
+  html {
+    scroll-behavior: smooth;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-semibold text-[var(--text-primary)];
+  }
+  
+  p {
+    @apply text-[var(--text-secondary)];
+  }
 }
 
-html {
-  scroll-behavior: smooth;
+@layer components {
+  /* Instagram-style Card */
+  .card {
+    @apply bg-[var(--bg-card)] border border-[var(--border)] rounded-xl p-6 transition-all duration-200;
+  }
+  
+  .card:hover {
+    @apply border-[var(--border-strong)];
+  }
+  
+  /* Button Styles */
+  .btn-primary {
+    @apply bg-[var(--accent)] text-white px-4 py-2.5 rounded-lg font-semibold 
+           hover:bg-[var(--accent-hover)] transition-all duration-200;
+  }
+  
+  .btn-secondary {
+    @apply bg-[var(--bg-hover)] text-[var(--text-primary)] px-4 py-2.5 rounded-lg 
+           font-semibold hover:bg-[var(--bg-card)] border border-[var(--border)] 
+           transition-all duration-200;
+  }
+  
+  .btn-ghost {
+    @apply text-[var(--text-secondary)] px-4 py-2.5 rounded-lg 
+           hover:bg-[var(--bg-hover)] transition-all duration-200;
+  }
+  
+  /* Input Styles */
+  .input {
+    @apply bg-[var(--bg-secondary)] border border-[var(--border)] 
+           text-[var(--text-primary)] placeholder:text-[var(--text-muted)]
+           px-4 py-2.5 rounded-lg focus:border-[var(--accent)] 
+           focus:outline-none transition-all duration-200;
+  }
+  
+  /* Textarea */
+  .textarea {
+    @apply bg-[var(--bg-secondary)] border border-[var(--border)] 
+           text-[var(--text-primary)] placeholder:text-[var(--text-muted)]
+           px-4 py-2.5 rounded-lg focus:border-[var(--accent)] 
+           focus:outline-none transition-all duration-200 resize-none;
+  }
 }
