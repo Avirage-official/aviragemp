@@ -1,18 +1,36 @@
-export default function HomePage() {
-  return (
-    <div className="flex min-h-screen items-center justify-center">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to ETHOS</h1>
-        <p className="text-gray-600 mb-8">Discover your Mythical Code</p>
-        <div className="space-x-4">
-          <a href="/sign-in" className="px-6 py-3 bg-blue-600 text-white rounded">
-            Sign In
-          </a>
-          <a href="/sign-up" className="px-6 py-3 bg-green-600 text-white rounded">
-            Sign Up
-          </a>
-        </div>
-      </div>
-    </div>
-  );
+import { auth } from "@clerk/nextjs/server";
+import { prisma } from "@/lib/prisma";
+import { redirect } from "next/navigation";
+
+export default async function HomePage() {
+  const { userId } = await auth();
+
+  if (!userId) {
+    redirect("/sign-in");
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { clerkId: userId },
+    select: {
+      type: true,
+      primaryCode: true
+    }
+  });
+
+  if (!user) {
+    redirect("/onboarding");
+  }
+
+  // Redirect based on user type
+  if (user.type === "BUSINESS") {
+    redirect("/business/dashboard");
+  }
+
+  // If no code yet, go to onboarding
+  if (!user.primaryCode) {
+    redirect("/onboarding");
+  }
+
+  // Regular user goes to dashboard
+  redirect("/dashboard");
 }

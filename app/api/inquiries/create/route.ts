@@ -26,20 +26,19 @@ export async function POST(request: Request) {
 
     const data = await request.json();
 
-    // Create booking/inquiry record
-    const booking = await prisma.booking.create({
-      data: {
-        userId: user.id,
-        listingId: data.listingId,
-        inquiryMessage: data.message,
-        numberOfPeople: data.numberOfPeople || null,
-        bookingDate: data.bookingDate ? new Date(data.bookingDate) : null,
-        specialRequests: data.specialRequests || null,
-        status: "INQUIRY",
-        amount: null,
-        currency: "USD"
-      }
-    });
+   const booking = await prisma.booking.create({
+  data: {
+    userId: user.id,
+    listingId: data.listingId,
+    inquiryMessage: data.message,
+    numberOfPeople: data.numberOfPeople || null,
+    bookingDate: data.bookingDate ? new Date(data.bookingDate) : null,
+    specialRequests: data.specialRequests || null,
+    status: "INQUIRY",
+    currency: "USD"
+    // amount is omitted - will be set when booking is confirmed
+  }
+});
 
     // TODO: Send email notification to business
 
