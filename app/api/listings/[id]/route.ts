@@ -3,12 +3,14 @@ import { NextResponse } from "next/server";
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }  // ← Changed to Promise
 ) {
+  const { id } = await params;  // ← AWAIT params
+  
   try {
     const listing = await prisma.listing.findUnique({
       where: { 
-        id: params.id,
+        id: id,  // ← Use awaited id
         isActive: true
       },
       include: {
