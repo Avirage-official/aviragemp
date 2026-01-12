@@ -97,16 +97,24 @@ export default function PersonalOnboardingPage() {
                 Mythical Code *
               </label>
               <select
-                required
-                value={formData.primaryCode}
-                onChange={(e) => setFormData({ ...formData, primaryCode: e.target.value })}
-                className="input w-full"
-              >
-                <option value="">Select your code</option>
-                {PERSONALITY_CODES.map(code => (
-                  <option key={code} value={code}>{code}</option>
-                ))}
-              </select>
+  required
+  value={formData.primaryCode}
+  onChange={(e) => setFormData({ ...formData, primaryCode: e.target.value })}
+  className="w-full bg-white/5 border border-white/20 text-white px-4 py-3 rounded-lg focus:border-blue-500 focus:outline-none transition-all duration-200 appearance-none cursor-pointer hover:bg-white/10"
+  style={{
+    backgroundImage: `url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%23ffffff' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")`,
+    backgroundRepeat: 'no-repeat',
+    backgroundPosition: 'right 1rem center',
+    paddingRight: '3rem'
+  }}
+>
+  <option value="" disabled className="bg-zinc-900 text-gray-400">Select your code</option>
+  {PERSONALITY_CODES.map(code => (
+    <option key={code} value={code} className="bg-zinc-900 text-white py-2">
+      {code}
+    </option>
+  ))}
+</select>
               <p className="text-xs text-gray-500 mt-2">
                 Don't know your code?{" "}
                 <a href="https://myethoslens.vercel.app" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300">

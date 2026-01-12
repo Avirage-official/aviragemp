@@ -5,12 +5,13 @@ import { useUser, UserButton } from "@clerk/nextjs";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+
 export function MainNav() {
   const { user } = useUser();
   const pathname = usePathname();
   const [userType, setUserType] = useState<string | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
+  
   useEffect(() => {
     async function fetchUserType() {
       if (!user) return;
@@ -23,6 +24,9 @@ export function MainNav() {
         console.error("Error fetching user type:", error);
         setUserType("CONSUMER");
       }
+      if (pathname.startsWith("/onboarding") || pathname.startsWith("/sign-")) {
+    return null;
+  }
     }
     
     fetchUserType();
