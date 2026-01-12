@@ -24,7 +24,7 @@ export function MainNav() {
         console.error("Error fetching user type:", error);
         setUserType("CONSUMER");
       }
-      if (pathname.startsWith("/onboarding") || pathname.startsWith("/sign-")) {
+      if (!user || pathname.startsWith("/onboarding") || pathname === "/sign-in" || pathname === "/sign-up") {
     return null;
   }
     }

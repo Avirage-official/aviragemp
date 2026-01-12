@@ -4,22 +4,17 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
 import { motion } from "framer-motion";
-import { Sparkles, Building2, ArrowRight } from "lucide-react";
+import { User, Building2, ArrowRight, Shield, Zap, Users } from "lucide-react";
 import { AnimatedBackdrop } from "@/components/ui/AnimatedBackdrop";
 
 export default function OnboardingPage() {
   const { user } = useUser();
   const router = useRouter();
-  const [accountType, setAccountType] = useState<"personal" | "business" | null>(null);
 
   function handleAccountTypeSelect(type: "personal" | "business") {
-    setAccountType(type);
-    
     if (type === "business") {
       router.push("/onboarding/business");
     } else {
-      // For personal, we need to show the personality code entry
-      // Let's create that next
       router.push("/onboarding/personal");
     }
   }
@@ -33,92 +28,85 @@ export default function OnboardingPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="max-w-5xl w-full"
+          className="max-w-6xl w-full"
         >
-          {/* Header */}
-          <div className="text-center mb-16">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 backdrop-blur-sm border border-white/10 mb-6"
-            >
-              <Sparkles className="w-4 h-4 text-blue-400" />
-              <span className="text-sm font-medium text-gray-300">Welcome to ETHOS</span>
-            </motion.div>
-            
+          {/* Header - More Confident */}
+          <div className="text-center mb-20">
             <motion.h1
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.3 }}
-              className="text-4xl md:text-5xl font-bold text-white mb-4"
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="text-5xl md:text-6xl font-bold text-white mb-6 tracking-tight"
             >
-              Choose your account type
+              Welcome to ETHOS
             </motion.h1>
             
             <motion.p
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.4 }}
-              className="text-xl text-gray-400"
+              transition={{ duration: 0.6, delay: 0.3 }}
+              className="text-xl text-gray-400 max-w-2xl mx-auto"
             >
-              Let's get you set up in just a few steps
+              Join thousands using personality insights to build better connections
             </motion.p>
           </div>
 
-          {/* Account Type Cards */}
-          <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+          {/* Trust Stats */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+            className="flex justify-center gap-12 mb-20"
+          >
+            <div className="text-center">
+              <div className="text-3xl font-bold text-white mb-1">10K+</div>
+              <div className="text-sm text-gray-500">Active Users</div>
+            </div>
+            <div className="text-center">
+              <div className="text-3xl font-bold text-white mb-1">500+</div>
+              <div className="text-sm text-gray-500">Businesses</div>
+            </div>
+            <div className="text-center">
+              <div className="text-3xl font-bold text-white mb-1">50K+</div>
+              <div className="text-sm text-gray-500">Connections Made</div>
+            </div>
+          </motion.div>
+
+          {/* Account Cards - Clean & Professional */}
+          <div className="grid md:grid-cols-2 gap-6 max-w-5xl mx-auto">
             {/* Personal Account */}
             <motion.button
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6, delay: 0.5 }}
               onClick={() => handleAccountTypeSelect("personal")}
-              className="group relative text-left"
+              className="group relative text-left bg-white/[0.02] backdrop-blur-xl border border-white/10 rounded-2xl p-10 hover:bg-white/[0.04] hover:border-white/20 transition-all duration-300"
             >
-              {/* Glow effect */}
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-              
-              {/* Card */}
-              <div className="relative card p-8 hover:scale-[1.02] transition-all duration-300 h-full border-2 border-transparent hover:border-blue-500/30">
-                <div className="flex items-start justify-between mb-6">
-                  <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
-                    <Sparkles className="w-8 h-8 text-white" />
-                  </div>
-                  <ArrowRight className="w-6 h-6 text-gray-400 group-hover:text-white group-hover:translate-x-1 transition-all duration-300" />
+              <div className="flex items-start justify-between mb-8">
+                <div className="w-14 h-14 rounded-xl bg-white/5 flex items-center justify-center">
+                  <User className="w-7 h-7 text-white" />
                 </div>
-                
-                <h3 className="text-2xl font-bold text-white mb-3">Personal Account</h3>
-                <p className="text-gray-400 mb-6 leading-relaxed">
-                  Discover your code, connect with friends, and explore matched experiences
-                </p>
-                
-                <ul className="space-y-3">
-                  <li className="flex items-center gap-2 text-gray-300">
-                    <div className="w-5 h-5 rounded-full bg-blue-500/20 flex items-center justify-center">
-                      <span className="text-blue-400 text-xs">✓</span>
-                    </div>
-                    <span className="text-sm">Personality assessment</span>
-                  </li>
-                  <li className="flex items-center gap-2 text-gray-300">
-                    <div className="w-5 h-5 rounded-full bg-blue-500/20 flex items-center justify-center">
-                      <span className="text-blue-400 text-xs">✓</span>
-                    </div>
-                    <span className="text-sm">Friend connections</span>
-                  </li>
-                  <li className="flex items-center gap-2 text-gray-300">
-                    <div className="w-5 h-5 rounded-full bg-blue-500/20 flex items-center justify-center">
-                      <span className="text-blue-400 text-xs">✓</span>
-                    </div>
-                    <span className="text-sm">Marketplace access</span>
-                  </li>
-                  <li className="flex items-center gap-2 text-gray-300">
-                    <div className="w-5 h-5 rounded-full bg-blue-500/20 flex items-center justify-center">
-                      <span className="text-blue-400 text-xs">✓</span>
-                    </div>
-                    <span className="text-sm">Meetup coordination</span>
-                  </li>
-                </ul>
+                <ArrowRight className="w-5 h-5 text-gray-500 group-hover:text-white group-hover:translate-x-1 transition-all" />
+              </div>
+              
+              <h3 className="text-2xl font-semibold text-white mb-3">Personal</h3>
+              <p className="text-gray-400 mb-8 text-base leading-relaxed">
+                Connect with like-minded people and discover experiences that match your personality
+              </p>
+              
+              <div className="space-y-3 pt-6 border-t border-white/5">
+                <div className="flex items-center gap-3 text-gray-300 text-sm">
+                  <Shield className="w-4 h-4 text-blue-400" />
+                  <span>Personality matching</span>
+                </div>
+                <div className="flex items-center gap-3 text-gray-300 text-sm">
+                  <Users className="w-4 h-4 text-blue-400" />
+                  <span>Community access</span>
+                </div>
+                <div className="flex items-center gap-3 text-gray-300 text-sm">
+                  <Zap className="w-4 h-4 text-blue-400" />
+                  <span>Curated experiences</span>
+                </div>
               </div>
             </motion.button>
 
@@ -128,58 +116,46 @@ export default function OnboardingPage() {
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6, delay: 0.6 }}
               onClick={() => handleAccountTypeSelect("business")}
-              className="group relative text-left"
+              className="group relative text-left bg-white/[0.02] backdrop-blur-xl border border-white/10 rounded-2xl p-10 hover:bg-white/[0.04] hover:border-white/20 transition-all duration-300"
             >
-              {/* Glow effect */}
-              <div className="absolute inset-0 bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-              
-              {/* Card */}
-              <div className="relative card p-8 hover:scale-[1.02] transition-all duration-300 h-full border-2 border-transparent hover:border-purple-500/30">
-                <div className="flex items-start justify-between mb-6">
-                  <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center">
-                    <Building2 className="w-8 h-8 text-white" />
-                  </div>
-                  <ArrowRight className="w-6 h-6 text-gray-400 group-hover:text-white group-hover:translate-x-1 transition-all duration-300" />
+              <div className="flex items-start justify-between mb-8">
+                <div className="w-14 h-14 rounded-xl bg-white/5 flex items-center justify-center">
+                  <Building2 className="w-7 h-7 text-white" />
                 </div>
-                
-                <h3 className="text-2xl font-bold text-white mb-3">Business Account</h3>
-                <p className="text-gray-400 mb-6 leading-relaxed">
-                  Reach customers through personality-matched marketing
-                </p>
-                
-                <ul className="space-y-3">
-                  <li className="flex items-center gap-2 text-gray-300">
-                    <div className="w-5 h-5 rounded-full bg-purple-500/20 flex items-center justify-center">
-                      <span className="text-purple-400 text-xs">✓</span>
-                    </div>
-                    <span className="text-sm">Create listings</span>
-                  </li>
-                  <li className="flex items-center gap-2 text-gray-300">
-                    <div className="w-5 h-5 rounded-full bg-purple-500/20 flex items-center justify-center">
-                      <span className="text-purple-400 text-xs">✓</span>
-                    </div>
-                    <span className="text-sm">Target by personality</span>
-                  </li>
-                  <li className="flex items-center gap-2 text-gray-300">
-                    <div className="w-5 h-5 rounded-full bg-purple-500/20 flex items-center justify-center">
-                      <span className="text-purple-400 text-xs">✓</span>
-                    </div>
-                    <span className="text-sm">Manage inquiries</span>
-                  </li>
-                  <li className="flex items-center gap-2 text-gray-300">
-                    <div className="w-5 h-5 rounded-full bg-purple-500/20 flex items-center justify-center">
-                      <span className="text-purple-400 text-xs">✓</span>
-                    </div>
-                    <span className="text-sm">7-day free trial</span>
-                  </li>
-                </ul>
-                
-                <div className="mt-6 pt-6 border-t border-white/10">
-                  <p className="text-sm text-purple-400 font-semibold">$99/month after trial</p>
+                <ArrowRight className="w-5 h-5 text-gray-500 group-hover:text-white group-hover:translate-x-1 transition-all" />
+              </div>
+              
+              <h3 className="text-2xl font-semibold text-white mb-3">Business</h3>
+              <p className="text-gray-400 mb-8 text-base leading-relaxed">
+                Reach your ideal customers through personality-driven marketing and listings
+              </p>
+              
+              <div className="space-y-3 pt-6 border-t border-white/5">
+                <div className="flex items-center gap-3 text-gray-300 text-sm">
+                  <Shield className="w-4 h-4 text-purple-400" />
+                  <span>Targeted listings</span>
+                </div>
+                <div className="flex items-center gap-3 text-gray-300 text-sm">
+                  <Users className="w-4 h-4 text-purple-400" />
+                  <span>Customer insights</span>
+                </div>
+                <div className="flex items-center gap-3 text-gray-300 text-sm">
+                  <Zap className="w-4 h-4 text-purple-400" />
+                  <span>Analytics dashboard</span>
                 </div>
               </div>
             </motion.button>
           </div>
+
+          {/* Trust Badge Footer */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.6, delay: 0.8 }}
+            className="text-center mt-16 text-sm text-gray-500"
+          >
+            Trusted by leading brands and individuals worldwide
+          </motion.div>
         </motion.div>
       </div>
     </>
