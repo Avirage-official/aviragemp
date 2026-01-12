@@ -2,7 +2,6 @@
 
 import { useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
 import Link from "next/link";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { ArrowRight, Sparkles, Users, Compass, Heart } from "lucide-react";
@@ -10,56 +9,34 @@ import { ArrowRight, Sparkles, Users, Compass, Heart } from "lucide-react";
 export default function HomePage() {
   const { user } = useUser();
   const router = useRouter();
-  const [isLoading, setIsLoading] = useState(true);
   
   const { scrollY } = useScroll();
   const y = useTransform(scrollY, [0, 500], [0, 150]);
   const opacity = useTransform(scrollY, [0, 300], [1, 0]);
 
-  useEffect(() => {
-    async function checkUser() {
-      if (!user) {
-        setIsLoading(false);
-        return;
-      }
-
-      try {
-        const response = await fetch(`/api/users/${user.id}`);
-        const data = await response.json();
-
-        if (!data.user) {
-          router.push("/onboarding");
-          return;
-        }
-
-        if (!data.user.primaryCode) {
-          router.push("/onboarding");
-          return;
-        }
-
-        if (data.user.type === "BUSINESS") {
-          router.push("/business/dashboard");
-        } else {
-          router.push("/dashboard");
-        }
-      } catch (error) {
-        console.error("Error checking user:", error);
-        router.push("/onboarding");
-      }
+  // Function to handle CTA clicks
+  async function handleGetStarted() {
+    if (!user) {
+      router.push("/sign-up");
+      return;
     }
 
-    checkUser();
-  }, [user, router]);
+    // User is logged in, check their status
+    try {
+      const response = await fetch(`/api/users/${user.id}`);
+      const data = await response.json();
 
-  if (isLoading || user) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-black">
-        <div className="text-center">
-          <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-400">Loading...</p>
-        </div>
-      </div>
-    );
+      if (!data.user || !data.user.primaryCode) {
+        router.push("/onboarding");
+      } else if (data.user.type === "BUSINESS") {
+        router.push("/business/dashboard");
+      } else {
+        router.push("/dashboard");
+      }
+    } catch (error) {
+      console.error("Error:", error);
+      router.push("/onboarding");
+    }
   }
 
   return (
@@ -122,19 +99,22 @@ export default function HomePage() {
               transition={{ duration: 0.8, delay: 0.8 }}
               className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4"
             >
-              <Link
-                href="/sign-up"
+              <button
+                onClick={handleGetStarted}
                 className="group px-8 py-4 bg-white text-black rounded-xl font-semibold transition-all duration-300 flex items-center gap-2 shadow-2xl hover:shadow-white/20 hover:scale-105"
               >
-                Get Started Free
+                {user ? "Continue" : "Get Started Free"}
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-              </Link>
-              <Link
-                href="/sign-in"
-                className="px-8 py-4 bg-white/10 backdrop-blur-sm hover:bg-white/20 text-white rounded-xl font-semibold transition-all duration-300 border border-white/20"
-              >
-                Sign In
-              </Link>
+              </button>
+              
+              {!user && (
+                <Link
+                  href="/sign-in"
+                  className="px-8 py-4 bg-white/10 backdrop-blur-sm hover:bg-white/20 text-white rounded-xl font-semibold transition-all duration-300 border border-white/20"
+                >
+                  Sign In
+                </Link>
+              )}
             </motion.div>
 
             <motion.p
@@ -262,13 +242,13 @@ export default function HomePage() {
             <p className="text-xl text-gray-400 mb-8">
               Join our community and start your journey today
             </p>
-            <Link
-              href="/sign-up"
+            <button
+              onClick={handleGetStarted}
               className="inline-flex items-center gap-2 px-10 py-5 bg-white text-black rounded-xl font-semibold text-lg hover:scale-105 transition-all duration-300 shadow-2xl"
             >
-              Get Started Free
+              {user ? "Continue to Dashboard" : "Get Started Free"}
               <ArrowRight className="w-5 h-5" />
-            </Link>
+            </button>
           </motion.div>
         </div>
       </section>
