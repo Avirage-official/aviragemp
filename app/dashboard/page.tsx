@@ -31,33 +31,36 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!isLoaded) return;
+  if (!isLoaded) return;
 
-    if (!user) {
-      router.push("/");
-      return;
-    }
+  if (!user) {
+    router.push("/");
+    return;
+  }
 
-    async function loadProfile() {
-      try {
-        const res = await fetch(`/api/users/${user.id}`);
-        const data = await res.json();
+  const userId = user.id; // 👈 lock it once (TS-safe)
 
-        if (!data.user || !data.user.primaryCode) {
-          router.push("/onboarding");
-          return;
-        }
+  async function loadProfile() {
+    try {
+      const res = await fetch(`/api/users/${userId}`);
+      const data = await res.json();
 
-        setProfile(data.user);
-      } catch (e) {
-        console.error(e);
-      } finally {
-        setLoading(false);
+      if (!data.user || !data.user.primaryCode) {
+        router.push("/onboarding");
+        return;
       }
-    }
 
-    loadProfile();
-  }, [user, isLoaded, router]);
+      setProfile(data.user);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  loadProfile();
+}, [user, isLoaded, router]);
+
 
   return (
     <div className="relative space-y-20">
