@@ -11,11 +11,7 @@ export function MainNav() {
   const [userType, setUserType] = useState<string | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  // HIDE NAV - Put this BEFORE useEffect
-  if (!user || pathname?.startsWith("/onboarding") || pathname === "/sign-in" || pathname === "/sign-up") {
-    return null;
-  }
-
+  // ALL HOOKS MUST COME FIRST
   useEffect(() => {
     async function fetchUserType() {
       if (!user) return;
@@ -32,6 +28,11 @@ export function MainNav() {
     
     fetchUserType();
   }, [user]);
+
+  // NOW we can conditionally return
+  if (!user || pathname?.startsWith("/onboarding") || pathname === "/sign-in" || pathname === "/sign-up") {
+    return null;
+  }
 
   const isBusiness = userType === "BUSINESS";
 
@@ -55,7 +56,6 @@ export function MainNav() {
     <nav className="bg-white shadow-lg sticky top-0 z-50">
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center h-16">
-          {/* Logo */}
           <Link href={isBusiness ? "/business/dashboard" : "/dashboard"} className="flex items-center gap-2">
             <span className="text-2xl font-bold text-blue-600">ETHOS</span>
             {isBusiness && (
@@ -65,7 +65,6 @@ export function MainNav() {
             )}
           </Link>
 
-          {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-6">
             {links.map((link) => (
               <Link
@@ -83,7 +82,6 @@ export function MainNav() {
             ))}
           </div>
 
-          {/* User Menu */}
           <div className="flex items-center gap-4">
             <div className="hidden md:block">
               <UserButton 
@@ -96,7 +94,6 @@ export function MainNav() {
               />
             </div>
 
-            {/* Mobile Menu Button */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="md:hidden p-2 rounded-lg hover:bg-gray-100"
@@ -127,7 +124,6 @@ export function MainNav() {
           </div>
         </div>
 
-        {/* Mobile Menu */}
         {mobileMenuOpen && (
           <div className="md:hidden py-4 border-t">
             <div className="flex flex-col gap-2">
@@ -147,7 +143,6 @@ export function MainNav() {
                 </Link>
               ))}
               
-              {/* Mobile User Button */}
               <div className="mt-4 pt-4 border-t flex items-center justify-between px-4">
                 <span className="text-sm text-gray-600">Account</span>
                 <UserButton 
