@@ -12,7 +12,7 @@ import {
   ArrowRight,
   Shield,
 } from "lucide-react";
-import AnimatedBackdrop from "@/components/ui/AnimatedBackdrop";
+import { AnimatedBackdrop } from "@/components/ui/AnimatedBackdrop";
 
 type UserProfile = {
   id: string;
