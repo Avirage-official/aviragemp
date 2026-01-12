@@ -4,7 +4,6 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
 import { motion, AnimatePresence } from "framer-motion";
-import { AnimatedBackdrop } from "@/components/ui/AnimatedBackdrop";
 import { ArrowRight, ArrowLeft, Sparkles } from "lucide-react";
 
 const PERSONALITY_CODES = [
@@ -48,14 +47,12 @@ export default function PersonalOnboardingPage() {
 
   async function handleNext() {
     if (step < 3) {
-      // Show success message
       setShowSuccess(true);
       setTimeout(() => {
         setShowSuccess(false);
         setStep(step + 1);
       }, 1500);
     } else {
-      // Final submission
       setIsLoading(true);
       try {
         const response = await fetch("/api/users/onboard", {
@@ -94,14 +91,35 @@ export default function PersonalOnboardingPage() {
   const isValid = currentValue.length > 0;
 
   return (
-    <>
-      <AnimatedBackdrop />
-      
-      <div className="min-h-screen flex items-center justify-center px-6">
+    <div className="min-h-screen grid lg:grid-cols-2 bg-black">
+      {/* Left Side - Image (changes per step) */}
+      <div className="hidden lg:block relative overflow-hidden">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={step}
+            initial={{ opacity: 0, scale: 1.05 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ duration: 0.5 }}
+            className="absolute inset-0"
+          >
+            <div 
+              className="w-full h-full bg-cover bg-center"
+              style={{ backgroundImage: `url(/images/onboarding/personal-${step}.jpg)` }}
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-black/60 to-transparent"></div>
+          </motion.div>
+        </AnimatePresence>
+      </div>
+
+      {/* Right Side - Form */}
+      <div className="flex items-center justify-center px-6 py-12 relative">
+        <div className="absolute inset-0 bg-gradient-to-br from-slate-950 via-blue-950/20 to-slate-950 -z-10"></div>
+        
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="max-w-2xl w-full"
+          className="max-w-lg w-full"
         >
           {/* Progress Bar */}
           <div className="mb-12">
@@ -129,19 +147,18 @@ export default function PersonalOnboardingPage() {
                 className="space-y-8"
               >
                 {/* Question */}
-                <div className="text-center mb-12">
-                  <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
+                <div className="mb-12">
+                  <h1 className="text-3xl md:text-4xl font-bold text-white mb-4">
                     {STEP_COPY[step as keyof typeof STEP_COPY].title}
                   </h1>
-                  <p className="text-xl text-gray-400">
+                  <p className="text-lg text-gray-400">
                     {STEP_COPY[step as keyof typeof STEP_COPY].subtitle}
                   </p>
                 </div>
 
                 {/* Input */}
-                <div className="card p-8">
+                <div className="bg-white/[0.02] backdrop-blur-xl border border-white/10 rounded-2xl p-8">
                   {step === 1 ? (
-                    // Dropdown for code
                     <select
                       value={formData.primaryCode}
                       onChange={(e) => setFormData({ ...formData, primaryCode: e.target.value })}
@@ -163,7 +180,6 @@ export default function PersonalOnboardingPage() {
                       ))}
                     </select>
                   ) : (
-                    // Text input for username/city
                     <input
                       type="text"
                       value={currentValue as string}
@@ -174,7 +190,7 @@ export default function PersonalOnboardingPage() {
                           setFormData({ ...formData, city: e.target.value });
                         }
                       }}
-                      className="w-full bg-white/5 border border-white/20 text-white px-6 py-4 rounded-xl text-lg focus:border-blue-500 focus:outline-none transition-all"
+                      className="w-full bg-white/5 border border-white/20 text-white px-6 py-4 rounded-xl text-lg focus:border-blue-500 focus:outline-none transition-all placeholder:text-gray-600"
                       placeholder={STEP_COPY[step as keyof typeof STEP_COPY].placeholder}
                       autoFocus
                     />
@@ -195,7 +211,7 @@ export default function PersonalOnboardingPage() {
                   {step > 1 && (
                     <button
                       onClick={handleBack}
-                      className="flex-1 btn-ghost py-4 flex items-center justify-center gap-2"
+                      className="flex-1 bg-white/5 text-white px-6 py-4 rounded-xl hover:bg-white/10 transition-all flex items-center justify-center gap-2 border border-white/10"
                     >
                       <ArrowLeft className="w-5 h-5" />
                       Back
@@ -204,7 +220,7 @@ export default function PersonalOnboardingPage() {
                   <button
                     onClick={handleNext}
                     disabled={!isValid || isLoading}
-                    className="flex-1 btn-primary py-4 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex-1 bg-blue-600 hover:bg-blue-500 text-white px-6 py-4 rounded-xl transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-blue-500/20"
                   >
                     {step === 3 ? (isLoading ? "Creating..." : "Finish") : "Continue"}
                     {step < 3 && <ArrowRight className="w-5 h-5" />}
@@ -212,7 +228,6 @@ export default function PersonalOnboardingPage() {
                 </div>
               </motion.div>
             ) : (
-              // Success Message
               <motion.div
                 initial={{ scale: 0.9, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
@@ -232,6 +247,6 @@ export default function PersonalOnboardingPage() {
           </AnimatePresence>
         </motion.div>
       </div>
-    </>
+    </div>
   );
 }
