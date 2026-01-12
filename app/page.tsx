@@ -12,49 +12,44 @@ export default function HomePage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
   
-  // Parallax effect
   const { scrollY } = useScroll();
   const y = useTransform(scrollY, [0, 500], [0, 150]);
   const opacity = useTransform(scrollY, [0, 300], [1, 0]);
 
   useEffect(() => {
-  async function checkUser() {
-    if (!user) {
-      setIsLoading(false);
-      return;
-    }
-
-    try {
-      const response = await fetch(`/api/users/${user.id}`);
-      const data = await response.json();
-
-      // If user doesn't exist in DB yet, go to onboarding
-      if (!data.user) {
-        router.push("/onboarding");
+    async function checkUser() {
+      if (!user) {
+        setIsLoading(false);
         return;
       }
 
-      // If no personality code, go to onboarding
-      if (!data.user.primaryCode) {
+      try {
+        const response = await fetch(`/api/users/${user.id}`);
+        const data = await response.json();
+
+        if (!data.user) {
+          router.push("/onboarding");
+          return;
+        }
+
+        if (!data.user.primaryCode) {
+          router.push("/onboarding");
+          return;
+        }
+
+        if (data.user.type === "BUSINESS") {
+          router.push("/business/dashboard");
+        } else {
+          router.push("/dashboard");
+        }
+      } catch (error) {
+        console.error("Error checking user:", error);
         router.push("/onboarding");
-        return;
       }
-
-      // User exists and has code, route to dashboard
-      if (data.user.type === "BUSINESS") {
-        router.push("/business/dashboard");
-      } else {
-        router.push("/dashboard");
-      }
-    } catch (error) {
-      console.error("Error checking user:", error);
-      // On error, send to onboarding to be safe
-      router.push("/onboarding");
     }
-  }
 
-  checkUser();
-}, [user, router]);
+    checkUser();
+  }, [user, router]);
 
   if (isLoading || user) {
     return (
@@ -69,9 +64,8 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-black">
-      {/* Hero Section with Background Image */}
+      {/* Hero Section */}
       <section className="relative h-screen overflow-hidden">
-        {/* Parallax Background Image */}
         <motion.div 
           style={{ y }}
           className="absolute inset-0 w-full h-[120vh]"
@@ -82,17 +76,14 @@ export default function HomePage() {
               backgroundImage: 'url(/images/backgrounds/Landing-page-background.jpg)',
             }}
           />
-          {/* Dark Overlay for readability */}
           <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-black"></div>
         </motion.div>
 
-        {/* Hero Content */}
         <motion.div 
           style={{ opacity }}
           className="relative z-10 h-full flex items-center justify-center px-6"
         >
           <div className="max-w-4xl mx-auto text-center space-y-8">
-            {/* Fade in animations */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -157,7 +148,6 @@ export default function HomePage() {
           </div>
         </motion.div>
 
-        {/* Scroll indicator */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -177,10 +167,9 @@ export default function HomePage() {
         </motion.div>
       </section>
 
-      {/* Features Section */}
+      {/* Features */}
       <section className="relative py-32 px-6 bg-black">
         <div className="max-w-6xl mx-auto">
-          {/* Section Header */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -196,9 +185,7 @@ export default function HomePage() {
             </p>
           </motion.div>
 
-          {/* Feature Cards */}
           <div className="grid md:grid-cols-3 gap-8">
-            {/* Feature 1 */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -207,7 +194,7 @@ export default function HomePage() {
               className="group relative"
             >
               <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-purple-500/10 rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-300"></div>
-              <div className="relative card hover:scale-[1.02] transition-all duration-300 h-full">
+              <div className="relative bg-white/[0.02] backdrop-blur-xl border border-white/10 rounded-2xl p-8 hover:bg-white/[0.04] transition-all duration-300 h-full">
                 <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center mb-6">
                   <Sparkles className="w-7 h-7 text-white" />
                 </div>
@@ -218,7 +205,6 @@ export default function HomePage() {
               </div>
             </motion.div>
 
-            {/* Feature 2 */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -227,7 +213,7 @@ export default function HomePage() {
               className="group relative"
             >
               <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 to-pink-500/10 rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-300"></div>
-              <div className="relative card hover:scale-[1.02] transition-all duration-300 h-full">
+              <div className="relative bg-white/[0.02] backdrop-blur-xl border border-white/10 rounded-2xl p-8 hover:bg-white/[0.04] transition-all duration-300 h-full">
                 <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center mb-6">
                   <Users className="w-7 h-7 text-white" />
                 </div>
@@ -238,7 +224,6 @@ export default function HomePage() {
               </div>
             </motion.div>
 
-            {/* Feature 3 */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -247,7 +232,7 @@ export default function HomePage() {
               className="group relative"
             >
               <div className="absolute inset-0 bg-gradient-to-r from-pink-500/10 to-blue-500/10 rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-300"></div>
-              <div className="relative card hover:scale-[1.02] transition-all duration-300 h-full">
+              <div className="relative bg-white/[0.02] backdrop-blur-xl border border-white/10 rounded-2xl p-8 hover:bg-white/[0.04] transition-all duration-300 h-full">
                 <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-pink-500 to-pink-600 flex items-center justify-center mb-6">
                   <Compass className="w-7 h-7 text-white" />
                 </div>
@@ -261,7 +246,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* CTA Section */}
+      {/* CTA */}
       <section className="relative py-32 px-6 bg-gradient-to-b from-black to-blue-950/20">
         <div className="max-w-4xl mx-auto text-center">
           <motion.div
