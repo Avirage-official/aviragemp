@@ -3,11 +3,24 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
+import { motion } from "framer-motion";
+import { AnimatedBackdrop } from "@/components/ui/AnimatedBackdrop";
+import { Building2, Sparkles } from "lucide-react";
 
-export default function BusinessOnboarding() {
+const CATEGORIES = [
+  { value: "coaching", label: "Coaching & Consulting" },
+  { value: "wellness", label: "Wellness & Spa" },
+  { value: "retreat", label: "Retreats & Workshops" },
+  { value: "creative", label: "Creative Services" },
+  { value: "hospitality", label: "Hospitality & Travel" },
+  { value: "fitness", label: "Fitness & Training" },
+  { value: "education", label: "Education & Learning" },
+  { value: "other", label: "Other" }
+];
+
+export default function BusinessOnboardingPage() {
   const { user } = useUser();
   const router = useRouter();
-  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     businessName: "",
     description: "",
@@ -16,6 +29,7 @@ export default function BusinessOnboarding() {
     contactPhone: "",
     website: ""
   });
+  const [isLoading, setIsLoading] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -26,7 +40,7 @@ export default function BusinessOnboarding() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          clerkId: user?.id,
+          userId: user?.id,
           ...formData
         })
       });
@@ -34,9 +48,10 @@ export default function BusinessOnboarding() {
       if (response.ok) {
         router.push("/business/dashboard");
       } else {
-        alert("Failed to create business account. Please try again.");
+        alert("Error creating business profile. Please try again.");
       }
     } catch (error) {
+      console.error("Business onboarding error:", error);
       alert("An error occurred. Please try again.");
     } finally {
       setIsLoading(false);
@@ -44,120 +59,179 @@ export default function BusinessOnboarding() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <div className="max-w-2xl w-full bg-white rounded-lg shadow-lg p-8">
-        <h1 className="text-3xl font-bold mb-2">Business Registration</h1>
-        <p className="text-gray-600 mb-8">
-          Join ETHOS to reach personality-matched customers
-        </p>
-
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div>
-            <label className="block font-semibold mb-2">
-              Business Name <span className="text-red-600">*</span>
-            </label>
-            <input
-              type="text"
-              required
-              value={formData.businessName}
-              onChange={(e) => setFormData({ ...formData, businessName: e.target.value })}
-              placeholder="Your Business Name"
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-
-          <div>
-            <label className="block font-semibold mb-2">
-              Description <span className="text-red-600">*</span>
-            </label>
-            <textarea
-              required
-              value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              placeholder="Tell us about your business..."
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              rows={4}
-            />
-          </div>
-
-          <div>
-            <label className="block font-semibold mb-2">
-              Category <span className="text-red-600">*</span>
-            </label>
-            <select
-              required
-              value={formData.category}
-              onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+    <>
+      <AnimatedBackdrop />
+      
+      <div className="min-h-screen flex items-center justify-center px-6 py-20">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="max-w-3xl w-full"
+        >
+          {/* Header */}
+          <div className="text-center mb-12">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-purple-500/10 backdrop-blur-sm border border-purple-500/20 mb-6"
             >
-              <option value="">Select a category...</option>
-              <option value="retreat">Retreat Center</option>
-              <option value="coaching">Coaching/Therapy</option>
-              <option value="products">Products</option>
-              <option value="experiences">Experiences</option>
-              <option value="events">Events</option>
-              <option value="wellness">Wellness Services</option>
-              <option value="other">Other</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="block font-semibold mb-2">
-              Contact Email <span className="text-red-600">*</span>
-            </label>
-            <input
-              type="email"
-              required
-              value={formData.contactEmail}
-              onChange={(e) => setFormData({ ...formData, contactEmail: e.target.value })}
-              placeholder="contact@yourbusiness.com"
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-
-          <div>
-            <label className="block font-semibold mb-2">
-              Contact Phone
-            </label>
-            <input
-              type="tel"
-              value={formData.contactPhone}
-              onChange={(e) => setFormData({ ...formData, contactPhone: e.target.value })}
-              placeholder="+1 (555) 123-4567"
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-
-          <div>
-            <label className="block font-semibold mb-2">
-              Website
-            </label>
-            <input
-              type="url"
-              value={formData.website}
-              onChange={(e) => setFormData({ ...formData, website: e.target.value })}
-              placeholder="https://yourbusiness.com"
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <p className="text-sm text-blue-800">
-              <strong>7-Day Free Trial Included</strong>
-              <br />
-              After your trial, continue with our subscription at $99/month to access the marketplace.
+              <Building2 className="w-4 h-4 text-purple-400" />
+              <span className="text-sm font-medium text-purple-300">Business Account</span>
+            </motion.div>
+            
+            <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
+              Tell us about your business
+            </h1>
+            <p className="text-xl text-gray-400">
+              Start your 7-day free trial • No credit card required
             </p>
           </div>
 
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="w-full px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition"
+          {/* Form */}
+          <motion.form
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.3 }}
+            onSubmit={handleSubmit}
+            className="card p-8 space-y-6"
           >
-            {isLoading ? "Creating Account..." : "Create Business Account"}
-          </button>
-        </form>
+            {/* Business Name */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-300 mb-2">
+                Business Name *
+              </label>
+              <input
+                type="text"
+                required
+                value={formData.businessName}
+                onChange={(e) => setFormData({ ...formData, businessName: e.target.value })}
+                className="input w-full"
+                placeholder="Your Business Inc."
+              />
+            </div>
+
+            {/* Description */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-300 mb-2">
+                Description *
+              </label>
+              <textarea
+                required
+                value={formData.description}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                className="textarea w-full min-h-[120px]"
+                placeholder="Tell us about your business and what you offer..."
+              />
+              <p className="text-xs text-gray-500 mt-2">
+                This will appear on your business profile
+              </p>
+            </div>
+
+            {/* Category */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-300 mb-2">
+                Category *
+              </label>
+              <select
+                required
+                value={formData.category}
+                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                className="w-full bg-white/5 border border-white/20 text-white px-4 py-3 rounded-lg focus:border-purple-500 focus:outline-none transition-all duration-200 appearance-none cursor-pointer hover:bg-white/10"
+                style={{
+                  backgroundImage: `url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%23ffffff' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")`,
+                  backgroundRepeat: 'no-repeat',
+                  backgroundPosition: 'right 1rem center',
+                  paddingRight: '3rem'
+                }}
+              >
+                <option value="" disabled className="bg-zinc-900 text-gray-400">Select your industry</option>
+                {CATEGORIES.map(cat => (
+                  <option key={cat.value} value={cat.value} className="bg-zinc-900 text-white py-2">
+                    {cat.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Two Column Grid */}
+            <div className="grid md:grid-cols-2 gap-6">
+              {/* Contact Email */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-300 mb-2">
+                  Contact Email *
+                </label>
+                <input
+                  type="email"
+                  required
+                  value={formData.contactEmail}
+                  onChange={(e) => setFormData({ ...formData, contactEmail: e.target.value })}
+                  className="input w-full"
+                  placeholder="hello@business.com"
+                />
+              </div>
+
+              {/* Contact Phone */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-300 mb-2">
+                  Phone Number
+                </label>
+                <input
+                  type="tel"
+                  value={formData.contactPhone}
+                  onChange={(e) => setFormData({ ...formData, contactPhone: e.target.value })}
+                  className="input w-full"
+                  placeholder="+1 (555) 000-0000"
+                />
+              </div>
+            </div>
+
+            {/* Website */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-300 mb-2">
+                Website
+              </label>
+              <input
+                type="url"
+                value={formData.website}
+                onChange={(e) => setFormData({ ...formData, website: e.target.value })}
+                className="input w-full"
+                placeholder="https://yourbusiness.com"
+              />
+            </div>
+
+            {/* Trial Info Box */}
+            <div className="bg-purple-500/10 border border-purple-500/20 rounded-lg p-4">
+              <div className="flex items-start gap-3">
+                <Sparkles className="w-5 h-5 text-purple-400 mt-0.5" />
+                <div>
+                  <p className="text-sm font-semibold text-purple-300 mb-1">
+                    7-Day Free Trial Included
+                  </p>
+                  <p className="text-xs text-gray-400 leading-relaxed">
+                    Full access to all features • No credit card required • Cancel anytime • $99/month after trial
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Submit Button */}
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="w-full bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 text-white px-8 py-4 rounded-lg font-semibold text-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-purple-500/20"
+            >
+              {isLoading ? "Creating your business profile..." : "Start Free Trial"}
+            </button>
+
+            {/* Terms */}
+            <p className="text-xs text-center text-gray-500">
+              By continuing, you agree to our Terms of Service and Privacy Policy
+            </p>
+          </motion.form>
+        </motion.div>
       </div>
-    </div>
+    </>
   );
 }
