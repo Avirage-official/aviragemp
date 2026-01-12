@@ -18,34 +18,43 @@ export default function HomePage() {
   const opacity = useTransform(scrollY, [0, 300], [1, 0]);
 
   useEffect(() => {
-    async function checkUser() {
-      if (!user) {
-        setIsLoading(false);
+  async function checkUser() {
+    if (!user) {
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/users/${user.id}`);
+      const data = await response.json();
+
+      // If user doesn't exist in DB yet, go to onboarding
+      if (!data.user) {
+        router.push("/onboarding");
         return;
       }
 
-      try {
-        const response = await fetch(`/api/users/${user.id}`);
-        const data = await response.json();
-
-        if (!data.user?.primaryCode) {
-          router.push("/onboarding");
-          return;
-        }
-
-        if (data.user.type === "BUSINESS") {
-          router.push("/business/dashboard");
-        } else {
-          router.push("/dashboard");
-        }
-      } catch (error) {
-        console.error("Error checking user:", error);
-        setIsLoading(false);
+      // If no personality code, go to onboarding
+      if (!data.user.primaryCode) {
+        router.push("/onboarding");
+        return;
       }
-    }
 
-    checkUser();
-  }, [user, router]);
+      // User exists and has code, route to dashboard
+      if (data.user.type === "BUSINESS") {
+        router.push("/business/dashboard");
+      } else {
+        router.push("/dashboard");
+      }
+    } catch (error) {
+      console.error("Error checking user:", error);
+      // On error, send to onboarding to be safe
+      router.push("/onboarding");
+    }
+  }
+
+  checkUser();
+}, [user, router]);
 
   if (isLoading || user) {
     return (
