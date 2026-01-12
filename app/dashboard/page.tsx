@@ -3,285 +3,195 @@
 import { useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 import Link from "next/link";
-import { motion, useScroll, useTransform } from "framer-motion";
-import { ArrowRight, Sparkles, Users, Compass, Heart } from "lucide-react";
+import {
+  Sparkles,
+  Users,
+  Compass,
+  ArrowRight,
+  Shield,
+} from "lucide-react";
+import AnimatedBackdrop from "@/components/ui/AnimatedBackdrop";
 
-export default function HomePage() {
-  const { user } = useUser();
+type UserProfile = {
+  id: string;
+  name: string;
+  primaryCode: {
+    label: string;
+    essence: string;
+    tone: string;
+  };
+};
+
+export default function DashboardPage() {
+  const { user, isLoaded } = useUser();
   const router = useRouter();
-  const [isLoading, setIsLoading] = useState(true);
-  
-  const { scrollY } = useScroll();
-  const y = useTransform(scrollY, [0, 500], [0, 150]);
-  const opacity = useTransform(scrollY, [0, 300], [1, 0]);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function checkUser() {
-      if (!user) {
-        setIsLoading(false);
-        return;
-      }
+    if (!isLoaded) return;
 
+    if (!user) {
+      router.push("/");
+      return;
+    }
+
+    async function loadProfile() {
       try {
-        const response = await fetch(`/api/users/${user.id}`);
-        const data = await response.json();
+        const res = await fetch(`/api/users/${user.id}`);
+        const data = await res.json();
 
-        // No user in DB at all
-        if (!data.user) {
+        if (!data.user || !data.user.primaryCode) {
           router.push("/onboarding");
           return;
         }
 
-        // User exists but no personality code
-        if (!data.user.primaryCode) {
-          router.push("/onboarding");
-          return;
-        }
-
-        // User complete - route to dashboard
-        if (data.user.type === "BUSINESS") {
-          router.push("/business/dashboard");
-        } else {
-          router.push("/dashboard");
-        }
-      } catch (error) {
-        console.error("Error checking user:", error);
-        setIsLoading(false);
+        setProfile(data.user);
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setLoading(false);
       }
     }
 
-    checkUser();
-  }, [user, router]);
-
-  if (isLoading || user) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-black">
-        <div className="text-center">
-          <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-400">Loading...</p>
-        </div>
-      </div>
-    );
-  }
+    loadProfile();
+  }, [user, isLoaded, router]);
 
   return (
-    <div className="min-h-screen bg-black">
-      {/* Hero Section */}
-      <section className="relative h-screen overflow-hidden">
-        <motion.div 
-          style={{ y }}
-          className="absolute inset-0 w-full h-[120vh]"
-        >
-          <div 
-            className="w-full h-full bg-cover bg-center"
-            style={{ 
-              backgroundImage: 'url(/images/backgrounds/Landing-page-background.jpg)',
-            }}
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-black"></div>
-        </motion.div>
+    <div className="relative space-y-20">
+      {/* HERO / IDENTITY */}
+      <section className="relative overflow-hidden rounded-3xl border border-white/10 bg-white/[0.02]">
+        <AnimatedBackdrop />
 
-        <motion.div 
-          style={{ opacity }}
-          className="relative z-10 h-full flex items-center justify-center px-6"
-        >
-          <div className="max-w-4xl mx-auto text-center space-y-8">
+        <div className="relative z-10 px-10 py-16">
+          {loading || !profile ? (
+            <div className="h-32 rounded-xl bg-white/5 animate-pulse" />
+          ) : (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.2 }}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20"
+              transition={{ duration: 0.6 }}
+              className="space-y-4"
             >
-              <Sparkles className="w-4 h-4 text-blue-400" />
-              <span className="text-sm font-medium text-white">Discover Your Mythical Code</span>
+              <p className="text-sm uppercase tracking-widest text-white/40">
+                Your Universe
+              </p>
+
+              <h1 className="text-4xl md:text-5xl font-semibold text-white">
+                Welcome back, {profile.name}
+              </h1>
+
+              <p className="text-lg text-white/70 max-w-2xl">
+                This is your personal headquarters — where identity, people,
+                and experiences align.
+              </p>
             </motion.div>
+          )}
+        </div>
+      </section>
 
-            <motion.h1
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.4 }}
-              className="text-5xl md:text-7xl lg:text-8xl font-bold tracking-tight text-white"
-            >
-              Find your tribe.
-              <br />
-              <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
-                Live authentically.
-              </span>
-            </motion.h1>
-
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.6 }}
-              className="text-xl md:text-2xl text-gray-300 max-w-2xl mx-auto leading-relaxed"
-            >
-              Connect with personality-matched experiences, discover your people, and explore a marketplace built around who you truly are.
-            </motion.p>
-
+      {/* YOUR CODE – CORE ANCHOR */}
+      <section className="grid lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2 rounded-3xl border border-white/10 bg-white/[0.02] p-8">
+          {loading || !profile ? (
+            <div className="h-48 rounded-xl bg-white/5 animate-pulse" />
+          ) : (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.8 }}
-              className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4"
+              transition={{ duration: 0.6 }}
+              className="space-y-6"
             >
+              <div className="flex items-center gap-3">
+                <Sparkles className="w-5 h-5 text-blue-400" />
+                <span className="text-sm uppercase tracking-wider text-white/60">
+                  Your Code
+                </span>
+              </div>
+
+              <h2 className="text-3xl font-semibold text-white">
+                {profile.primaryCode.label}
+              </h2>
+
+              <p className="text-white/70 max-w-xl">
+                {profile.primaryCode.essence}
+              </p>
+
               <Link
-                href="/sign-up"
-                className="group px-8 py-4 bg-white text-black rounded-xl font-semibold transition-all duration-300 flex items-center gap-2 shadow-2xl hover:shadow-white/20 hover:scale-105"
+                href="/codes"
+                className="inline-flex items-center gap-2 text-sm text-blue-400 hover:text-blue-300"
               >
-                Get Started Free
-                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-              </Link>
-              <Link
-                href="/sign-in"
-                className="px-8 py-4 bg-white/10 backdrop-blur-sm hover:bg-white/20 text-white rounded-xl font-semibold transition-all duration-300 border border-white/20"
-              >
-                Sign In
+                Explore your full profile
+                <ArrowRight className="w-4 h-4" />
               </Link>
             </motion.div>
+          )}
+        </div>
 
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.8, delay: 1 }}
-              className="text-sm text-gray-400 pt-4"
-            >
-              Join thousands discovering their authentic path
-            </motion.p>
+        {/* SOCIAL SIGNAL */}
+        <div className="rounded-3xl border border-white/10 bg-white/[0.02] p-8">
+          <div className="flex items-center gap-3 mb-4">
+            <Users className="w-5 h-5 text-purple-400" />
+            <span className="text-sm uppercase tracking-wider text-white/60">
+              Social
+            </span>
           </div>
-        </motion.div>
 
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 1, delay: 1.2 }}
-          className="absolute bottom-10 left-1/2 -translate-x-1/2 z-10"
+          <p className="text-white/70 mb-6">
+            You’re not alone. ETHOS connects you with people who move like you.
+          </p>
+
+          <Link
+            href="/dashboard/friends"
+            className="inline-flex items-center gap-2 text-sm text-purple-400 hover:text-purple-300"
+          >
+            View your circle
+            <ArrowRight className="w-4 h-4" />
+          </Link>
+        </div>
+      </section>
+
+      {/* CURATED EXPERIENCES */}
+      <section className="space-y-6">
+        <div className="flex items-center gap-3">
+          <Compass className="w-5 h-5 text-pink-400" />
+          <h3 className="text-xl font-semibold text-white">
+            Curated for You
+          </h3>
+        </div>
+
+        <div className="grid md:grid-cols-3 gap-6">
+          {[1, 2, 3].map((i) => (
+            <div
+              key={i}
+              className="rounded-2xl border border-white/10 bg-white/[0.02] p-6 hover:bg-white/[0.04] transition"
+            >
+              <p className="text-sm text-white/50 mb-2">
+                Experience Preview
+              </p>
+              <p className="text-white/80">
+                Hand-selected moments aligned with your code.
+              </p>
+            </div>
+          ))}
+        </div>
+
+        <Link
+          href="/marketplace"
+          className="inline-flex items-center gap-2 text-sm text-white/70 hover:text-white"
         >
-          <div className="flex flex-col items-center gap-2">
-            <span className="text-xs text-gray-400 uppercase tracking-wider">Scroll to explore</span>
-            <motion.div
-              animate={{ y: [0, 8, 0] }}
-              transition={{ duration: 1.5, repeat: Infinity }}
-              className="w-6 h-10 rounded-full border-2 border-white/30 flex justify-center pt-2"
-            >
-              <div className="w-1 h-2 bg-white/60 rounded-full"></div>
-            </motion.div>
-          </div>
-        </motion.div>
+          Explore Marketplace
+          <ArrowRight className="w-4 h-4" />
+        </Link>
       </section>
 
-      {/* Features */}
-      <section className="relative py-32 px-6 bg-black">
-        <div className="max-w-6xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-            className="text-center mb-16"
-          >
-            <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
-              Your journey starts here
-            </h2>
-            <p className="text-xl text-gray-400 max-w-2xl mx-auto">
-              Three simple steps to discover your authentic self
-            </p>
-          </motion.div>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 0.1 }}
-              className="group relative"
-            >
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-purple-500/10 rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-300"></div>
-              <div className="relative bg-white/[0.02] backdrop-blur-xl border border-white/10 rounded-2xl p-8 hover:bg-white/[0.04] transition-all duration-300 h-full">
-                <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center mb-6">
-                  <Sparkles className="w-7 h-7 text-white" />
-                </div>
-                <h3 className="text-2xl font-semibold mb-3 text-white">Find Your Code</h3>
-                <p className="text-gray-400 leading-relaxed">
-                  Discover your personality archetype through our unique assessment system
-                </p>
-              </div>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="group relative"
-            >
-              <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 to-pink-500/10 rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-300"></div>
-              <div className="relative bg-white/[0.02] backdrop-blur-xl border border-white/10 rounded-2xl p-8 hover:bg-white/[0.04] transition-all duration-300 h-full">
-                <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center mb-6">
-                  <Users className="w-7 h-7 text-white" />
-                </div>
-                <h3 className="text-2xl font-semibold mb-3 text-white">Connect with Friends</h3>
-                <p className="text-gray-400 leading-relaxed">
-                  Build meaningful connections with compatible personalities
-                </p>
-              </div>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 0.3 }}
-              className="group relative"
-            >
-              <div className="absolute inset-0 bg-gradient-to-r from-pink-500/10 to-blue-500/10 rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-300"></div>
-              <div className="relative bg-white/[0.02] backdrop-blur-xl border border-white/10 rounded-2xl p-8 hover:bg-white/[0.04] transition-all duration-300 h-full">
-                <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-pink-500 to-pink-600 flex items-center justify-center mb-6">
-                  <Compass className="w-7 h-7 text-white" />
-                </div>
-                <h3 className="text-2xl font-semibold mb-3 text-white">Matched Experiences</h3>
-                <p className="text-gray-400 leading-relaxed">
-                  Explore curated offerings aligned with your unique code
-                </p>
-              </div>
-            </motion.div>
-          </div>
-        </div>
+      {/* TRUST FOOTER */}
+      <section className="flex items-center gap-3 text-sm text-white/40">
+        <Shield className="w-4 h-4" />
+        Your data, identity, and connections are protected by design.
       </section>
-
-      {/* CTA */}
-      <section className="relative py-32 px-6 bg-gradient-to-b from-black to-blue-950/20">
-        <div className="max-w-4xl mx-auto text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-          >
-            <Heart className="w-16 h-16 text-blue-400 mx-auto mb-6" />
-            <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
-              Ready to discover your path?
-            </h2>
-            <p className="text-xl text-gray-400 mb-8">
-              Join our community and start your journey today
-            </p>
-            <Link
-              href="/sign-up"
-              className="inline-flex items-center gap-2 px-10 py-5 bg-white text-black rounded-xl font-semibold text-lg hover:scale-105 transition-all duration-300 shadow-2xl"
-            >
-              Get Started Free
-              <ArrowRight className="w-5 h-5" />
-            </Link>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="border-t border-white/10 py-12 px-6 bg-black">
-        <div className="max-w-6xl mx-auto text-center text-gray-500 text-sm">
-          <p>© 2026 ETHOS. All rights reserved.</p>
-        </div>
-      </footer>
     </div>
   );
 }
