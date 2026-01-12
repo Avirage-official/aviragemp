@@ -5,13 +5,17 @@ import { useUser, UserButton } from "@clerk/nextjs";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-
 export function MainNav() {
   const { user } = useUser();
   const pathname = usePathname();
   const [userType, setUserType] = useState<string | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  
+
+  // HIDE NAV - Put this BEFORE useEffect
+  if (!user || pathname?.startsWith("/onboarding") || pathname === "/sign-in" || pathname === "/sign-up") {
+    return null;
+  }
+
   useEffect(() => {
     async function fetchUserType() {
       if (!user) return;
@@ -24,15 +28,10 @@ export function MainNav() {
         console.error("Error fetching user type:", error);
         setUserType("CONSUMER");
       }
-      if (!user || pathname.startsWith("/onboarding") || pathname === "/sign-in" || pathname === "/sign-up") {
-    return null;
-  }
     }
     
     fetchUserType();
   }, [user]);
-
-  if (!user) return null;
 
   const isBusiness = userType === "BUSINESS";
 
@@ -40,8 +39,8 @@ export function MainNav() {
     { href: "/dashboard", label: "Dashboard", icon: "🏠" },
     { href: "/marketplace", label: "Marketplace", icon: "🛍️" },
     { href: "/bookings", label: "My Bookings", icon: "📋" },
-    { href: "/friends", label: "Friends", icon: "👥" },
-    { href: "/meetups", label: "Meetups", icon: "📅" },
+    { href: "/dashboard/friends", label: "Friends", icon: "👥" },
+    { href: "/dashboard/meetups", label: "Meetups", icon: "📅" },
   ];
 
   const businessLinks = [
