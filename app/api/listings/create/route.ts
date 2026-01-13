@@ -80,7 +80,7 @@ export async function POST(request: Request) {
     /* Editorial normalisation (NEW, SAFE)                                     */
     /* ---------------------------------------------------------------------- */
 
-    const traits = normaliseTraits(data.traits);
+    const traits = normaliseTraits(data.traits) ?? undefined;
     const tags = safeStringArray(data.tags);
 
     const duration =

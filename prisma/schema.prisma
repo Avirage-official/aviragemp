@@ -281,6 +281,11 @@ model Listing {
   bookingType String  @default("INQUIRY")
   isActive    Boolean @default(true)
 
+  traits    Json?
+  tags      String[] @default([])
+  duration  String?
+  groupSize String?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
