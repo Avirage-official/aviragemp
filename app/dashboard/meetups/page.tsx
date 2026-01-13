@@ -1,71 +1,87 @@
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
-import { MessageThread } from "@/components/messages/MessageThread";
-import { MessageInput } from "@/components/messages/MessageInput";
-import { redirect } from "next/navigation";
+import { MeetupsList } from "@/components/meetups/MeetupsList";
+import { CreateMeetupButton } from "@/components/meetups/CreateMeetupButton";
+import { CalendarDays } from "lucide-react";
 
-export default async function ConversationPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+export default async function MeetupsPage() {
   const { userId } = await auth();
-  const { id: conversationId } = await params;
 
-  if (!userId) redirect("/sign-in");
+  if (!userId) {
+    return (
+      <div className="rounded-3xl border border-white/10 bg-white/[0.02] p-10 text-white/70">
+        You need to be signed in to view meetups.
+      </div>
+    );
+  }
 
   const user = await prisma.user.findUnique({
     where: { clerkId: userId },
   });
-  if (!user) redirect("/onboarding");
 
-  const conversation = await prisma.conversation.findUnique({
-    where: { id: conversationId },
-    include: {
-      participants: { include: { user: true } },
-      messages: {
-        include: { sender: true },
-        orderBy: { createdAt: "asc" },
-        take: 100,
-      },
-    },
+  if (!user) return null;
+
+  // Friends (for invites)
+  const friendships = await prisma.friendship.findMany({
+    where: { userId: user.id },
   });
 
-  if (!conversation) redirect("/dashboard/messages");
+  const friends = (
+    await Promise.all(
+      friendships.map((f) =>
+        prisma.user.findUnique({ where: { id: f.friendId } })
+      )
+    )
+  ).filter(Boolean);
 
-  const otherUser = conversation.participants.find(
-    (p) => p.userId !== user.id
-  )?.user;
-
-  if (!otherUser) redirect("/dashboard/messages");
+  // Meetups — DO NOT TYPE THIS
+  const meetups = await prisma.meetup.findMany({
+    where: {
+      OR: [
+        { isPublic: true },
+        { hostId: user.id },
+        { participants: { some: { userId: user.id } } },
+      ],
+      scheduledAt: { gte: new Date() },
+    },
+    include: {
+      host: true,
+      participants: {
+        include: { user: true },
+      },
+    },
+    orderBy: { scheduledAt: "asc" },
+  });
 
   return (
-    <section className="flex h-[calc(100vh-4rem)] flex-col bg-black">
+    <div className="space-y-10">
       {/* HEADER */}
-      <div className="flex items-center gap-3 border-b border-white/10 px-6 py-4">
-        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-500 text-sm font-semibold text-white">
-          {(otherUser.name || otherUser.username || "?")[0]}
-        </div>
+      <section className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+        <div className="space-y-2">
+          <div className="flex items-center gap-3 text-white/60">
+            <CalendarDays className="w-5 h-5" />
+            <span className="text-sm uppercase tracking-wider">
+              Real-world moments
+            </span>
+          </div>
 
-        <div>
-          <p className="text-sm font-medium text-white">
-            {otherUser.name || otherUser.username}
+          <h1 className="text-3xl md:text-4xl font-semibold text-white">
+            Meetups
+          </h1>
+
+          <p className="text-white/60 max-w-xl">
+            Plans don’t start with dates — they start with energy.
           </p>
-          {otherUser.primaryCode && (
-            <p className="text-xs text-white/40">{otherUser.primaryCode}</p>
-          )}
         </div>
-      </div>
 
-      {/* THREAD */}
-      <MessageThread
-        messages={conversation.messages as any}
+        <CreateMeetupButton friends={friends as any[]} />
+      </section>
+
+      {/* LIST */}
+      <MeetupsList
+        meetups={meetups}
         currentUserId={user.id}
-        conversationId={conversation.id}
       />
-
-      {/* INPUT */}
-      <MessageInput conversationId={conversation.id} />
-    </section>
+    </div>
   );
 }
