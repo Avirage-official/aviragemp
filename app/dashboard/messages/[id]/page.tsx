@@ -6,9 +6,7 @@ import { redirect } from "next/navigation";
 
 export default async function ConversationPage({
   params,
-}: {
-  params: { id: string };
-}) {
+}: any) {
   const { userId } = await auth();
   const conversationId = params.id;
 
