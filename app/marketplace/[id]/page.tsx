@@ -1,4 +1,4 @@
-// app/[id]/marketplace/page.tsx
+// app/marketplace/[id]/page.tsx
 import { prisma } from "@/lib/prisma";
 import MarketplaceDetailClient, {
   ListingDetailView,
@@ -6,19 +6,17 @@ import MarketplaceDetailClient, {
 
 export const dynamic = "force-dynamic";
 
-type PageProps = {
-  params: Promise<{ id: string }>;
+export default async function MarketplaceDetailPage({
+  params,
+  searchParams,
+}: {
+  params: { id: string };
   searchParams?: {
     lens?: string;
     code?: string;
   };
-};
-
-export default async function MarketplaceDetailPage({
-  params,
-  searchParams,
-}: PageProps) {
-  const { id } = await params;
+}) {
+  const { id } = params;
 
   const listing = await prisma.listing.findFirst({
     where: { id, isActive: true },
@@ -44,34 +42,43 @@ export default async function MarketplaceDetailPage({
     );
   }
 
-  /**
-   * NOTE:
-   * Your current Prisma Listing model does not include:
-   * - traits / whatToExpect / host / timeline
-   * We keep the UI by allowing editorial fields to come from optional JSON/arrays.
-   * If fields are missing, we render tasteful defaults (not “empty MVP”).
-   */
+  /* ---------------------------------------------------------------------- */
+  /* Safe helpers                                                            */
+  /* ---------------------------------------------------------------------- */
+
+  function safeStringArray(v: unknown): string[] {
+    if (!Array.isArray(v)) return [];
+    return v.filter((x) => typeof x === "string") as string[];
+  }
+
+  /* ---------------------------------------------------------------------- */
+  /* Editorial fallbacks (forward-compatible)                                */
+  /* ---------------------------------------------------------------------- */
+
   const traits =
     typeof (listing as any).traits === "object" && (listing as any).traits
       ? (listing as any).traits
       : null;
-function safeStringArray(v: unknown): string[] {
-  if (!Array.isArray(v)) return [];
-  return v.filter((x) => typeof x === "string") as string[];
-}
 
   const whatToExpect = safeStringArray((listing as any).whatToExpect);
+
   const whatHappensNext =
     typeof (listing as any).whatHappensNext === "string"
       ? (listing as any).whatHappensNext
       : null;
 
-  const host = (listing as any).host && typeof (listing as any).host === "object"
-    ? (listing as any).host
+  const host =
+    (listing as any).host && typeof (listing as any).host === "object"
+      ? (listing as any).host
+      : null;
+
+  const timeline = Array.isArray((listing as any).timeline)
+    ? (listing as any).timeline
     : null;
 
-  const timeline =
-    Array.isArray((listing as any).timeline) ? (listing as any).timeline : null;
+  /* ---------------------------------------------------------------------- */
+  /* View model                                                              */
+  /* ---------------------------------------------------------------------- */
 
   const view: ListingDetailView = {
     id: listing.id,
@@ -93,15 +100,16 @@ function safeStringArray(v: unknown): string[] {
       tertiaryCode: listing.business.tertiaryCode ?? null,
     },
     editorial: {
-      traits: traits ?? {
-        energy: 55,
-        social: 45,
-        structure: 50,
-        expression: 45,
-        nature: 50,
-        pace: 50,
-        introspection: 55,
-      },
+      traits:
+        traits ?? {
+          energy: 55,
+          social: 45,
+          structure: 50,
+          expression: 45,
+          nature: 50,
+          pace: 50,
+          introspection: 55,
+        },
       whatToExpect:
         whatToExpect.length > 0
           ? whatToExpect
@@ -128,8 +136,7 @@ function safeStringArray(v: unknown): string[] {
           values: ["Clarity", "Care", "Human pace"],
         },
       timeline:
-        timeline ??
-        [
+        timeline ?? [
           {
             phase: "Inquiry",
             description:
