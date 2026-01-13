@@ -34,6 +34,8 @@ export type ListingDetailView = {
       introspection: number;
     };
     tags: string[];
+    duration: string | null; // ✅ ADD
+    groupSize: string | null; // ✅ ADD
     whatToExpect: string[];
     whatHappensNext: string;
     host: {

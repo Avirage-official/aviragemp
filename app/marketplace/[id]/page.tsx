@@ -6,46 +6,75 @@ import MarketplaceDetailClient, {
 
 export const dynamic = "force-dynamic";
 
-function normaliseTraits(input: unknown): {
-  energy: number;
-  social: number;
-  structure: number;
-  expression: number;
-  nature: number;
-  pace: number;
-  introspection: number;
-} | null {
-  if (!input || typeof input !== "object") return null;
+/**
+ * Next.js 15 typegen expects params/searchParams to be Promises in async pages.
+ * If we type them as plain objects, Vercel build fails with the Promise<any> mismatch.
+ */
+type SearchParams = {
+  lens?: string;
+  code?: string;
+};
 
-  const obj = input as Record<string, unknown>;
+type PageProps = {
+  params: Promise<{ id: string }>;
+  searchParams?: Promise<SearchParams>;
+};
 
-  const clamp = (v: unknown, d = 50) =>
-    typeof v === "number" ? Math.max(0, Math.min(100, v)) : d;
-
-  return {
-    energy: clamp(obj.energy),
-    social: clamp(obj.social),
-    structure: clamp(obj.structure),
-    expression: clamp(obj.expression),
-    nature: clamp(obj.nature),
-    pace: clamp(obj.pace),
-    introspection: clamp(obj.introspection),
-  };
-}
+/* -------------------------------------------------------------------------- */
+/* Small helpers                                                              */
+/* -------------------------------------------------------------------------- */
 
 function safeStringArray(v: unknown): string[] {
   if (!Array.isArray(v)) return [];
-  return v.filter((x) => typeof x === "string");
+  return v
+    .filter((x) => typeof x === "string")
+    .map((x) => x.trim())
+    .filter(Boolean);
 }
+
+function clampTrait(n: unknown, fallback = 50): number {
+  const v = typeof n === "number" && Number.isFinite(n) ? n : fallback;
+  return Math.max(0, Math.min(100, v));
+}
+
+function normaliseTraits(v: unknown): ListingDetailView["editorial"]["traits"] {
+  // Prisma Json can be object/array/string/number/bool/null — we only accept object
+  if (!v || typeof v !== "object" || Array.isArray(v)) {
+    return {
+      energy: 55,
+      social: 45,
+      structure: 50,
+      expression: 45,
+      nature: 50,
+      pace: 50,
+      introspection: 55,
+    };
+  }
+
+  const obj = v as Record<string, unknown>;
+
+  return {
+    energy: clampTrait(obj.energy, 55),
+    social: clampTrait(obj.social, 45),
+    structure: clampTrait(obj.structure, 50),
+    expression: clampTrait(obj.expression, 45),
+    nature: clampTrait(obj.nature, 50),
+    pace: clampTrait(obj.pace, 50),
+    introspection: clampTrait(obj.introspection, 55),
+  };
+}
+
+/* -------------------------------------------------------------------------- */
+/* Page                                                                       */
+/* -------------------------------------------------------------------------- */
 
 export default async function MarketplaceDetailPage({
   params,
   searchParams,
-}: {
-  params: { id: string };
-  searchParams?: { lens?: string; code?: string };
-}) {
-  const { id } = params;
+}: PageProps) {
+  const { id } = await params;
+
+  const sp = searchParams ? await searchParams : undefined;
 
   const listing = await prisma.listing.findFirst({
     where: { id, isActive: true },
@@ -71,10 +100,17 @@ export default async function MarketplaceDetailPage({
     );
   }
 
-  const traits =
-    listing.traits && typeof listing.traits === "object"
-      ? listing.traits
-      : null;
+  // Pull editorial from Listing model (now that you added these fields)
+  const traits = normaliseTraits((listing as any).traits);
+  const tags = safeStringArray((listing as any).tags ?? []);
+  const duration =
+    typeof (listing as any).duration === "string" && (listing as any).duration.trim()
+      ? (listing as any).duration.trim()
+      : "Varies";
+  const groupSize =
+    typeof (listing as any).groupSize === "string" && (listing as any).groupSize.trim()
+      ? (listing as any).groupSize.trim()
+      : "Flexible";
 
   const view: ListingDetailView = {
     id: listing.id,
@@ -96,69 +132,51 @@ export default async function MarketplaceDetailPage({
       tertiaryCode: listing.business.tertiaryCode ?? null,
     },
     editorial: {
-      traits: traits ?? {
-        energy: 55,
-        social: 45,
-        structure: 50,
-        expression: 45,
-        nature: 50,
-        pace: 50,
-        introspection: 55,
-      },
-      whatToExpect: safeStringArray((listing as any).whatToExpect).length
-        ? safeStringArray((listing as any).whatToExpect)
-        : [
-            "A gentle pace — you can opt in or out of intensity",
-            "Clarity over pressure (no hard selling, no forced sharing)",
-            "Space to ask questions before committing",
-            "Designed to feel like fit, not funnel",
-          ],
+      traits,
+      tags,
+      duration,
+      groupSize,
+
+      // Keep continuity even if you haven't stored these yet
+      whatToExpect: [
+        "A gentle pace — you can opt in or out of intensity",
+        "Clarity over pressure (no forced sharing)",
+        "Space to ask questions before committing",
+        "Designed to feel like fit, not funnel",
+      ],
       whatHappensNext:
-        typeof (listing as any).whatHappensNext === "string"
-          ? (listing as any).whatHappensNext
-          : "After you send an inquiry, the host replies with timing options and practical details so you can decide if it fits.",
-      host:
-        (listing as any).host && typeof (listing as any).host === "object"
-          ? (listing as any).host
-          : {
-              name: listing.business.businessName,
-              ethos:
-                listing.business.description ??
-                "A small operator focused on intentional, personality-aligned experiences.",
-              approach: [
-                "Low-pressure conversation first",
-                "Fit-focused guidance",
-                "Respect for autonomy",
-              ],
-              values: ["Clarity", "Care", "Human pace"],
-            },
-      timeline: Array.isArray((listing as any).timeline)
-        ? (listing as any).timeline
-        : [
-            {
-              phase: "Inquiry",
-              description:
-                "You send a message describing your interest and constraints.",
-            },
-            {
-              phase: "Host reply",
-              description:
-                "The host responds with options and practical details.",
-            },
-            {
-              phase: "Confirm fit",
-              description:
-                "If it feels aligned, you confirm timing and next steps.",
-            },
-          ],
+        "After you send an inquiry, the host replies with timing options, practical details, and guidance so you can decide if it fits.",
+      host: {
+        name: listing.business.businessName,
+        ethos:
+          listing.business.description ??
+          "A small operator focused on intentional, personality-aligned experiences.",
+        approach: ["Low-pressure conversation first", "Fit-focused guidance", "Respect for autonomy"],
+        values: ["Clarity", "Care", "Human pace"],
+      },
+      timeline: [
+        {
+          phase: "Inquiry",
+          description:
+            "You send a message describing your interest, constraints, and what you want from the experience.",
+        },
+        {
+          phase: "Host reply",
+          description: "The host responds with options, practical details, and any preparation notes.",
+        },
+        {
+          phase: "Confirm fit",
+          description: "If it feels aligned, you confirm timing and next steps—no pressure if it doesn’t.",
+        },
+      ],
     },
   };
 
   return (
     <MarketplaceDetailClient
       view={view}
-      lens={searchParams?.lens ?? null}
-      codeLens={searchParams?.code ?? null}
+      lens={sp?.lens ?? null}
+      codeLens={sp?.code ?? null}
     />
   );
 }
