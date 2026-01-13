@@ -2,6 +2,41 @@ import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
+/* -------------------------------------------------------------------------- */
+/* Helpers — calm normalisation (not validation walls)                          */
+/* -------------------------------------------------------------------------- */
+
+function clampTrait(n: unknown, fallback = 50): number {
+  const v = typeof n === "number" ? n : fallback;
+  return Math.max(0, Math.min(100, v));
+}
+
+function normaliseTraits(input: any) {
+  if (!input || typeof input !== "object") return null;
+
+  return {
+    energy: clampTrait(input.energy),
+    social: clampTrait(input.social),
+    structure: clampTrait(input.structure),
+    expression: clampTrait(input.expression),
+    nature: clampTrait(input.nature),
+    pace: clampTrait(input.pace),
+    introspection: clampTrait(input.introspection),
+  };
+}
+
+function safeStringArray(v: unknown): string[] {
+  if (!Array.isArray(v)) return [];
+  return v
+    .filter((x) => typeof x === "string")
+    .map((x) => x.trim())
+    .filter(Boolean);
+}
+
+/* -------------------------------------------------------------------------- */
+/* CREATE LISTING                                                              */
+/* -------------------------------------------------------------------------- */
+
 export async function POST(request: Request) {
   try {
     const { userId } = await auth();
@@ -41,6 +76,27 @@ export async function POST(request: Request) {
       );
     }
 
+    /* ---------------------------------------------------------------------- */
+    /* Editorial normalisation (NEW, SAFE)                                     */
+    /* ---------------------------------------------------------------------- */
+
+    const traits = normaliseTraits(data.traits);
+    const tags = safeStringArray(data.tags);
+
+    const duration =
+      typeof data.duration === "string" && data.duration.trim()
+        ? data.duration.trim()
+        : null;
+
+    const groupSize =
+      typeof data.groupSize === "string" && data.groupSize.trim()
+        ? data.groupSize.trim()
+        : null;
+
+    /* ---------------------------------------------------------------------- */
+    /* Create listing                                                         */
+    /* ---------------------------------------------------------------------- */
+
     const listing = await prisma.listing.create({
       data: {
         businessId: user.businessProfile.id,
@@ -63,6 +119,12 @@ export async function POST(request: Request) {
 
         bookingType: data.bookingType ?? "INQUIRY",
         isActive: true,
+
+        // 👇 ETHOS EDITORIAL LAYER
+        traits,
+        tags,
+        duration,
+        groupSize,
       },
     });
 
