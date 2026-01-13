@@ -39,9 +39,9 @@ export default async function MeetupsPage() {
     await Promise.all(
       friendships.map((f) =>
         prisma.user.findUnique({ where: { id: f.friendId } })
-      )
     )
-  ).filter(Boolean);
+  )
+).filter((u): u is NonNullable<typeof u> => u !== null);
 
   /**
    * Meetups user can see
