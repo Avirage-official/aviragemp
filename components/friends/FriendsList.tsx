@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { motion } from "framer-motion";
 
 interface Friend {
   id: string;
@@ -18,102 +19,96 @@ interface Friend {
 export function FriendsList({ friends }: { friends: Friend[] }) {
   const router = useRouter();
   const [loading, setLoading] = useState<string | null>(null);
-  
+
   async function startConversation(friendUserId: string) {
     setLoading(friendUserId);
-    
-    try {
-      const response = await fetch("/api/conversations/create", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ friendId: friendUserId })
-      });
-      
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error("API error:", response.status, errorText);
-        alert(`Error: ${response.status} - ${errorText}`);
-        setLoading(null);
-        return;
-      }
-      
-      const data = await response.json();
-      console.log("Conversation created:", data);
-      
-      if (data.conversationId) {
-        router.push(`/dashboard/messages/${data.conversationId}`);
-      } else {
-        console.error("No conversationId in response");
-        alert("Failed to create conversation");
-        setLoading(null);
-      }
-    } catch (error) {
-      console.error("Failed to create conversation:", error);
-      alert("Failed to create conversation");
-      setLoading(null);
+
+    const res = await fetch("/api/conversations/create", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ friendId: friendUserId }),
+    });
+
+    const data = await res.json();
+    setLoading(null);
+
+    if (data?.conversationId) {
+      router.push(`/dashboard/messages/${data.conversationId}`);
     }
   }
-  
+
   if (friends.length === 0) {
     return (
-      <div className="bg-white rounded-lg p-12 shadow text-center">
-        <div className="text-6xl mb-4">👋</div>
-        <h2 className="text-2xl font-bold mb-2">No friends yet</h2>
-        <p className="text-gray-600">
-          Click "Invite Friend" above to start building your circle
+      <div className="rounded-3xl border border-white/10 bg-white/[0.02] p-12 text-center">
+        <div className="text-5xl mb-4">🌌</div>
+        <h2 className="text-xl font-medium text-white mb-2">
+          Your circle is forming
+        </h2>
+        <p className="text-white/50 max-w-sm mx-auto">
+          Invite people who move like you. ETHOS is about alignment, not numbers.
         </p>
       </div>
     );
   }
-  
+
   return (
-    <div className="bg-white rounded-lg p-6 shadow">
-      <h2 className="text-2xl font-bold mb-4">Your Friends ({friends.length})</h2>
-      
-      <div className="space-y-4">
-        {friends.map(friendship => {
-          const friend = friendship.user;
-          const isLoadingThis = loading === friend.id;
-          
-          return (
-            <div key={friend.id} className="flex items-center justify-between border-b pb-4 last:border-b-0">
+    <div className="grid md:grid-cols-2 gap-6">
+      {friends.map(({ id, user }) => {
+        const isLoading = loading === user.id;
+
+        return (
+          <motion.div
+            key={id}
+            whileHover={{ y: -6 }}
+            className="relative rounded-3xl border border-white/10 bg-white/[0.02] p-6 overflow-hidden"
+          >
+            {/* mood aura */}
+            {user.currentMood && (
+              <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/5 to-transparent blur-xl" />
+            )}
+
+            <div className="relative z-10 flex items-center justify-between">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-purple-400 rounded-full flex items-center justify-center text-white font-bold">
-                  {(friend.name || friend.username || "?")[0].toUpperCase()}
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white font-semibold">
+                  {(user.name || user.username || "?")[0]?.toUpperCase()}
                 </div>
+
                 <div>
-                  <p className="font-semibold text-gray-900">
-                    {friend.name || friend.username || "Anonymous"}
+                  <p className="text-white font-medium">
+                    {user.name || user.username || "Anonymous"}
                   </p>
-                  <p className="text-sm text-gray-600">{friend.primaryCode}</p>
-                  
-                  {friend.currentMood && (
-                    <p className="text-sm text-blue-600 mt-1">
-                      {friend.currentMood}
+                  <p className="text-xs text-white/50">
+                    {user.primaryCode || "Unknown code"}
+                  </p>
+
+                  {user.currentMood && (
+                    <p className="text-xs text-blue-400 mt-1">
+                      {user.currentMood}
                     </p>
                   )}
                 </div>
               </div>
-              
-              <div className="flex gap-2">
-                <button 
-                  onClick={() => startConversation(friend.id)}
-                  disabled={isLoadingThis}
-                  className="px-3 py-1 bg-blue-600 text-white rounded text-sm hover:bg-blue-700 disabled:bg-blue-300 transition"
+
+              {/* hover actions */}
+              <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition">
+                <button
+                  onClick={() => startConversation(user.id)}
+                  disabled={isLoading}
+                  className="rounded-full bg-white text-black px-3 py-1 text-xs font-medium hover:opacity-90 transition"
                 >
-                  {isLoadingThis ? "Loading..." : "Message"}
+                  {isLoading ? "..." : "Message"}
                 </button>
-                <button 
-                  onClick={() => router.push(`/dashboard/meetups`)}
-                  className="px-3 py-1 bg-green-600 text-white rounded text-sm hover:bg-green-700 transition"
+                <button
+                  onClick={() => router.push("/dashboard/meetups")}
+                  className="rounded-full border border-white/20 px-3 py-1 text-xs text-white hover:bg-white/10 transition"
                 >
-                  Plan Meetup
+                  Meetup
                 </button>
               </div>
             </div>
-          );
-        })}
-      </div>
+          </motion.div>
+        );
+      })}
     </div>
   );
 }
