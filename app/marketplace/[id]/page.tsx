@@ -7,20 +7,18 @@ import MarketplaceDetailClient, {
 export const dynamic = "force-dynamic";
 
 type PageProps = {
-  params: { id: string };
-  searchParams?: { lens?: string; code?: string };
+  params: Promise<{ id: string }>;
+  searchParams?: {
+    lens?: string;
+    code?: string;
+  };
 };
-
-function safeStringArray(v: unknown): string[] {
-  if (!Array.isArray(v)) return [];
-  return v.filter((x) => typeof x === "string") as string[];
-}
 
 export default async function MarketplaceDetailPage({
   params,
   searchParams,
 }: PageProps) {
-  const id = params.id;
+  const { id } = await params;
 
   const listing = await prisma.listing.findFirst({
     where: { id, isActive: true },
@@ -57,6 +55,10 @@ export default async function MarketplaceDetailPage({
     typeof (listing as any).traits === "object" && (listing as any).traits
       ? (listing as any).traits
       : null;
+function safeStringArray(v: unknown): string[] {
+  if (!Array.isArray(v)) return [];
+  return v.filter((x) => typeof x === "string") as string[];
+}
 
   const whatToExpect = safeStringArray((listing as any).whatToExpect);
   const whatHappensNext =
