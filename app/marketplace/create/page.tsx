@@ -25,7 +25,7 @@ const MYTHICAL_CODES = [
 type MythicalCode = (typeof MYTHICAL_CODES)[number];
 
 /* -------------------------------------------------------------------------- */
-/* TYPES                                                                      */
+/* TYPES (PRISMA-SAFE)                                                         */
 /* -------------------------------------------------------------------------- */
 
 type ExperienceTraits = {
@@ -46,7 +46,7 @@ type Category =
   | "service";
 
 /* -------------------------------------------------------------------------- */
-/* SMALL UI PRIMITIVES                                                        */
+/* UI PRIMITIVES                                                               */
 /* -------------------------------------------------------------------------- */
 
 function Section({
@@ -76,17 +76,19 @@ function Slider({
   left,
   right,
   value,
+  hint,
   onChange,
 }: {
   label: string;
   left: string;
   right: string;
   value: number;
+  hint?: string;
   onChange: (v: number) => void;
 }) {
   return (
     <div>
-      <div className="mb-2 flex justify-between text-xs text-white/60">
+      <div className="mb-1 flex justify-between text-xs text-white/60">
         <span>{left}</span>
         <span>{right}</span>
       </div>
@@ -98,11 +100,12 @@ function Slider({
         step={5}
         value={value}
         onChange={(e) => onChange(Number(e.target.value))}
-        className="w-full"
+        className="w-full accent-white"
       />
 
       <div className="mt-1 text-center text-xs text-white/40">
         {label}: {value}
+        {hint && <span className="block mt-1">{hint}</span>}
       </div>
     </div>
   );
@@ -134,7 +137,7 @@ function Pill({
 }
 
 /* -------------------------------------------------------------------------- */
-/* PAGE                                                                       */
+/* PAGE                                                                        */
 /* -------------------------------------------------------------------------- */
 
 export default function CreateMarketplaceListingPage() {
@@ -160,6 +163,9 @@ export default function CreateMarketplaceListingPage() {
 
   /* MYTHICAL CODE RESONANCE */
   const [resonatesWith, setResonatesWith] = useState<MythicalCode[]>([]);
+
+  /* HOST INTENT (NEW — IMPORTANT) */
+  const [hostIntent, setHostIntent] = useState("");
 
   /* UI STATE */
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -192,6 +198,7 @@ export default function CreateMarketplaceListingPage() {
           location,
           traits,
           targetCodes: resonatesWith,
+          hostIntent,
           bookingType: "INQUIRY",
         }),
       });
@@ -217,29 +224,30 @@ export default function CreateMarketplaceListingPage() {
             Create an experience
           </h1>
           <p className="mt-4 text-white/60 max-w-2xl">
-            Ethos listings are not advertisements.  
-            They describe how an experience *feels*, so people can self-select calmly.
+            Ethos listings are not advertisements.
+            They describe how an experience <em>feels</em>, so people can
+            self-select calmly and honestly.
           </p>
         </div>
 
-        {/* BASIC INFO */}
+        {/* EXPERIENCE DETAILS */}
         <Section
           title="Experience details"
-          description="Describe the experience clearly and honestly. Avoid hype or pressure."
+          description="Describe what actually happens. Avoid promises, hype, or pressure."
         >
           <div className="space-y-5">
             <input
-              placeholder="Title"
+              placeholder="Experience title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               className="w-full rounded-lg bg-black/40 border border-white/15 px-4 py-3 text-white outline-none"
             />
 
             <textarea
-              placeholder="Describe what happens, how it feels, and what people should expect."
+              placeholder="Describe the flow, tone, and expectations of the experience."
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              rows={5}
+              rows={6}
               className="w-full rounded-lg bg-black/40 border border-white/15 px-4 py-3 text-white outline-none"
             />
 
@@ -277,24 +285,45 @@ export default function CreateMarketplaceListingPage() {
         {/* EXPERIENCE PERSONALITY */}
         <Section
           title="Experience personality"
-          description="These sliders describe the experience — not the person attending."
+          description="These sliders describe the experience itself — not the attendee."
         >
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-            <Slider label="Energy" left="Calm" right="Intense" value={traits.energy}
+            <Slider label="Energy" left="Calm" right="Intense"
+              value={traits.energy}
               onChange={(v) => setTraits({ ...traits, energy: v })} />
-            <Slider label="Social" left="Solo" right="Group" value={traits.social}
+            <Slider label="Social" left="Solo" right="Group"
+              value={traits.social}
               onChange={(v) => setTraits({ ...traits, social: v })} />
-            <Slider label="Structure" left="Guided" right="Open-ended" value={traits.structure}
+            <Slider label="Structure" left="Guided" right="Open"
+              value={traits.structure}
               onChange={(v) => setTraits({ ...traits, structure: v })} />
-            <Slider label="Expression" left="Reflective" right="Expressive" value={traits.expression}
+            <Slider label="Expression" left="Reflective" right="Expressive"
+              value={traits.expression}
               onChange={(v) => setTraits({ ...traits, expression: v })} />
-            <Slider label="Nature" left="Indoor" right="Nature" value={traits.nature}
+            <Slider label="Nature" left="Indoor" right="Nature"
+              value={traits.nature}
               onChange={(v) => setTraits({ ...traits, nature: v })} />
-            <Slider label="Pace" left="Slow" right="Fast" value={traits.pace}
+            <Slider label="Pace" left="Slow" right="Fast"
+              value={traits.pace}
               onChange={(v) => setTraits({ ...traits, pace: v })} />
-            <Slider label="Introspection" left="Light" right="Deep" value={traits.introspection}
+            <Slider label="Introspection" left="Light" right="Deep"
+              value={traits.introspection}
               onChange={(v) => setTraits({ ...traits, introspection: v })} />
           </div>
+        </Section>
+
+        {/* HOST INTENT */}
+        <Section
+          title="Host intention"
+          description="Why does this experience exist? What do you hope people leave with?"
+        >
+          <textarea
+            placeholder="This experience exists because…"
+            value={hostIntent}
+            onChange={(e) => setHostIntent(e.target.value)}
+            rows={4}
+            className="w-full rounded-lg bg-black/40 border border-white/15 px-4 py-3 text-white outline-none"
+          />
         </Section>
 
         {/* CODE RESONANCE */}
@@ -315,8 +344,8 @@ export default function CreateMarketplaceListingPage() {
           </div>
 
           <p className="mt-4 text-xs text-white/45 max-w-2xl">
-            Ethos will never say “this is for you.”  
-            These signals are shown softly and always optional.
+            Ethos never assigns people to experiences.
+            These signals are descriptive, optional, and always reversible.
           </p>
         </Section>
 
@@ -333,7 +362,7 @@ export default function CreateMarketplaceListingPage() {
 
         {/* FOOTER ETHICS */}
         <div className="pt-8 border-t border-white/10 text-xs text-white/40 max-w-3xl">
-          Ethos listings describe experiences, not people.  
+          Ethos listings describe experiences, not people.
           No ranking. No pressure. No behavioural targeting.
         </div>
       </main>
