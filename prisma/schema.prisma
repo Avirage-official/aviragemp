@@ -7,308 +7,370 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+////////////////////////
+// USER
+////////////////////////
+
 model User {
-  id              String   @id @default(cuid())
-  clerkId         String   @unique
-  email           String   @unique
-  name            String?
-  username        String?  @unique
-  avatar          String?
-  
-  type            String   @default("CONSUMER")
-  
-  primaryCode     String?
-  secondaryCode   String?
-  tertiaryCode    String?
-  quizResults     Json?
-  
-  city            String?
-  country         String?
-  timezone        String?
-  
-  currentMood     String?
-  moodUpdatedAt   DateTime?
-  
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  
+  id       String  @id @default(cuid())
+  clerkId  String  @unique
+  email    String  @unique
+  name     String?
+  username String? @unique
+  avatar   String?
+
+  type String @default("CONSUMER")
+
+  primaryCode   String?
+  secondaryCode String?
+  tertiaryCode  String?
+  quizResults   Json?
+
+  city     String?
+  country  String?
+  timezone String?
+
+  currentMood   String?
+  moodUpdatedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   sentFriendRequests     FriendRequest[] @relation("SentRequests")
   receivedFriendRequests FriendRequest[] @relation("ReceivedRequests")
   friendships            Friendship[]    @relation("UserFriendships")
-  
-  sentMessages           Message[]       @relation("SentMessages")
-  conversations          ConversationParticipant[]
-  
-  hostedMeetups          Meetup[]        @relation("HostedMeetups")
-  meetupParticipants     MeetupParticipant[]
-  
-  // NEW: Business relations
-  businessProfile        BusinessProfile?
-  bookings               Booking[]
-  
-  notifications          Notification[]
-  
+
+  sentMessages  Message[]                 @relation("SentMessages")
+  conversations ConversationParticipant[]
+
+  hostedMeetups      Meetup[]            @relation("HostedMeetups")
+  meetupParticipants MeetupParticipant[]
+
+  businessProfile BusinessProfile?
+  bookings        Booking[]
+  notifications   Notification[]
+
   @@index([type])
   @@index([city])
   @@index([primaryCode])
 }
 
+////////////////////////
+// SOCIAL
+////////////////////////
+
 model FriendRequest {
-  id          String   @id @default(cuid())
-  senderId    String
-  sender      User     @relation("SentRequests", fields: [senderId], references: [id], onDelete: Cascade)
-  receiverId  String
-  receiver    User     @relation("ReceivedRequests", fields: [receiverId], references: [id], onDelete: Cascade)
-  
-  status      String   @default("PENDING")
-  message     String?
-  
-  createdAt   DateTime @default(now())
+  id         String @id @default(cuid())
+  senderId   String
+  receiverId String
+
+  sender   User @relation("SentRequests", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver User @relation("ReceivedRequests", fields: [receiverId], references: [id], onDelete: Cascade)
+
+  status  String  @default("PENDING")
+  message String?
+
+  createdAt   DateTime  @default(now())
   respondedAt DateTime?
-  
+
   @@unique([senderId, receiverId])
   @@index([receiverId, status])
 }
 
 model Friendship {
-  id          String   @id @default(cuid())
-  userId      String
-  user        User     @relation("UserFriendships", fields: [userId], references: [id], onDelete: Cascade)
-  friendId    String
-  
-  createdAt   DateTime @default(now())
-  
+  id       String @id @default(cuid())
+  userId   String
+  friendId String
+
+  user User @relation("UserFriendships", fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
   @@unique([userId, friendId])
   @@index([userId])
 }
 
+////////////////////////
+// MESSAGING
+////////////////////////
+
 model Conversation {
-  id            String   @id @default(cuid())
-  isGroup       Boolean  @default(false)
-  groupName     String?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  
-  participants  ConversationParticipant[]
-  messages      Message[]
+  id        String  @id @default(cuid())
+  isGroup   Boolean @default(false)
+  groupName String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  participants ConversationParticipant[]
+  messages     Message[]
 }
 
 model ConversationParticipant {
-  id             String   @id @default(cuid())
+  id             String @id @default(cuid())
   conversationId String
-  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
   userId         String
-  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  lastRead       DateTime @default(now())
-  createdAt      DateTime @default(now())
-  
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  lastRead  DateTime @default(now())
+  createdAt DateTime @default(now())
+
   @@unique([conversationId, userId])
   @@index([userId])
 }
 
 model Message {
-  id             String   @id @default(cuid())
+  id             String @id @default(cuid())
   conversationId String
-  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
   senderId       String
-  sender         User     @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
-  content        String
-  attachments    Json?
-  createdAt      DateTime @default(now())
-  
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender       User         @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+
+  content     String
+  attachments Json?
+
+  createdAt DateTime @default(now())
+
   @@index([conversationId])
   @@index([senderId])
 }
 
+////////////////////////
+// MEETUPS
+////////////////////////
+
 model Meetup {
-  id          String   @id @default(cuid())
-  hostId      String
-  host        User     @relation("HostedMeetups", fields: [hostId], references: [id], onDelete: Cascade)
+  id     String @id @default(cuid())
+  hostId String
+
+  host User @relation("HostedMeetups", fields: [hostId], references: [id], onDelete: Cascade)
+
   title       String
   description String?
   venueName   String
   city        String
   scheduledAt DateTime
-  isPublic    Boolean  @default(false)
+
+  isPublic        Boolean @default(false)
   maxParticipants Int?
-  status      String   @default("UPCOMING")
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
+  status          String  @default("UPCOMING")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   participants MeetupParticipant[]
-  
+
   @@index([hostId])
   @@index([city, isPublic, status])
   @@index([scheduledAt])
 }
 
 model MeetupParticipant {
-  id          String   @id @default(cuid())
-  meetupId    String
-  meetup      Meetup   @relation(fields: [meetupId], references: [id], onDelete: Cascade)
-  userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  status      String   @default("PENDING")
+  id       String @id @default(cuid())
+  meetupId String
+  userId   String
+
+  meetup Meetup @relation(fields: [meetupId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  status         String  @default("PENDING")
   requestMessage String?
-  joinedAt    DateTime @default(now())
+
+  joinedAt    DateTime  @default(now())
   respondedAt DateTime?
-  
+
   @@unique([meetupId, userId])
   @@index([userId])
   @@index([meetupId, status])
 }
 
+////////////////////////
+// NOTIFICATIONS
+////////////////////////
+
 model Notification {
-  id          String   @id @default(cuid())
-  userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  type        String
-  title       String
-  message     String
-  linkTo      String?
-  isRead      Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  
+  id     String @id @default(cuid())
+  userId String
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  type    String
+  title   String
+  message String
+  linkTo  String?
+
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
   @@index([userId, isRead])
   @@index([createdAt])
 }
 
-// ============================================================
-// BUSINESS MODELS (NEW)
-// ============================================================
+////////////////////////
+// BUSINESS
+////////////////////////
 
 model BusinessProfile {
-  id              String   @id @default(cuid())
-  userId          String   @unique
-  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  businessName    String
-  description     String?
-  category        String
-  logo            String?
-  website         String?
-  
-  contactEmail    String
-  contactPhone    String?
-  
+  id     String @id @default(cuid())
+  userId String @unique
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  businessName String
+  description  String?
+  category     String
+  logo         String?
+  website      String?
+
+  primaryCode   String?
+  secondaryCode String?
+  tertiaryCode  String?
+
+  contactEmail String
+  contactPhone String?
+
+  country  String?
+  city     String?
+  timezone String?
+
   stripeAccountId String?
-  
-  subscriptionStatus String @default("TRIAL")
-  subscriptionTier   String @default("basic")
+
+  subscriptionStatus String    @default("TRIAL")
+  subscriptionTier   String    @default("basic")
   subscriptionEndsAt DateTime?
-  
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  
-  listings        Listing[]
-  subscriptions   Subscription[]
-  
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  listings      Listing[]
+  subscriptions Subscription[]
+
   @@index([subscriptionStatus])
+  @@index([primaryCode])
 }
 
+////////////////////////
+// LISTINGS
+////////////////////////
+
 model Listing {
-  id              String   @id @default(cuid())
-  businessId      String
-  business        BusinessProfile @relation(fields: [businessId], references: [id], onDelete: Cascade)
-  
-  title           String
-  description     String
-  category        String
-  subcategory     String?
-  
-  images          String[]
-  
-  price           Float?
-  currency        String   @default("USD")
-  pricingType     String   @default("FIXED")
-  
-  location        String?
-  city            String?
-  
-  targetCodes     String[]
-  
-  bookingType     String   @default("INQUIRY")
-  
-  isActive        Boolean  @default(true)
-  
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  
-  bookings        Booking[]
-  analytics       ListingAnalytics[]
-  
+  id         String @id @default(cuid())
+  businessId String
+
+  business BusinessProfile @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  title       String
+  description String
+  category    String
+  subcategory String?
+
+  images String[]
+
+  price       Float?
+  currency    String @default("USD")
+  pricingType String @default("FIXED")
+
+  location String?
+  city     String?
+
+  targetCodes String[]
+
+  bookingType String  @default("INQUIRY")
+  isActive    Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  bookings  Booking[]
+  analytics ListingAnalytics[]
+
   @@index([businessId])
   @@index([category])
   @@index([isActive])
   @@index([targetCodes])
 }
 
+////////////////////////
+// SUBSCRIPTIONS
+////////////////////////
+
 model Subscription {
-  id              String   @id @default(cuid())
-  businessId      String
-  business        BusinessProfile @relation(fields: [businessId], references: [id], onDelete: Cascade)
-  
-  stripeSubscriptionId String @unique
-  tier            String
-  billingPeriod   String
-  
-  amount          Float?
-  currency        String   @default("USD")
-  
-  status          String
-  
-  currentPeriodStart DateTime
-  currentPeriodEnd   DateTime
-  
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  
+  id         String @id @default(cuid())
+  businessId String
+
+  business BusinessProfile @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  tier   String
+  status String
+
+  stripeSubscriptionId String? @unique
+  stripeCustomerId     String?
+
+  currentPeriodStart DateTime?
+  currentPeriodEnd   DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@index([businessId])
+  @@index([status])
 }
 
+////////////////////////
+// BOOKINGS / PAYMENTS
+////////////////////////
+
 model Booking {
-  id              String   @id @default(cuid())
-  userId          String
-  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  listingId       String
-  listing         Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
-  
-  bookingDate     DateTime?
-  numberOfPeople  Int?      @default(1)
+  id        String @id @default(cuid())
+  userId    String
+  listingId String
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  listing Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  bookingDate    DateTime?
+  numberOfPeople Int?      @default(1)
+
   specialRequests String?
-  
-  amount          Float?
-  currency        String   @default("USD")
-  
-  status          String   @default("PENDING")
-  
-  inquiryMessage  String?
+
+  amount   Float?
+  currency String @default("USD")
+
+  status String @default("PENDING")
+
+  inquiryMessage   String?
   businessResponse String?
-  
+
   stripePaymentId String?
   paidAt          DateTime?
-  
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@index([userId])
   @@index([listingId])
   @@index([status])
 }
 
+////////////////////////
+// ANALYTICS
+////////////////////////
+
 model ListingAnalytics {
-  id          String   @id @default(cuid())
-  listingId   String
-  listing     Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
-  
-  viewerCode  String?
-  
-  action      String
-  
-  userId      String?
-  
-  timestamp   DateTime @default(now())
-  
+  id        String @id @default(cuid())
+  listingId String
+
+  listing Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  viewerCode String?
+  action     String
+  userId     String?
+
+  timestamp DateTime @default(now())
+
   @@index([listingId])
   @@index([viewerCode])
   @@index([action])
