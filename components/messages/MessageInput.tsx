@@ -3,57 +3,56 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-export function MessageInput({ conversationId }: { conversationId: string }) {
+export function MessageInput({
+  conversationId,
+}: {
+  conversationId: string;
+}) {
   const [content, setContent] = useState("");
   const [sending, setSending] = useState(false);
   const router = useRouter();
-  
-  async function sendMessage(e: React.FormEvent) {
+
+  async function send(e: React.FormEvent) {
     e.preventDefault();
-    
     if (!content.trim() || sending) return;
-    
+
     setSending(true);
-    
-    try {
-      await fetch("/api/messages/send", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          conversationId,
-          content: content.trim()
-        })
-      });
-      
-      setContent("");
-      router.refresh();
-    } catch (error) {
-      console.error("Failed to send message:", error);
-    } finally {
-      setSending(false);
-    }
+
+    await fetch("/api/messages/send", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        conversationId,
+        content: content.trim(),
+      }),
+    });
+
+    setContent("");
+    setSending(false);
+    router.refresh();
   }
-  
+
   return (
-    <div className="bg-white border-t p-4">
-      <form onSubmit={sendMessage} className="flex gap-2">
+    <form
+      onSubmit={send}
+      className="border-t border-white/10 bg-black px-6 py-4"
+    >
+      <div className="flex items-center gap-3">
         <input
-          type="text"
           value={content}
           onChange={(e) => setContent(e.target.value)}
-          onKeyPress={(e) => e.key === "Enter" && !e.shiftKey && sendMessage(e)}
-          placeholder="Type a message..."
+          placeholder="Say something meaningful…"
           disabled={sending}
-          className="flex-1 p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 text-gray-900"
+          className="flex-1 rounded-full bg-white/10 px-5 py-3 text-sm text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-white/20"
         />
+
         <button
-          type="submit"
           disabled={!content.trim() || sending}
-          className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition"
+          className="rounded-full bg-white px-5 py-2 text-sm font-medium text-black hover:opacity-90 disabled:opacity-40"
         >
-          {sending ? "Sending..." : "Send"}
+          Send
         </button>
-      </form>
-    </div>
+      </div>
+    </form>
   );
 }
