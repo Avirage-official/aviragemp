@@ -1,162 +1,71 @@
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
-import { MeetupsList } from "@/components/meetups/MeetupsList";
-import { CreateMeetupButton } from "@/components/meetups/CreateMeetupButton";
-import { CalendarDays } from "lucide-react";
+import { MessageThread } from "@/components/messages/MessageThread";
+import { MessageInput } from "@/components/messages/MessageInput";
+import { redirect } from "next/navigation";
 
-export default async function MeetupsPage() {
+export default async function ConversationPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
   const { userId } = await auth();
+  const { id: conversationId } = await params;
 
-  /* ───────────────────────────────────────────────
-     AUTH GUARD
-  ─────────────────────────────────────────────── */
-  if (!userId) {
-    return (
-      <div className="rounded-3xl border border-white/10 bg-white/[0.02] p-10 text-white/70">
-        You need to be signed in to view meetups.
-      </div>
-    );
-  }
+  if (!userId) redirect("/sign-in");
 
-  /* ───────────────────────────────────────────────
-     CURRENT USER
-  ─────────────────────────────────────────────── */
   const user = await prisma.user.findUnique({
     where: { clerkId: userId },
   });
+  if (!user) redirect("/onboarding");
 
-  if (!user) {
-    return (
-      <div className="rounded-3xl border border-white/10 bg-white/[0.02] p-10 animate-pulse">
-        <div className="h-6 w-48 bg-white/10 rounded mb-4" />
-        <div className="h-4 w-80 bg-white/5 rounded" />
-      </div>
-    );
-  }
-
-  /* ───────────────────────────────────────────────
-     FRIENDS (PRIVATE INVITES)
-  ─────────────────────────────────────────────── */
-  const friendships = await prisma.friendship.findMany({
-    where: { userId: user.id },
-    select: { friendId: true },
-  });
-
-  const friends = (
-    await Promise.all(
-      friendships.map((f) =>
-        prisma.user.findUnique({
-          where: { id: f.friendId },
-          select: {
-            id: true,
-            name: true,
-            username: true,
-          },
-        })
-      )
-    )
-  ).filter(
-    (u): u is { id: string; name: string | null; username: string | null } =>
-      u !== null
-  );
-
-  /* ───────────────────────────────────────────────
-     MEETUPS (LET PRISMA INFER TYPES)
-  ─────────────────────────────────────────────── */
-  const meetups = await prisma.meetup.findMany({
-    where: {
-      OR: [
-        { isPublic: true },
-        { hostId: user.id },
-        {
-          participants: {
-            some: { userId: user.id },
-          },
-        },
-      ],
-      scheduledAt: {
-        gte: new Date(),
-      },
-    },
+  const conversation = await prisma.conversation.findUnique({
+    where: { id: conversationId },
     include: {
-      host: {
-        select: {
-          id: true,
-          name: true,
-          username: true,
-        },
+      participants: { include: { user: true } },
+      messages: {
+        include: { sender: true },
+        orderBy: { createdAt: "asc" },
+        take: 100,
       },
-      participants: {
-        select: {
-          userId: true,
-          status: true,
-          user: {
-            select: {
-              id: true,
-              name: true,
-              username: true,
-            },
-          },
-        },
-      },
-    },
-    orderBy: {
-      scheduledAt: "asc",
     },
   });
 
-  const hasMeetups = meetups.length > 0;
+  if (!conversation) redirect("/dashboard/messages");
 
-  /* ───────────────────────────────────────────────
-     RENDER
-  ─────────────────────────────────────────────── */
+  const otherUser = conversation.participants.find(
+    (p) => p.userId !== user.id
+  )?.user;
+
+  if (!otherUser) redirect("/dashboard/messages");
+
   return (
-    <div className="space-y-10">
+    <section className="flex h-[calc(100vh-4rem)] flex-col bg-black">
       {/* HEADER */}
-      <section className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-        <div className="space-y-2">
-          <div className="flex items-center gap-3 text-white/60">
-            <CalendarDays className="w-5 h-5" />
-            <span className="text-sm uppercase tracking-wider">
-              Real-world moments
-            </span>
-          </div>
-
-          <h1 className="text-3xl md:text-4xl font-semibold text-white">
-            Meetups
-          </h1>
-
-          <p className="text-white/60 max-w-xl">
-            Plans don’t start with dates — they start with energy.
-            See what’s forming and create moments that feel right.
-          </p>
+      <div className="flex items-center gap-3 border-b border-white/10 px-6 py-4">
+        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-500 text-sm font-semibold text-white">
+          {(otherUser.name || otherUser.username || "?")[0]}
         </div>
 
-        <CreateMeetupButton friends={friends} />
-      </section>
+        <div>
+          <p className="text-sm font-medium text-white">
+            {otherUser.name || otherUser.username}
+          </p>
+          {otherUser.primaryCode && (
+            <p className="text-xs text-white/40">{otherUser.primaryCode}</p>
+          )}
+        </div>
+      </div>
 
-      {/* MEETUPS */}
-      <section className="space-y-6">
-        {hasMeetups ? (
-          <MeetupsList
-            meetups={meetups}
-            currentUserId={user.id}
-            userCode={user.primaryCode}
-          />
-        ) : (
-          <div className="rounded-3xl border border-white/10 bg-white/[0.02] p-12 text-center">
-            <div className="text-5xl mb-4">🗺️</div>
-            <h3 className="text-xl font-medium text-white mb-3">
-              Nothing planned yet
-            </h3>
-            <p className="text-white/60 max-w-md mx-auto mb-6">
-              Be the spark. Create a meetup and invite people who
-              move on the same wavelength.
-            </p>
-            <CreateMeetupButton friends={friends} />
-          </div>
-        )}
-      </section>
-    </div>
+      {/* THREAD */}
+      <MessageThread
+        messages={conversation.messages as any}
+        currentUserId={user.id}
+        conversationId={conversation.id}
+      />
+
+      {/* INPUT */}
+      <MessageInput conversationId={conversation.id} />
+    </section>
   );
 }

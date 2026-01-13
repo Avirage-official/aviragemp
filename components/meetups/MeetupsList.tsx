@@ -1,22 +1,24 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
+import type { RSVPStatus } from "@prisma/client";
 
-type RSVPStatus = "GOING" | "MAYBE" | "CANT_GO";
-
-type Meetup = {
+type MeetupLite = {
   id: string;
   title: string;
-  description?: string | null;
-  scheduledAt: Date;
+  description: string | null;
+  scheduledAt: Date | string;
   venueName: string;
-  host: { id: string };
-  participants: {
+  city: string;
+  isPublic: boolean;
+  host: { id: string; name: string | null; username: string | null };
+  participants: Array<{
     userId: string;
-    status: RSVPStatus;
-  }[];
+    status: RSVPStatus | string; // allow string from prisma/select differences
+    user?: { id: string; name: string | null; username: string | null } | null;
+  }>;
 };
 
 export function MeetupsList({
@@ -24,52 +26,63 @@ export function MeetupsList({
   currentUserId,
   userCode,
 }: {
-  meetups: Meetup[];
+  meetups: MeetupLite[];
   currentUserId: string;
   userCode: string | null;
 }) {
   const router = useRouter();
   const [filter, setFilter] = useState<"all" | "hosting" | "attending">("all");
-  const [pending, setPending] = useState<string | null>(null);
 
-  function myStatus(meetup: Meetup): RSVPStatus | null {
-    return (
-      meetup.participants.find((p) => p.userId === currentUserId)?.status ??
-      null
-    );
-  }
+  // optimistic local status so buttons “stick” instantly
+  const [localStatus, setLocalStatus] = useState<Record<string, RSVPStatus | null>>({});
 
-  const visible = meetups.filter((m) => {
-    if (filter === "hosting") return m.host.id === currentUserId;
-    if (filter === "attending")
-      return m.participants.some(
-        (p) => p.userId === currentUserId && p.status === "GOING"
-      );
-    return true;
-  });
+  const getMyStatus = (m: MeetupLite): RSVPStatus | null => {
+    if (localStatus[m.id] !== undefined) return localStatus[m.id];
+    const p = m.participants.find((p) => p.userId === currentUserId);
+    return (p?.status as RSVPStatus) ?? null;
+  };
+
+  const visible = useMemo(() => {
+    return meetups.filter((m) => {
+      if (filter === "hosting") return m.host.id === currentUserId;
+      if (filter === "attending") return getMyStatus(m) === "GOING";
+      return true;
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [meetups, filter, currentUserId, localStatus]);
 
   async function rsvp(meetupId: string, status: RSVPStatus) {
-    setPending(meetupId);
+    // optimistic
+    setLocalStatus((p) => ({ ...p, [meetupId]: status }));
 
-    await fetch("/api/meetups/rsvp", {
+    const res = await fetch("/api/meetups/rsvp", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ meetupId, status }),
     });
 
-    setPending(null);
-    router.refresh(); // server truth
+    // rollback if API fails
+    if (!res.ok) {
+      setLocalStatus((p) => {
+        const copy = { ...p };
+        delete copy[meetupId];
+        return copy;
+      });
+      return;
+    }
+
+    router.refresh();
   }
 
   return (
-    <section className="space-y-6">
+    <div className="space-y-6">
       {/* FILTERS */}
       <div className="flex gap-2">
         {(["all", "hosting", "attending"] as const).map((f) => (
           <button
             key={f}
             onClick={() => setFilter(f)}
-            className={`rounded-full px-4 py-1.5 text-sm transition ${
+            className={`px-4 py-1.5 rounded-full text-sm transition ${
               filter === f
                 ? "bg-white text-black"
                 : "bg-white/10 text-white hover:bg-white/20"
@@ -80,11 +93,11 @@ export function MeetupsList({
         ))}
       </div>
 
-      {/* LIST */}
+      {/* MEETUPS */}
       <div className="grid gap-6">
         {visible.map((m) => {
           const isHost = m.host.id === currentUserId;
-          const status = myStatus(m);
+          const myStatus = getMyStatus(m);
 
           return (
             <motion.div
@@ -94,30 +107,26 @@ export function MeetupsList({
             >
               <div className="flex justify-between items-start gap-4">
                 <div>
-                  <h3 className="text-lg font-medium text-white">
-                    {m.title}
-                  </h3>
+                  <h3 className="text-lg font-medium text-white">{m.title}</h3>
                   <p className="text-sm text-white/50">
                     {new Date(m.scheduledAt).toLocaleString()} · {m.venueName}
+                    {m.city ? `, ${m.city}` : ""}
                   </p>
                 </div>
 
                 {!isHost && (
                   <div className="flex gap-2">
                     {(["GOING", "MAYBE", "CANT_GO"] as const).map((s) => {
-                      const active = status === s;
-
+                      const active = myStatus === s;
                       return (
                         <button
                           key={s}
-                          disabled={pending === m.id}
                           onClick={() => rsvp(m.id, s)}
                           className={[
-                            "rounded-full px-3 py-1 text-xs transition",
+                            "px-3 py-1 rounded-full text-xs transition",
                             active
                               ? "bg-white text-black"
                               : "bg-white/10 text-white hover:bg-white/20",
-                            pending === m.id && "opacity-50",
                           ].join(" ")}
                         >
                           {s.replace("_", " ")}
@@ -129,16 +138,14 @@ export function MeetupsList({
               </div>
 
               {m.description && (
-                <p className="mt-3 text-sm text-white/60">
-                  {m.description}
-                </p>
+                <p className="mt-3 text-sm text-white/60">{m.description}</p>
               )}
 
-              {status && !isHost && (
+              {myStatus && !isHost && (
                 <p className="mt-3 text-xs text-white/40">
                   Your response:{" "}
                   <span className="text-white">
-                    {status.replace("_", " ")}
+                    {myStatus.replace("_", " ")}
                   </span>
                 </p>
               )}
@@ -146,6 +153,6 @@ export function MeetupsList({
           );
         })}
       </div>
-    </section>
+    </div>
   );
 }
