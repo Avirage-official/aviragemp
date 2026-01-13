@@ -4,55 +4,72 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 
+type RSVPStatus = "GOING" | "MAYBE" | "CANT_GO";
+
+type Meetup = {
+  id: string;
+  title: string;
+  description?: string | null;
+  scheduledAt: Date;
+  venueName: string;
+  host: { id: string };
+  participants: {
+    userId: string;
+    status: RSVPStatus;
+  }[];
+};
+
 export function MeetupsList({
   meetups,
   currentUserId,
   userCode,
 }: {
-  meetups: any[];
+  meetups: Meetup[];
   currentUserId: string;
   userCode: string | null;
 }) {
-  const [filter, setFilter] =
-    useState<"all" | "hosting" | "attending">("all");
   const router = useRouter();
+  const [filter, setFilter] = useState<"all" | "hosting" | "attending">("all");
+  const [pending, setPending] = useState<string | null>(null);
 
-  function getMyStatus(meetup: any) {
-    const p = meetup.participants.find(
-      (p: any) => p.userId === currentUserId
+  function myStatus(meetup: Meetup): RSVPStatus | null {
+    return (
+      meetup.participants.find((p) => p.userId === currentUserId)?.status ??
+      null
     );
-    return p?.status ?? null;
   }
 
   const visible = meetups.filter((m) => {
     if (filter === "hosting") return m.host.id === currentUserId;
     if (filter === "attending")
       return m.participants.some(
-        (p: any) =>
-          p.userId === currentUserId && p.status === "GOING"
+        (p) => p.userId === currentUserId && p.status === "GOING"
       );
     return true;
   });
 
-  async function rsvp(meetupId: string, status: string) {
+  async function rsvp(meetupId: string, status: RSVPStatus) {
+    setPending(meetupId);
+
     await fetch("/api/meetups/rsvp", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ meetupId, status }),
     });
 
-    router.refresh();
+    setPending(null);
+    router.refresh(); // server truth
   }
 
   return (
-    <div className="space-y-6">
+    <section className="space-y-6">
       {/* FILTERS */}
       <div className="flex gap-2">
-        {["all", "hosting", "attending"].map((f) => (
+        {(["all", "hosting", "attending"] as const).map((f) => (
           <button
             key={f}
-            onClick={() => setFilter(f as any)}
-            className={`px-4 py-1.5 rounded-full text-sm transition ${
+            onClick={() => setFilter(f)}
+            className={`rounded-full px-4 py-1.5 text-sm transition ${
               filter === f
                 ? "bg-white text-black"
                 : "bg-white/10 text-white hover:bg-white/20"
@@ -63,11 +80,11 @@ export function MeetupsList({
         ))}
       </div>
 
-      {/* MEETUPS */}
+      {/* LIST */}
       <div className="grid gap-6">
         {visible.map((m) => {
           const isHost = m.host.id === currentUserId;
-          const myStatus = getMyStatus(m);
+          const status = myStatus(m);
 
           return (
             <motion.div
@@ -81,25 +98,26 @@ export function MeetupsList({
                     {m.title}
                   </h3>
                   <p className="text-sm text-white/50">
-                    {new Date(m.scheduledAt).toLocaleString()} ·{" "}
-                    {m.venueName}
+                    {new Date(m.scheduledAt).toLocaleString()} · {m.venueName}
                   </p>
                 </div>
 
                 {!isHost && (
                   <div className="flex gap-2">
-                    {["GOING", "MAYBE", "CANT_GO"].map((s) => {
-                      const active = myStatus === s;
+                    {(["GOING", "MAYBE", "CANT_GO"] as const).map((s) => {
+                      const active = status === s;
 
                       return (
                         <button
                           key={s}
+                          disabled={pending === m.id}
                           onClick={() => rsvp(m.id, s)}
                           className={[
-                            "px-3 py-1 rounded-full text-xs transition",
+                            "rounded-full px-3 py-1 text-xs transition",
                             active
                               ? "bg-white text-black"
                               : "bg-white/10 text-white hover:bg-white/20",
+                            pending === m.id && "opacity-50",
                           ].join(" ")}
                         >
                           {s.replace("_", " ")}
@@ -116,11 +134,11 @@ export function MeetupsList({
                 </p>
               )}
 
-              {myStatus && !isHost && (
+              {status && !isHost && (
                 <p className="mt-3 text-xs text-white/40">
                   Your response:{" "}
                   <span className="text-white">
-                    {myStatus.replace("_", " ")}
+                    {status.replace("_", " ")}
                   </span>
                 </p>
               )}
@@ -128,6 +146,6 @@ export function MeetupsList({
           );
         })}
       </div>
-    </div>
+    </section>
   );
 }
