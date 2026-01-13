@@ -3,15 +3,15 @@ import { NextResponse } from "next/server";
 
 export async function GET(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }  // ← Changed to Promise
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = await params;  // ← AWAIT params
-  
   try {
-    const listing = await prisma.listing.findUnique({
-      where: { 
-        id: id,  // ← Use awaited id
-        isActive: true
+    const { id } = await params;
+
+    const listing = await prisma.listing.findFirst({
+      where: {
+        id: id,
+        isActive: true,
       },
       include: {
         business: {
@@ -22,10 +22,10 @@ export async function GET(
             description: true,
             logo: true,
             website: true,
-            contactEmail: true
-          }
-        }
-      }
+            contactEmail: true,
+          },
+        },
+      },
     });
 
     if (!listing) {
@@ -36,7 +36,6 @@ export async function GET(
     }
 
     return NextResponse.json({ listing });
-
   } catch (error) {
     console.error("Error fetching listing:", error);
     return NextResponse.json(

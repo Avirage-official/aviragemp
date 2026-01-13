@@ -5,17 +5,14 @@ import { NextResponse } from "next/server";
 export async function POST(request: Request) {
   try {
     const { userId } = await auth();
-    
+
     if (!userId) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const user = await prisma.user.findUnique({
       where: { clerkId: userId },
-      include: { businessProfile: true }
+      include: { businessProfile: true },
     });
 
     if (!user || !user.businessProfile) {
@@ -25,9 +22,10 @@ export async function POST(request: Request) {
       );
     }
 
-    // Check if business has active subscription
-    if (user.businessProfile.subscriptionStatus !== "ACTIVE" && 
-        user.businessProfile.subscriptionStatus !== "TRIAL") {
+    if (
+      user.businessProfile.subscriptionStatus !== "ACTIVE" &&
+      user.businessProfile.subscriptionStatus !== "TRIAL"
+    ) {
       return NextResponse.json(
         { error: "Active subscription required to create listings" },
         { status: 403 }
@@ -36,31 +34,42 @@ export async function POST(request: Request) {
 
     const data = await request.json();
 
-    // Create listing
+    if (!Array.isArray(data.targetCodes) || data.targetCodes.length === 0) {
+      return NextResponse.json(
+        { error: "At least one target personality code is required" },
+        { status: 400 }
+      );
+    }
+
     const listing = await prisma.listing.create({
       data: {
-        businessId: user.businessProfile!.id,
+        businessId: user.businessProfile.id,
+
         title: data.title,
         description: data.description,
         category: data.category,
-        subcategory: data.subcategory || null,
-        images: [], // Will add image upload later
-        price: data.price || null,
+        subcategory: data.subcategory ?? null,
+
+        images: [],
+
+        price: data.price ?? null,
         currency: "USD",
-        pricingType: data.pricingType,
-        location: data.location || null,
-        city: data.city || null,
+        pricingType: data.pricingType ?? "FIXED",
+
+        location: data.location ?? null,
+        city: data.city ?? null,
+
         targetCodes: data.targetCodes,
-        bookingType: data.bookingType,
-        isActive: true
-      }
+
+        bookingType: data.bookingType ?? "INQUIRY",
+        isActive: true,
+      },
     });
 
-    return NextResponse.json({ 
+    return NextResponse.json({
       success: true,
-      listing 
+      listing,
     });
-
   } catch (error) {
     console.error("Error creating listing:", error);
     return NextResponse.json(
