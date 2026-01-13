@@ -7,9 +7,11 @@ import { motion } from "framer-motion";
 export function MeetupsList({
   meetups,
   currentUserId,
+  userCode,
 }: {
   meetups: any[];
   currentUserId: string;
+  userCode: string | null;
 }) {
   const [filter, setFilter] =
     useState<"all" | "hosting" | "attending">("all");

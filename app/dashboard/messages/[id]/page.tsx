@@ -10,6 +10,8 @@ export default async function ConversationPage({
   params: { id: string };
 }) {
   const { userId } = await auth();
+  const conversationId = params.id;
+
   if (!userId) redirect("/sign-in");
 
   const user = await prisma.user.findUnique({
