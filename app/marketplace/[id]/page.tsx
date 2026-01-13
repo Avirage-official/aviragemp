@@ -1,439 +1,244 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
-import { useUser } from "@clerk/nextjs";
-import Link from "next/link";
-import { MOCK_LISTINGS, MockListing } from "@/lib/mockListings";
-import { AnimatedBackdrop } from "@/components/ui/AnimatedBackdrop";
+import { useParams, useSearchParams, useRouter } from "next/navigation";
+import { useState, useMemo } from "react";
+import clsx from "clsx";
 
-type Listing = MockListing;
+/* -------------------------------------------------------------------------- */
+/* MOCK DATA (shared shape with marketplace page)                              */
+/* -------------------------------------------------------------------------- */
 
-export default function ListingDetailPage() {
-  const params = useParams();
-  const router = useRouter();
-  const { user, isSignedIn } = useUser();
-
-  const [listing, setListing] = useState<Listing | null>(null);
-  const [userCode, setUserCode] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  const [showForm, setShowForm] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
-  const [form, setForm] = useState({
-    message: "",
-    numberOfPeople: "",
-    bookingDate: "",
-    specialRequests: "",
-  });
-
-  const id = String(params?.id || "");
-
-  const emoji = useMemo(() => {
-    if (!listing) return "✨";
-    return listing.category === "retreat"
-      ? "🏔️"
-      : listing.category === "coaching"
-      ? "💬"
-      : listing.category === "workshop"
-      ? "🎨"
-      : listing.category === "experience"
-      ? "✨"
-      : listing.category === "event"
-      ? "🎉"
-      : listing.category === "service"
-      ? "🫧"
-      : "📦";
-  }, [listing]);
-
-  const isMatched = useMemo(() => {
-    if (!listing || !userCode) return false;
-    return listing.targetCodes.includes(userCode);
-  }, [listing, userCode]);
-
-  // Fetch listing (API first, fallback to MOCK)
-  useEffect(() => {
-    async function fetchListing() {
-      setLoading(true);
-
-      // 1) Try API (future-ready)
-      try {
-        const res = await fetch(`/api/listings/${id}`);
-        if (res.ok) {
-          const data = await res.json();
-          setListing(data.listing);
-          setLoading(false);
-          return;
-        }
-      } catch {
-        // ignore and fallback
-      }
-
-      // 2) Fallback to mock data (UI-first)
-      const found = MOCK_LISTINGS.find((l) => l.id === id);
-      if (!found) {
-        router.push("/marketplace");
-        return;
-      }
-      setListing(found);
-      setLoading(false);
-    }
-
-    fetchListing();
-  }, [id, router]);
-
-  // Fetch user code (works with real accounts later)
-  useEffect(() => {
-    async function fetchUserCode() {
-      if (!user) return;
-      try {
-        const res = await fetch(`/api/users/${user.id}`);
-        const data = await res.json();
-        setUserCode(data.user?.primaryCode || null);
-      } catch {
-        setUserCode(null);
-      }
-    }
-    fetchUserCode();
-  }, [user]);
-
-  async function submitInquiry(e: React.FormEvent) {
-    e.preventDefault();
-
-    if (!isSignedIn) {
-      router.push("/sign-in");
-      return;
-    }
-
-    if (!listing) return;
-
-    setSubmitting(true);
-    try {
-      // UI-first note: API will work once you hook real listings + users
-      const res = await fetch("/api/inquiries/create", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          listingId: listing.id,
-          ...form,
-          numberOfPeople: form.numberOfPeople
-            ? parseInt(form.numberOfPeople)
-            : null,
-        }),
-      });
-
-      if (res.ok) {
-        alert("Inquiry sent. The business will respond personally.");
-        setShowForm(false);
-        setForm({
-          message: "",
-          numberOfPeople: "",
-          bookingDate: "",
-          specialRequests: "",
-        });
-      } else {
-        alert("Failed to send inquiry. Try again.");
-      }
-    } catch {
-      alert("An error occurred. Try again.");
-    } finally {
-      setSubmitting(false);
-    }
+const MOCK_EXPERIENCES = [
+  {
+    id: "exp-1",
+    title: "Silent Coastal Walk",
+    description:
+      "A slow, unguided coastal walk designed for presence, quiet attention, and environmental attunement. Participants move independently while sharing a common rhythm of place.",
+    location: "Coast",
+    city: "Remote",
+    traits: {
+      energy: 20,
+      social: 10,
+      structure: 30,
+      expression: 20,
+      nature: 95,
+      pace: 25,
+      introspection: 90
+    },
+    resonatesWith: ["khoisan", "lhumir", "tjukari"],
+    whatToExpect: [
+      "Minimal facilitation",
+      "Extended periods of silence",
+      "Outdoor terrain and weather exposure",
+      "No performance or sharing requirement"
+    ],
+    whatHappensNext:
+      "After you send an inquiry, the host will respond with timing options, practical details, and any preparation guidance."
+  },
+  {
+    id: "exp-2",
+    title: "Collective Rhythm Workshop",
+    description:
+      "A communal rhythm and movement session focused on shared energy, expression, and collective presence. No prior experience required.",
+    location: "Studio",
+    city: "Urban",
+    traits: {
+      energy: 80,
+      social: 85,
+      structure: 60,
+      expression: 90,
+      nature: 20,
+      pace: 75,
+      introspection: 25
+    },
+    resonatesWith: ["kayori", "tahiri"],
+    whatToExpect: [
+      "Group-based movement",
+      "Guided rhythm exercises",
+      "Expressive participation encouraged",
+      "Shared closing reflection"
+    ],
+    whatHappensNext:
+      "The facilitator will reply with session dates, group size, and any accessibility considerations."
   }
+];
 
-  if (loading) {
+/* -------------------------------------------------------------------------- */
+/* UI Helpers                                                                  */
+/* -------------------------------------------------------------------------- */
+
+function TraitBar({
+  label,
+  value
+}: {
+  label: string;
+  value: number;
+}) {
+  return (
+    <div>
+      <div className="flex justify-between text-xs text-white/50 mb-1">
+        <span>{label}</span>
+      </div>
+      <div className="h-1 w-full bg-white/10 rounded">
+        <div
+          className="h-1 bg-white/70 rounded"
+          style={{ width: `${value}%` }}
+        />
+      </div>
+    </div>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/* PAGE                                                                        */
+/* -------------------------------------------------------------------------- */
+
+export default function MarketplaceDetailPage() {
+  const params = useParams();
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
+  const lens = searchParams.get("lens"); // browse | codes | mood | location
+  const codeLens = searchParams.get("code"); // mythical code if any
+
+  const experience = useMemo(
+    () => MOCK_EXPERIENCES.find((e) => e.id === params.id),
+    [params.id]
+  );
+
+  const [showResonance, setShowResonance] = useState(false);
+
+  if (!experience) {
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
-        <p className="text-white/60">Loading experience…</p>
+        <p className="text-white/60">This experience is no longer available.</p>
       </div>
     );
   }
 
-  if (!listing) return null;
+  const resonates =
+    codeLens && experience.resonatesWith.includes(codeLens);
 
   return (
     <div className="min-h-screen bg-black text-white">
-      {/* Top ambience */}
-      <div className="relative overflow-hidden border-b border-white/10">
-        <div className="absolute inset-0 opacity-[0.55]">
-          <AnimatedBackdrop />
-        </div>
-        <div className="relative container mx-auto px-8 py-10">
-          <Link
-            href="/marketplace"
-            className="text-sm text-white/70 hover:text-white hover:underline"
-          >
-            ← Back to marketplace
-          </Link>
+      <main className="max-w-5xl mx-auto px-6 py-14">
+        {/* Back */}
+        <button
+          onClick={() => router.back()}
+          className="text-sm text-white/60 hover:text-white mb-10"
+        >
+          ← Back to marketplace
+        </button>
 
-          <div className="mt-8 flex items-end justify-between gap-6">
-            <div className="max-w-3xl">
-              <p className="text-xs font-semibold uppercase tracking-wide text-white/70">
-                {listing.category}
-              </p>
-              <h1 className="text-3xl md:text-5xl font-semibold tracking-tight mt-2">
-                {listing.title}
-              </h1>
-              <p className="text-white/70 mt-4 leading-relaxed">
-                {listing.description}
-              </p>
-
-              {isMatched && (
-                <div className="mt-5 inline-flex items-center gap-2 rounded-full border border-green-300/30 bg-green-300/10 px-4 py-2">
-                  <span className="text-green-200 text-sm font-semibold">
-                    Aligned with you
-                  </span>
-                  <span className="text-green-200/70 text-sm">
-                    — designed for your pace and preferences
-                  </span>
-                </div>
-              )}
-            </div>
-
-            <div className="hidden md:flex items-center justify-center w-28 h-28 rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl">
-              <span className="text-6xl">{emoji}</span>
-            </div>
+        {/* Context */}
+        {(lens || codeLens) && (
+          <div className="mb-6 text-xs text-white/50">
+            Viewing through{" "}
+            <span className="text-white">
+              {lens}
+              {codeLens && ` · ${codeLens}`}
+            </span>
           </div>
+        )}
+
+        {/* Header */}
+        <div className="max-w-3xl mb-14">
+          <h1 className="text-3xl font-semibold">{experience.title}</h1>
+          <p className="text-white/60 mt-4 leading-relaxed">
+            {experience.description}
+          </p>
         </div>
-      </div>
 
-      <div className="container mx-auto px-8 py-12">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-          {/* MAIN */}
-          <div className="lg:col-span-2 space-y-8">
-            {/* Details */}
-            <section className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl p-7 shadow-[0_20px_70px_rgba(0,0,0,0.55)]">
-              <h2 className="text-lg font-semibold">Details</h2>
+        {/* Core Question 1: Can I imagine myself here? */}
+        <section className="mb-16">
+          <h2 className="text-lg font-medium mb-6">
+            How this experience tends to feel
+          </h2>
 
-              <div className="mt-5 space-y-4 text-white/70">
-                {(listing.city || listing.location) && (
-                  <div className="flex items-start gap-3">
-                    <span className="text-xl">📍</span>
-                    <div>
-                      <p className="text-white font-medium">Location</p>
-                      <p className="text-white/70">
-                        {listing.city ? listing.city : ""}
-                        {listing.city && listing.location ? ", " : ""}
-                        {listing.location ? listing.location : ""}
-                      </p>
-                    </div>
-                  </div>
-                )}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <TraitBar label="Energy demand" value={experience.traits.energy} />
+            <TraitBar label="Social density" value={experience.traits.social} />
+            <TraitBar
+              label="Structure"
+              value={experience.traits.structure}
+            />
+            <TraitBar
+              label="Expressiveness"
+              value={experience.traits.expression}
+            />
+            <TraitBar
+              label="Nature involvement"
+              value={experience.traits.nature}
+            />
+            <TraitBar label="Pace" value={experience.traits.pace} />
+          </div>
+        </section>
 
-                <div className="flex items-start gap-3">
-                  <span className="text-xl">🎯</span>
-                  <div>
-                    <p className="text-white font-medium">
-                      Designed for selected personality types
-                    </p>
-                    <p className="text-white/70">
-                      Targeted to {listing.targetCodes.length} codes
-                    </p>
-                  </div>
-                </div>
+        {/* Core Question 2: Does this fit how I want to feel? */}
+        <section className="mb-16">
+          <h2 className="text-lg font-medium mb-6">
+            What people often notice
+          </h2>
 
-                <div className="flex items-start gap-3">
-                  <span className="text-xl">💬</span>
-                  <div>
-                    <p className="text-white font-medium">Booking style</p>
-                    <p className="text-white/70">
-                      Inquiry-based — you talk first, then decide.
-                    </p>
-                  </div>
+          <ul className="space-y-3 text-white/70">
+            {experience.whatToExpect.map((item, i) => (
+              <li key={i}>• {item}</li>
+            ))}
+          </ul>
+
+          {/* Code Resonance (collapsed, optional) */}
+          <div className="mt-8">
+            <button
+              onClick={() => setShowResonance(!showResonance)}
+              className="text-sm text-white/60 hover:text-white"
+            >
+              {showResonance
+                ? "Hide resonance context"
+                : "View resonance context"}
+            </button>
+
+            {showResonance && (
+              <div className="mt-4 text-sm text-white/60 max-w-xl">
+                This experience often resonates with people who value similar
+                rhythms and environments to:
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {experience.resonatesWith.map((code) => (
+                    <span
+                      key={code}
+                      className={clsx(
+                        "px-3 py-1 rounded-full border text-xs",
+                        code === codeLens && resonates
+                          ? "bg-white text-black"
+                          : "border-white/20 text-white/70"
+                      )}
+                    >
+                      {code}
+                    </span>
+                  ))}
                 </div>
               </div>
-            </section>
-
-            {/* Why this fits you */}
-            {isMatched && (
-              <section className="rounded-2xl border border-green-300/25 bg-green-300/10 p-7">
-                <h3 className="text-lg font-semibold text-green-100">
-                  Why this aligns with you
-                </h3>
-                <p className="text-green-100/80 mt-3 leading-relaxed">
-                  This offering was created for people who value the same pace,
-                  energy, and way of engaging with the world as you do — less
-                  noise, more fit.
-                </p>
-              </section>
             )}
-
-            {/* Business */}
-            <section className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl p-7 shadow-[0_20px_70px_rgba(0,0,0,0.55)]">
-              <h2 className="text-lg font-semibold">Offered by</h2>
-
-              <div className="mt-5 flex gap-4 items-start">
-                <div className="w-14 h-14 rounded-2xl bg-white/10 border border-white/10 flex items-center justify-center font-bold text-white">
-                  {listing.business.businessName.charAt(0)}
-                </div>
-                <div className="flex-1">
-                  <p className="text-white font-semibold">
-                    {listing.business.businessName}
-                  </p>
-                  <p className="text-white/70 mt-1 leading-relaxed">
-                    {listing.business.description}
-                  </p>
-
-                  {listing.business.website && (
-                    <a
-                      href={listing.business.website}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-block mt-3 text-sm text-white/80 hover:text-white hover:underline"
-                    >
-                      Visit website →
-                    </a>
-                  )}
-                </div>
-              </div>
-            </section>
           </div>
+        </section>
 
-          {/* SIDEBAR */}
-          <div className="lg:col-span-1">
-            <div className="sticky top-10 rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl p-6 shadow-[0_20px_70px_rgba(0,0,0,0.55)]">
-              {/* Price */}
-              <div className="pb-5 border-b border-white/10">
-                {listing.price ? (
-                  <>
-                    <p className="text-3xl font-semibold text-white">
-                      A${listing.price}
-                    </p>
-                    <p className="text-sm text-white/60 mt-1">
-                      {listing.pricingType === "FIXED"
-                        ? "Fixed price"
-                        : listing.pricingType === "RANGE"
-                        ? "Starting from"
-                        : "Custom pricing"}
-                    </p>
-                  </>
-                ) : (
-                  <>
-                    <p className="text-xl font-semibold text-white">
-                      Pricing on request
-                    </p>
-                    <p className="text-sm text-white/60 mt-1">
-                      Send an inquiry to receive details.
-                    </p>
-                  </>
-                )}
-              </div>
+        {/* Core Question 3: What happens if I reach out? */}
+        <section className="mb-24">
+          <h2 className="text-lg font-medium mb-4">What happens next</h2>
+          <p className="text-white/60 max-w-2xl">
+            {experience.whatHappensNext}
+          </p>
 
-              {!showForm ? (
-                <>
-                  <button
-                    onClick={() =>
-                      isSignedIn ? setShowForm(true) : router.push("/sign-in")
-                    }
-                    className="mt-5 w-full rounded-xl bg-white text-black font-semibold py-4 hover:bg-white/90 transition"
-                  >
-                    Send inquiry
-                  </button>
+          <button className="mt-8 px-6 py-3 rounded-lg bg-white text-black text-sm font-medium hover:opacity-90 transition">
+            Send inquiry
+          </button>
+        </section>
 
-                  <div className="mt-6 rounded-xl border border-white/10 bg-black/30 p-4">
-                    <p className="text-sm text-white/70 font-medium">
-                      What happens next
-                    </p>
-                    <ol className="mt-3 space-y-2 text-sm text-white/60 list-decimal ml-5">
-                      <li>You send an inquiry</li>
-                      <li>The business responds personally</li>
-                      <li>You decide — no pressure</li>
-                    </ol>
-                  </div>
-
-                  <p className="mt-5 text-xs text-white/40 text-center">
-                    Australia-only for now. We’re curating intentionally.
-                  </p>
-                </>
-              ) : (
-                <form onSubmit={submitInquiry} className="mt-5 space-y-4">
-                  <div>
-                    <label className="text-sm font-medium text-white/80">
-                      Your message <span className="text-red-400">*</span>
-                    </label>
-                    <textarea
-                      required
-                      value={form.message}
-                      onChange={(e) =>
-                        setForm({ ...form, message: e.target.value })
-                      }
-                      placeholder="What are you hoping to experience?"
-                      className="mt-2 w-full rounded-xl border border-white/10 bg-black/40 text-white placeholder:text-white/30 p-3 focus:outline-none focus:ring-2 focus:ring-white/20"
-                      rows={4}
-                    />
-                  </div>
-
-                  <div>
-                    <label className="text-sm font-medium text-white/80">
-                      Number of people
-                    </label>
-                    <input
-                      type="number"
-                      min={1}
-                      value={form.numberOfPeople}
-                      onChange={(e) =>
-                        setForm({ ...form, numberOfPeople: e.target.value })
-                      }
-                      placeholder="1"
-                      className="mt-2 w-full rounded-xl border border-white/10 bg-black/40 text-white placeholder:text-white/30 p-3 focus:outline-none focus:ring-2 focus:ring-white/20"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="text-sm font-medium text-white/80">
-                      Preferred date
-                    </label>
-                    <input
-                      type="date"
-                      value={form.bookingDate}
-                      onChange={(e) =>
-                        setForm({ ...form, bookingDate: e.target.value })
-                      }
-                      className="mt-2 w-full rounded-xl border border-white/10 bg-black/40 text-white p-3 focus:outline-none focus:ring-2 focus:ring-white/20"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="text-sm font-medium text-white/80">
-                      Special requests
-                    </label>
-                    <textarea
-                      value={form.specialRequests}
-                      onChange={(e) =>
-                        setForm({ ...form, specialRequests: e.target.value })
-                      }
-                      placeholder="Anything important to know?"
-                      className="mt-2 w-full rounded-xl border border-white/10 bg-black/40 text-white placeholder:text-white/30 p-3 focus:outline-none focus:ring-2 focus:ring-white/20"
-                      rows={3}
-                    />
-                  </div>
-
-                  <div className="flex gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setShowForm(false)}
-                      className="flex-1 rounded-xl border border-white/10 bg-white/5 py-3 text-white/80 hover:bg-white/10 transition"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="submit"
-                      disabled={submitting}
-                      className="flex-1 rounded-xl bg-white text-black font-semibold py-3 hover:bg-white/90 disabled:opacity-60 transition"
-                    >
-                      {submitting ? "Sending…" : "Send"}
-                    </button>
-                  </div>
-
-                  <p className="text-xs text-white/40 text-center mt-2">
-                    The business will respond personally.
-                  </p>
-                </form>
-              )}
-            </div>
-          </div>
+        {/* Footer Ethics */}
+        <div className="border-t border-white/10 pt-8 text-xs text-white/40 max-w-xl">
+          Ethos does not rank or recommend experiences. Any resonance shown is
+          descriptive and optional.
         </div>
-      </div>
+      </main>
     </div>
   );
 }

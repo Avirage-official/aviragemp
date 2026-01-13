@@ -1,338 +1,579 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { useUser } from "@clerk/nextjs";
+import { useMemo, useState } from "react";
 import Link from "next/link";
-import { MOCK_LISTINGS, MockListing } from "@/lib/mockListings";
-import { AnimatedBackdrop } from "@/components/ui/AnimatedBackdrop";
+import clsx from "clsx";
 
-type Listing = MockListing;
+const MYTHICAL_CODES = [
+  "khoisan",
+  "kayori",
+  "alethir",
+  "lhumir",
+  "tjukari",
+  "shokunin",
+  "siyuane",
+  "khoruun",
+  "sahen",
+  "tahiri",
+  "yatevar",
+] as const;
 
-function Section({
-  title,
-  subtitle,
-  children,
-  right,
+type MythicalCode = (typeof MYTHICAL_CODES)[number];
+
+const [activeCode, setActiveCode] = useState<MythicalCode | null>(null);
+
+/* -------------------------------------------------------------------------- */
+/* MOCK DATA (UI-first, replace later with API)                                */
+/* -------------------------------------------------------------------------- */
+
+const MOCK_EXPERIENCES = [
+  {
+    id: "exp-1",
+    title: "Silent Coastal Walk",
+    description:
+      "A slow, unguided coastal walk designed for presence, quiet attention, and environmental attunement.",
+    location: "Coast",
+    city: "Remote",
+    traits: {
+      energy: 20,
+      social: 10,
+      structure: 30,
+      expression: 20,
+      nature: 95,
+      pace: 25,
+      introspection: 90,
+    },
+    resonatesWith: ["khoisan", "lhumir", "tjukari"] as MythicalCode[],
+
+  },
+  {
+    id: "exp-2",
+    title: "Collective Rhythm Workshop",
+    description:
+      "A communal rhythm and movement session focused on shared energy, expression, and connection.",
+    location: "Studio",
+    city: "Urban",
+    traits: {
+      energy: 80,
+      social: 85,
+      structure: 60,
+      expression: 90,
+      nature: 20,
+      pace: 75,
+      introspection: 25,
+    },
+    resonatesWith: ["kayori", "tahiri"] as MythicalCode[],
+  },
+  {
+    id: "exp-3",
+    title: "Philosophical Walking Dialogue",
+    description:
+      "A guided walking conversation exploring meaning, inquiry, and reflective thought.",
+    location: "Park",
+    city: "Urban",
+    traits: {
+      energy: 45,
+      social: 40,
+      structure: 55,
+      expression: 50,
+      nature: 60,
+      pace: 40,
+      introspection: 85,
+    },
+    resonatesWith: ["alethir", "yatevar"] as MythicalCode[],
+  },
+  {
+    id: "exp-4",
+    title: "Steppe Horizon Ride",
+    description:
+      "A wide-space ride designed for autonomy, long-horizon thinking, and the calm confidence of movement.",
+    location: "Open Plains",
+    city: "Regional",
+    traits: {
+      energy: 55,
+      social: 20,
+      structure: 25,
+      expression: 35,
+      nature: 85,
+      pace: 55,
+      introspection: 55,
+    },
+    resonatesWith: ["khoruun", "sahen"] as MythicalCode[],
+  },
+  {
+    id: "exp-5",
+    title: "Precision Craft Session",
+    description:
+      "A quiet, structured craft session for people who enjoy detail, repetition, and the satisfaction of refinement.",
+    location: "Workshop",
+    city: "Urban",
+    traits: {
+      energy: 35,
+      social: 25,
+      structure: 85,
+      expression: 25,
+      nature: 15,
+      pace: 30,
+      introspection: 60,
+    },
+    resonatesWith: ["shokunin", "siyuane"] as MythicalCode[],
+  },
+] as const;
+
+type Experience = (typeof MOCK_EXPERIENCES)[number];
+
+/* -------------------------------------------------------------------------- */
+/* LENS MODEL                                                                  */
+/* -------------------------------------------------------------------------- */
+
+type LensMode = "browse" | "codes" | "mood" | "location";
+
+type MoodLens =
+  | "calm"
+  | "reflective"
+  | "social"
+  | "expressive"
+  | "grounded"
+  | "exploratory";
+
+/**
+ * Mood lenses are USER-SELECTED. They do not filter; they re-order + accent.
+ * They map to trait ranges that describe the *experience demand/feel*.
+ */
+const MOOD_LENS_TRAITS: Record<
+  MoodLens,
+  Partial<Record<keyof Experience["traits"], [number, number]>>
+> = {
+  calm: {
+    energy: [0, 35],
+    pace: [0, 40],
+    social: [0, 40],
+  },
+  reflective: {
+    introspection: [65, 100],
+    expression: [0, 45],
+  },
+  social: {
+    social: [60, 100],
+    energy: [50, 100],
+  },
+  expressive: {
+    expression: [65, 100],
+    energy: [55, 100],
+  },
+  grounded: {
+    nature: [60, 100],
+    pace: [0, 45],
+  },
+  exploratory: {
+    energy: [55, 100],
+    structure: [0, 45],
+  },
+};
+
+function scoreMoodMatch(traits: Experience["traits"], mood: MoodLens): number {
+  const ranges = MOOD_LENS_TRAITS[mood];
+  let score = 0;
+  let checks = 0;
+
+  (Object.keys(ranges) as (keyof Experience["traits"])[]).forEach((key) => {
+    const value = traits[key];
+    const range = ranges[key];
+    if (!range || value === undefined) return;
+
+    const [min, max] = range;
+    checks += 1;
+    if (value >= min && value <= max) score += 1;
+  });
+
+  return checks === 0 ? 0 : score / checks; // 0..1
+}
+
+/* -------------------------------------------------------------------------- */
+/* UI COMPONENTS                                                              */
+/* -------------------------------------------------------------------------- */
+
+function MarketplaceNav({
+  mode,
+  setMode,
 }: {
-  title: string;
-  subtitle?: string;
-  children: React.ReactNode;
-  right?: React.ReactNode;
+  mode: LensMode;
+  setMode: (m: LensMode) => void;
 }) {
+  const items: { id: LensMode; label: string }[] = [
+    { id: "browse", label: "Browse" },
+    { id: "codes", label: "Codes" },
+    { id: "mood", label: "Mood" },
+    { id: "location", label: "Location" },
+  ];
+
   return (
-    <section className="mb-14">
-      <div className="flex items-end justify-between gap-6 mb-5">
-        <div>
-          <h2 className="text-xl md:text-2xl font-semibold tracking-tight text-white">
-            {title}
-          </h2>
-          {subtitle && (
-            <p className="text-white/70 mt-1 max-w-2xl">{subtitle}</p>
-          )}
+    <nav className="sticky top-0 z-20 border-b border-white/10 bg-black/70 backdrop-blur">
+      <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-3">
+        <div className="flex items-center gap-6">
+          <span className="text-sm font-medium text-white/90">Marketplace</span>
+
+          <div className="flex items-center gap-5">
+            {items.map((item) => (
+              <button
+                key={item.id}
+                onClick={() => setMode(item.id)}
+                className={clsx(
+                  "text-sm transition",
+                  mode === item.id
+                    ? "text-white"
+                    : "text-white/50 hover:text-white/80"
+                )}
+              >
+                {item.label}
+              </button>
+            ))}
+          </div>
         </div>
-        {right}
+
+        <div className="text-xs text-white/40">
+          Lenses reorder + highlight — nothing is ranked.
+        </div>
       </div>
-      {children}
-    </section>
+    </nav>
   );
 }
 
-function CategoryChip({
-  active,
-  label,
-  onClick,
-}: {
-  active: boolean;
-  label: string;
-  onClick: () => void;
-}) {
+function TraitBar({ value }: { value: number }) {
   return (
-    <button
-      onClick={onClick}
-      className={[
-        "px-4 py-2 rounded-full text-sm font-medium transition",
-        "border border-white/10",
-        active
-          ? "bg-white/15 text-white"
-          : "bg-white/5 text-white/70 hover:bg-white/10 hover:text-white",
-      ].join(" ")}
-    >
-      {label}
-    </button>
+    <div className="h-1 w-full rounded bg-white/10">
+      <div
+        className="h-1 rounded bg-white/70"
+        style={{ width: `${value}%` }}
+      />
+    </div>
   );
 }
 
-function ListingCard({
-  listing,
-  userCode,
-}: {
-  listing: Listing;
-  userCode: string | null;
-}) {
-  const isMatched = userCode ? listing.targetCodes.includes(userCode) : false;
+function PersonalityStrip({ traits }: { traits: Experience["traits"] }) {
+  return (
+    <div className="mt-4 space-y-2">
+      <div>
+        <div className="mb-1 flex justify-between text-[11px] text-white/45">
+          <span>Energy</span>
+          <span>{traits.energy}</span>
+        </div>
+        <TraitBar value={traits.energy} />
+      </div>
 
-  const emoji =
-    listing.category === "retreat"
-      ? "🏔️"
-      : listing.category === "coaching"
-      ? "💬"
-      : listing.category === "workshop"
-      ? "🎨"
-      : listing.category === "experience"
-      ? "✨"
-      : listing.category === "event"
-      ? "🎉"
-      : listing.category === "service"
-      ? "🫧"
-      : "📦";
+      <div>
+        <div className="mb-1 flex justify-between text-[11px] text-white/45">
+          <span>Social</span>
+          <span>{traits.social}</span>
+        </div>
+        <TraitBar value={traits.social} />
+      </div>
+
+      <div>
+        <div className="mb-1 flex justify-between text-[11px] text-white/45">
+          <span>Structure</span>
+          <span>{traits.structure}</span>
+        </div>
+        <TraitBar value={traits.structure} />
+      </div>
+
+      <div>
+        <div className="mb-1 flex justify-between text-[11px] text-white/45">
+          <span>Expression</span>
+          <span>{traits.expression}</span>
+        </div>
+        <TraitBar value={traits.expression} />
+      </div>
+    </div>
+  );
+}
+
+function ExperienceCard({
+  experience,
+  lensMode,
+  activeCode,
+  activeMood,
+}: {
+  experience: Experience;
+  lensMode: LensMode;
+  activeCode: string | null;
+  activeMood: MoodLens | null;
+}) {
+  const resonates =
+  activeCode !== null && experience.resonatesWith.includes(activeCode);
+  const moodScore = activeMood ? scoreMoodMatch(experience.traits, activeMood) : 0;
+  const moodAligned = activeMood ? moodScore >= 0.6 : false;
+
+  const href = (() => {
+    const params = new URLSearchParams();
+    params.set("lens", lensMode);
+    if (activeCode) params.set("code", activeCode);
+    if (activeMood) params.set("mood", activeMood);
+    return `/marketplace/${experience.id}?${params.toString()}`;
+  })();
 
   return (
     <Link
-      href={`/marketplace/${listing.id}`}
-      className={[
-        "group block overflow-hidden rounded-2xl",
-        "border border-white/10 bg-white/5 backdrop-blur-xl",
-        "hover:bg-white/7 hover:border-white/15",
-        "transition shadow-[0_20px_70px_rgba(0,0,0,0.55)]",
-      ].join(" ")}
+      href={href}
+      className={clsx(
+        "group rounded-2xl border bg-white/5 p-6 transition",
+        "border-white/10 hover:border-white/20 hover:bg-white/[0.07]",
+        (resonates || moodAligned) && "ring-1 ring-white/20",
+        moodAligned && "border-white/35"
+      )}
     >
-      <div className="h-44 bg-gradient-to-br from-blue-500/35 to-purple-500/30 flex items-center justify-center">
-        <span className="text-5xl opacity-95">{emoji}</span>
+      <div className="flex items-start justify-between gap-4">
+        <div className="min-w-0">
+          <h3 className="text-lg font-medium text-white">{experience.title}</h3>
+          <p className="mt-2 line-clamp-2 text-sm text-white/60">
+            {experience.description}
+          </p>
+
+          <div className="mt-3 text-xs text-white/45">
+            {experience.city} · {experience.location}
+          </div>
+        </div>
+
+        <div className="shrink-0 text-xs text-white/45">
+          {resonates && (
+            <div className="rounded-full border border-white/15 bg-white/5 px-3 py-1">
+              Resonates (code lens)
+            </div>
+          )}
+          {!resonates && moodAligned && (
+            <div className="rounded-full border border-white/15 bg-white/5 px-3 py-1">
+              Emphasised (mood lens)
+            </div>
+          )}
+        </div>
       </div>
 
-      <div className="p-5">
-        <div className="flex items-center justify-between gap-3 mb-2">
-          <span className="text-[11px] font-semibold uppercase tracking-wide text-white/70">
-            {listing.category}
-          </span>
-          {isMatched && (
-            <span className="text-[11px] font-semibold text-green-300">
-              Aligned with you
+      <PersonalityStrip traits={experience.traits} />
+
+      {(activeMood || activeCode) && (
+        <div className="mt-4 text-xs text-white/45">
+          {activeCode && resonates && (
+            <span>
+              Often resonates with <span className="text-white">{activeCode}</span>
+            </span>
+          )}
+          {activeMood && (
+            <span className={clsx(activeCode && resonates && "ml-2")}>
+              {activeMood && (
+                <>
+                  <span className="text-white/60">·</span>{" "}
+                  Viewing through <span className="text-white">{activeMood}</span>
+                  {activeMood ? (
+                    <span className="text-white/40">
+                      {" "}
+                      (match {Math.round(moodScore * 100)}%)
+                    </span>
+                  ) : null}
+                </>
+              )}
             </span>
           )}
         </div>
-
-        <h3 className="text-base md:text-lg font-semibold leading-snug text-white line-clamp-2">
-          {listing.title}
-        </h3>
-
-        <p className="text-sm text-white/70 mt-2 line-clamp-2">
-          {listing.description}
-        </p>
-
-        <div className="mt-4 pt-4 border-t border-white/10 flex items-center justify-between gap-3">
-          <div className="min-w-0">
-            <p className="text-xs text-white/50">By</p>
-            <p className="text-sm font-medium text-white truncate">
-              {listing.business.businessName}
-            </p>
-            {(listing.city || listing.location) && (
-              <p className="text-xs text-white/50 mt-1 truncate">
-                {listing.city ? listing.city : ""}
-                {listing.city && listing.location ? " · " : ""}
-                {listing.location ? listing.location : ""}
-              </p>
-            )}
-          </div>
-
-          <div className="text-right shrink-0">
-            {listing.price ? (
-              <p className="text-sm font-semibold text-white">
-                A${listing.price}
-              </p>
-            ) : (
-              <p className="text-sm text-white/60">Enquire for pricing</p>
-            )}
-          </div>
-        </div>
-
-        <div className="mt-3">
-          <p className="text-xs text-white/50">
-            Booking via inquiry — intentional, no pressure
-          </p>
-        </div>
-      </div>
+      )}
     </Link>
   );
 }
 
+/* -------------------------------------------------------------------------- */
+/* PAGE                                                                        */
+/* -------------------------------------------------------------------------- */
+
 export default function MarketplacePage() {
-  const { user } = useUser();
+  const [mode, setMode] = useState<LensMode>("browse");
 
-  const [userCode, setUserCode] = useState<string | null>(null);
+  // Lenses (user-selected)
+  const [activeCode, setActiveCode] = useState<MythicalCode | null>(null);
+  const [activeMood, setActiveMood] = useState<MoodLens | null>(null);
 
-  // UI-first dataset
-  const listings = MOCK_LISTINGS;
+  // Light location lens (UI-first)
+  const [activeCity, setActiveCity] = useState<string | null>(null);
 
-  // Fetch user's code (works later with real users)
-  useEffect(() => {
-    async function fetchUserCode() {
-      if (!user) return;
-      try {
-        const res = await fetch(`/api/users/${user.id}`);
-        const data = await res.json();
-        setUserCode(data.user?.primaryCode || null);
-      } catch {
-        setUserCode(null);
-      }
+  const experiences = useMemo(() => {
+    // Base list
+    let list: Experience[] = [...MOCK_EXPERIENCES];
+
+    // Location lens: reorder by city match (no filtering)
+    if (activeCity) {
+      list.sort((a, b) => {
+        const aScore = a.city === activeCity ? 1 : 0;
+        const bScore = b.city === activeCity ? 1 : 0;
+        return bScore - aScore;
+      });
     }
-    fetchUserCode();
-  }, [user]);
 
-  const categories = useMemo(() => {
-    return [
-      { id: "all", label: "All" },
-      { id: "experience", label: "Experiences" },
-      { id: "retreat", label: "Retreats" },
-      { id: "coaching", label: "Coaching" },
-      { id: "workshop", label: "Workshops" },
-      { id: "event", label: "Events" },
-      { id: "service", label: "Services" },
-      { id: "product", label: "Products" },
-    ] as const;
+    // Code lens: reorder by resonance (no filtering)
+    if (activeCode) {
+      list.sort((a, b) => {
+        const aScore = a.resonatesWith.includes(activeCode) ? 1 : 0;
+        const bScore = b.resonatesWith.includes(activeCode) ? 1 : 0;
+        return bScore - aScore;
+      });
+    }
+
+    // Mood lens: reorder by trait-range score (no filtering)
+    if (activeMood) {
+      list.sort((a, b) => {
+        const aScore = scoreMoodMatch(a.traits, activeMood);
+        const bScore = scoreMoodMatch(b.traits, activeMood);
+        return bScore - aScore;
+      });
+    }
+
+    return list;
+  }, [activeCity, activeCode, activeMood]);
+
+  const availableCities = useMemo(() => {
+    const set = new Set<string>();
+    MOCK_EXPERIENCES.forEach((e) => set.add(e.city));
+    return Array.from(set);
   }, []);
-
-  const [activeCategory, setActiveCategory] = useState<
-    (typeof categories)[number]["id"]
-  >("all");
-
-  const matchedListings = useMemo(() => {
-    if (!userCode) return [];
-    return listings
-      .filter((l) => l.targetCodes.includes(userCode))
-      .slice(0, 9);
-  }, [listings, userCode]);
-
-  const popularListings = useMemo(() => listings.slice(0, 9), [listings]);
-
-  const categoryMap = useMemo(() => {
-    const map: Record<string, Listing[]> = {};
-    for (const l of listings) {
-      if (!map[l.category]) map[l.category] = [];
-      map[l.category].push(l);
-    }
-    return map;
-  }, [listings]);
-
-  const visibleByCategory = useMemo(() => {
-    if (activeCategory === "all") return listings;
-    return listings.filter((l) => l.category === activeCategory);
-  }, [listings, activeCategory]);
 
   return (
     <div className="min-h-screen bg-black text-white">
-      {/* Hero / Context */}
-      <div className="relative overflow-hidden">
-        <div className="absolute inset-0 opacity-[0.65]">
-          <AnimatedBackdrop />
-        </div>
-        <div className="relative container mx-auto px-8 pt-14 pb-12">
-          <div className="max-w-3xl">
-            <h1 className="text-3xl md:text-5xl font-semibold tracking-tight">
-              Experiences across Australia, curated by personality
-            </h1>
-            <p className="text-white/70 mt-4 text-base md:text-lg leading-relaxed">
-              Ethos helps you discover experiences that align with how you
-              prefer to move through the world — not just what’s popular.
-            </p>
-            <p className="text-white/50 mt-3 text-sm">
-              Australia-only for now. We’re curating carefully — not flooding the
-              feed.
-            </p>
-          </div>
+      <MarketplaceNav mode={mode} setMode={setMode} />
 
-          {/* Category rail */}
-          <div className="mt-10 flex flex-wrap gap-2">
-            {categories.map((c) => (
-              <CategoryChip
-                key={c.id}
-                label={c.label}
-                active={activeCategory === c.id}
-                onClick={() => setActiveCategory(c.id)}
-              />
-            ))}
-          </div>
+      <main className="mx-auto max-w-6xl px-6 py-12">
+        {/* Header */}
+        <div className="mb-14 max-w-3xl">
+          <h1 className="text-3xl font-semibold">
+            Explore experiences through different lenses
+          </h1>
+          <p className="mt-4 text-white/60">
+            Ethos doesn’t rank or recommend. You choose a lens (code, mood, or
+            location) — we only change emphasis.
+          </p>
         </div>
+
+        {/* LENS PANELS */}
+        {mode === "codes" && (
+          <section className="mb-10">
+            <div className="mb-3 text-sm text-white/70">
+              Choose a Mythical Code lens (optional). Nothing disappears — we only
+              emphasise resonance.
+            </div>
+             <div className="flex flex-wrap gap-3">
+              {MYTHICAL_CODES.map((code) => (
+                <button
+                key={code}
+                onClick={() =>
+                  setActiveCode(activeCode === code ? null : code)
+                }
+                className={clsx(
+                  "rounded-full border px-4 py-2 text-sm transition capitalize",
+                  activeCode === code
+                  ? "bg-white text-black border-white"
+                  : "border-white/20 text-white/70 hover:text-white hover:border-white/30"
+                )}
+                >
+                     {code}
+        </button>
+      ))}
       </div>
 
-      <div className="container mx-auto px-8 py-12">
-        {/* For You */}
-        {userCode && matchedListings.length > 0 && activeCategory === "all" && (
-          <Section
-            title="For You"
-            subtitle="Experiences aligned with how you naturally engage with people, places, and moments."
-            right={
-              <span className="text-sm text-white/60">
-                {matchedListings.length} aligned
-              </span>
-            }
-          >
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {matchedListings.map((l) => (
-                <ListingCard key={l.id} listing={l} userCode={userCode} />
+            {activeCode && (
+      <p className="mt-4 text-xs text-white/50">
+        Viewing through:{" "}
+        <span className="text-white capitalize">{activeCode}</span>
+      </p>
+    )}
+  </section>
+)}
+
+        {mode === "mood" && (
+          <section className="mb-10">
+            <div className="mb-3 text-sm text-white/70">
+              Choose a mood lens (optional). This is not a filter — it only changes
+              ordering and emphasis.
+            </div>
+            <div className="flex flex-wrap gap-3">
+              {(
+                [
+                  "calm",
+                  "reflective",
+                  "social",
+                  "expressive",
+                  "grounded",
+                  "exploratory",
+                ] as MoodLens[]
+              ).map((mood) => (
+                <button
+                  key={mood}
+                  onClick={() => setActiveMood(activeMood === mood ? null : mood)}
+                  className={clsx(
+                    "rounded-full border px-4 py-2 text-sm transition capitalize",
+                    activeMood === mood
+                      ? "bg-white text-black border-white"
+                      : "border-white/20 text-white/70 hover:text-white hover:border-white/30"
+                  )}
+                >
+                  {mood}
+                </button>
               ))}
             </div>
-          </Section>
+
+            {activeMood && (
+              <p className="mt-4 text-xs text-white/50">
+                Viewing through: <span className="text-white">{activeMood}</span>
+              </p>
+            )}
+          </section>
         )}
 
-        {/* Popular */}
-        {activeCategory === "all" && (
-          <Section
-            title="Popular Across Australia"
-            subtitle="Well-loved experiences — across different ways of living and exploring."
-            right={
-              <span className="text-sm text-white/60">
-                {popularListings.length} featured
-              </span>
-            }
-          >
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {popularListings.map((l) => (
-                <ListingCard key={l.id} listing={l} userCode={userCode} />
+        {mode === "location" && (
+          <section className="mb-10">
+            <div className="mb-3 text-sm text-white/70">
+              Choose a location lens (optional). Nothing disappears — we only
+              emphasise what matches.
+            </div>
+            <div className="flex flex-wrap gap-3">
+              {availableCities.map((city) => (
+                <button
+                  key={city}
+                  onClick={() => setActiveCity(activeCity === city ? null : city)}
+                  className={clsx(
+                    "rounded-full border px-4 py-2 text-sm transition",
+                    activeCity === city
+                      ? "bg-white text-black border-white"
+                      : "border-white/20 text-white/70 hover:text-white hover:border-white/30"
+                  )}
+                >
+                  {city}
+                </button>
               ))}
             </div>
-          </Section>
+
+            {activeCity && (
+              <p className="mt-4 text-xs text-white/50">
+                Viewing through: <span className="text-white">{activeCity}</span>
+              </p>
+            )}
+          </section>
         )}
 
-        {/* Category View */}
-        <Section
-          title={
-            activeCategory === "all"
-              ? "Explore by category"
-              : categories.find((c) => c.id === activeCategory)?.label ||
-                "Explore"
-          }
-          subtitle={
-            activeCategory === "all"
-              ? "Choose a lane — or let Ethos guide you."
-              : "A focused slice — calmer than infinite scroll."
-          }
-          right={
-            <span className="text-sm text-white/60">
-              {visibleByCategory.length} shown
-            </span>
-          }
-        >
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {visibleByCategory.map((l) => (
-              <ListingCard key={l.id} listing={l} userCode={userCode} />
-            ))}
-          </div>
-        </Section>
-
-        {/* Editorial footer (premium “empty without being empty”) */}
-        <section className="mt-16 border-t border-white/10 pt-10">
-          <p className="text-white/60 max-w-2xl leading-relaxed">
-            Ethos is a curated marketplace. We add listings selectively, because
-            alignment matters more than volume. If you’re a business, you’re not
-            competing for attention — you’re being placed where you actually fit.
-          </p>
-          <p className="text-white/40 mt-3 text-sm">
-            Next: richer visuals (images), location clustering, and “Why this fits
-            you” explanations.
-          </p>
+        {/* GRID */}
+        <section className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
+          {experiences.map((exp) => (
+            <ExperienceCard
+              key={exp.id}
+              experience={exp}
+              lensMode={mode}
+              activeCode={activeCode}
+              activeMood={activeMood}
+            />
+          ))}
         </section>
-      </div>
+
+        {/* Footer Ethics */}
+        <div className="mt-20 border-t border-white/10 pt-8 text-xs text-white/40 max-w-3xl">
+          Ethos does not rank or recommend experiences. Lenses are user-selected
+          and only change emphasis. Any resonance shown is descriptive and optional.
+        </div>
+      </main>
     </div>
   );
 }
