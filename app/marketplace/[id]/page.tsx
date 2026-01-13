@@ -6,15 +6,17 @@ import MarketplaceDetailClient, {
 
 export const dynamic = "force-dynamic";
 
+function safeStringArray(v: unknown): string[] {
+  if (!Array.isArray(v)) return [];
+  return v.filter((x) => typeof x === "string") as string[];
+}
+
 export default async function MarketplaceDetailPage({
   params,
   searchParams,
 }: {
   params: { id: string };
-  searchParams?: {
-    lens?: string;
-    code?: string;
-  };
+  searchParams?: { lens?: string; code?: string };
 }) {
   const { id } = params;
 
@@ -42,26 +44,12 @@ export default async function MarketplaceDetailPage({
     );
   }
 
-  /* ---------------------------------------------------------------------- */
-  /* Safe helpers                                                            */
-  /* ---------------------------------------------------------------------- */
-
-  function safeStringArray(v: unknown): string[] {
-    if (!Array.isArray(v)) return [];
-    return v.filter((x) => typeof x === "string") as string[];
-  }
-
-  /* ---------------------------------------------------------------------- */
-  /* Editorial fallbacks (forward-compatible)                                */
-  /* ---------------------------------------------------------------------- */
-
   const traits =
     typeof (listing as any).traits === "object" && (listing as any).traits
       ? (listing as any).traits
       : null;
 
   const whatToExpect = safeStringArray((listing as any).whatToExpect);
-
   const whatHappensNext =
     typeof (listing as any).whatHappensNext === "string"
       ? (listing as any).whatHappensNext
@@ -75,10 +63,6 @@ export default async function MarketplaceDetailPage({
   const timeline = Array.isArray((listing as any).timeline)
     ? (listing as any).timeline
     : null;
-
-  /* ---------------------------------------------------------------------- */
-  /* View model                                                              */
-  /* ---------------------------------------------------------------------- */
 
   const view: ListingDetailView = {
     id: listing.id,
@@ -100,16 +84,15 @@ export default async function MarketplaceDetailPage({
       tertiaryCode: listing.business.tertiaryCode ?? null,
     },
     editorial: {
-      traits:
-        traits ?? {
-          energy: 55,
-          social: 45,
-          structure: 50,
-          expression: 45,
-          nature: 50,
-          pace: 50,
-          introspection: 55,
-        },
+      traits: traits ?? {
+        energy: 55,
+        social: 45,
+        structure: 50,
+        expression: 45,
+        nature: 50,
+        pace: 50,
+        introspection: 55,
+      },
       whatToExpect:
         whatToExpect.length > 0
           ? whatToExpect
@@ -164,3 +147,4 @@ export default async function MarketplaceDetailPage({
     />
   );
 }
+/* -------------------------------------------------------------------------- */
