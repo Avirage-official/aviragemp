@@ -7,6 +7,9 @@ import { CalendarDays } from "lucide-react";
 export default async function MeetupsPage() {
   const { userId } = await auth();
 
+  /* ───────────────────────────────────────────────
+     AUTH GUARD
+  ─────────────────────────────────────────────── */
   if (!userId) {
     return (
       <div className="rounded-3xl border border-white/10 bg-white/[0.02] p-10 text-white/70">
@@ -15,6 +18,9 @@ export default async function MeetupsPage() {
     );
   }
 
+  /* ───────────────────────────────────────────────
+     CURRENT USER
+  ─────────────────────────────────────────────── */
   const user = await prisma.user.findUnique({
     where: { clerkId: userId },
   });
@@ -28,24 +34,35 @@ export default async function MeetupsPage() {
     );
   }
 
-  /**
-   * Friends (for private invites)
-   */
+  /* ───────────────────────────────────────────────
+     FRIENDS (PRIVATE INVITES)
+  ─────────────────────────────────────────────── */
   const friendships = await prisma.friendship.findMany({
     where: { userId: user.id },
+    select: { friendId: true },
   });
 
   const friends = (
     await Promise.all(
       friendships.map((f) =>
-        prisma.user.findUnique({ where: { id: f.friendId } })
+        prisma.user.findUnique({
+          where: { id: f.friendId },
+          select: {
+            id: true,
+            name: true,
+            username: true,
+          },
+        })
+      )
     )
-  )
-).filter((u): u is NonNullable<typeof u> => u !== null);
+  ).filter(
+    (u): u is { id: string; name: string | null; username: string | null } =>
+      u !== null
+  );
 
-  /**
-   * Meetups user can see
-   */
+  /* ───────────────────────────────────────────────
+     MEETUPS (LET PRISMA INFER TYPES)
+  ─────────────────────────────────────────────── */
   const meetups = await prisma.meetup.findMany({
     where: {
       OR: [
@@ -62,9 +79,25 @@ export default async function MeetupsPage() {
       },
     },
     include: {
-      host: true,
+      host: {
+        select: {
+          id: true,
+          name: true,
+          username: true,
+        },
+      },
       participants: {
-        include: { user: true },
+        select: {
+          userId: true,
+          status: true,
+          user: {
+            select: {
+              id: true,
+              name: true,
+              username: true,
+            },
+          },
+        },
       },
     },
     orderBy: {
@@ -74,6 +107,9 @@ export default async function MeetupsPage() {
 
   const hasMeetups = meetups.length > 0;
 
+  /* ───────────────────────────────────────────────
+     RENDER
+  ─────────────────────────────────────────────── */
   return (
     <div className="space-y-10">
       {/* HEADER */}
