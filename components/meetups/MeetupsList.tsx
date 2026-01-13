@@ -2,211 +2,199 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
 
-interface Meetup {
+interface Friend {
   id: string;
-  title: string;
-  description: string | null;
-  scheduledAt: Date;
-  venueName: string;
-  city: string;
-  isPublic: boolean;
-  host: {
-    id: string;
-    name: string | null;
-    username: string | null;
-  };
-  participants: Array<{
-    userId: string;
-    status: string;
-    user: {
-      id: string;
-      name: string | null;
-      username: string | null;
-    };
-  }>;
+  name: string | null;
+  username: string | null;
 }
 
-export function MeetupsList({ 
-  meetups,
-  currentUserId,
-  userCode
-}: { 
-  meetups: Meetup[],
-  currentUserId: string,
-  userCode: string | null
-}) {
-  const [filter, setFilter] = useState<"all" | "hosting" | "attending">("all");
+export function CreateMeetupButton({ friends }: { friends: Friend[] }) {
+  const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
-  
-  const filteredMeetups = meetups.filter(meetup => {
-    if (filter === "hosting") return meetup.host.id === currentUserId;
-    if (filter === "attending") {
-      return meetup.participants.some(a => 
-        a.userId === currentUserId && a.status === "GOING"
-      );
-    }
-    return true;
+
+  const [form, setForm] = useState({
+    title: "",
+    description: "",
+    date: "",
+    time: "",
+    location: "",
+    city: "",
+    isPublic: false,
+    invitedFriends: [] as string[],
   });
-  
-  async function handleRSVP(meetupId: string, status: string) {
-    await fetch("/api/meetups/rsvp", {
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    setLoading(true);
+
+    await fetch("/api/meetups/create", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ meetupId, status })
+      body: JSON.stringify(form),
     });
+
+    setLoading(false);
+    setOpen(false);
     router.refresh();
   }
-  
-  function getUserStatus(meetup: Meetup): string | null {
-    const participant = meetup.participants.find(a => a.userId === currentUserId);
-    return participant?.status || null;
+
+  function toggleFriend(id: string) {
+    setForm((p) => ({
+      ...p,
+      invitedFriends: p.invitedFriends.includes(id)
+        ? p.invitedFriends.filter((f) => f !== id)
+        : [...p.invitedFriends, id],
+    }));
   }
-  
-  if (meetups.length === 0) {
-    return (
-      <div className="bg-white rounded-lg p-12 shadow text-center">
-        <div className="text-6xl mb-4">📅</div>
-        <h2 className="text-2xl font-bold mb-2">No Meetups Yet</h2>
-        <p className="text-gray-600">
-          Create your first meetup or wait for friends to invite you!
-        </p>
-      </div>
-    );
-  }
-  
+
   return (
-    <div className="space-y-6">
-      {/* Filters */}
-      <div className="flex gap-2">
-        <button
-          onClick={() => setFilter("all")}
-          className={`px-4 py-2 rounded transition ${
-            filter === "all"
-              ? "bg-blue-600 text-white"
-              : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-          }`}
-        >
-          All Meetups
-        </button>
-        <button
-          onClick={() => setFilter("hosting")}
-          className={`px-4 py-2 rounded transition ${
-            filter === "hosting"
-              ? "bg-blue-600 text-white"
-              : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-          }`}
-        >
-          Hosting
-        </button>
-        <button
-          onClick={() => setFilter("attending")}
-          className={`px-4 py-2 rounded transition ${
-            filter === "attending"
-              ? "bg-blue-600 text-white"
-              : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-          }`}
-        >
-          Attending
-        </button>
-      </div>
-      
-      {/* Meetups List */}
-      <div className="grid gap-4">
-        {filteredMeetups.map(meetup => {
-          const userStatus = getUserStatus(meetup);
-          const isHost = meetup.host.id === currentUserId;
-          const goingCount = meetup.participants.filter(a => a.status === "GOING").length;
-          
-          return (
-            <div key={meetup.id} className="bg-white rounded-lg p-6 shadow">
-              <div className="flex justify-between items-start mb-4">
-                <div>
-                  <div className="flex items-center gap-2 mb-1">
-                    <h3 className="text-xl font-bold text-gray-900">{meetup.title}</h3>
-                    {meetup.isPublic ? (
-                      <span className="px-2 py-1 bg-green-100 text-green-700 text-xs rounded">
-                        Public
-                      </span>
-                    ) : (
-                      <span className="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded">
-                        Private
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-sm text-gray-600">
-                    Hosted by {isHost ? "You" : (meetup.host.name || meetup.host.username)}
-                  </p>
-                </div>
-                
-                {!isHost && (
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => handleRSVP(meetup.id, "GOING")}
-                      className={`px-3 py-1 rounded text-sm transition ${
-                        userStatus === "GOING"
-                          ? "bg-green-600 text-white"
-                          : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                      }`}
-                    >
-                      Going
-                    </button>
-                    <button
-                      onClick={() => handleRSVP(meetup.id, "MAYBE")}
-                      className={`px-3 py-1 rounded text-sm transition ${
-                        userStatus === "MAYBE"
-                          ? "bg-yellow-600 text-white"
-                          : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                      }`}
-                    >
-                      Maybe
-                    </button>
-                    <button
-                      onClick={() => handleRSVP(meetup.id, "CANT_GO")}
-                      className={`px-3 py-1 rounded text-sm transition ${
-                        userStatus === "CANT_GO"
-                          ? "bg-red-600 text-white"
-                          : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                      }`}
-                    >
-                      Can't Go
-                    </button>
-                  </div>
-                )}
-              </div>
-              
-              {meetup.description && (
-                <p className="text-gray-700 mb-4">{meetup.description}</p>
-              )}
-              
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div>
-                  <p className="text-gray-600">📅 Date & Time</p>
-                  <p className="font-medium text-gray-900">
-                    {new Date(meetup.scheduledAt).toLocaleString()}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-gray-600">📍 Location</p>
-                  <p className="font-medium text-gray-900">{meetup.venueName}, {meetup.city}</p>
-                </div>
-              </div>
-              
-              <div className="mt-4 pt-4 border-t">
-                <p className="text-sm text-gray-600">
-                  {goingCount} {goingCount === 1 ? "person" : "people"} going
+    <>
+      <button
+        onClick={() => setOpen(true)}
+        className="rounded-full bg-white text-black px-5 py-2 text-sm font-medium hover:opacity-90 transition"
+      >
+        Create meetup
+      </button>
+
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
+          >
+            <motion.form
+              onSubmit={submit}
+              initial={{ scale: 0.96, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.96, y: 20 }}
+              className="w-full max-w-2xl rounded-3xl border border-white/10 bg-black p-8 space-y-6"
+            >
+              <header className="space-y-1">
+                <h2 className="text-2xl font-semibold text-white">
+                  Create a meetup
+                </h2>
+                <p className="text-sm text-white/50">
+                  Start with intention, not logistics.
                 </p>
+              </header>
+
+              {/* WHAT */}
+              <div className="space-y-3">
+                <input
+                  required
+                  placeholder="What’s the plan?"
+                  value={form.title}
+                  onChange={(e) =>
+                    setForm({ ...form, title: e.target.value })
+                  }
+                  className="w-full rounded-xl bg-white/5 border border-white/10 p-3 text-white placeholder-white/40 focus:outline-none"
+                />
+                <textarea
+                  placeholder="Optional context"
+                  value={form.description}
+                  onChange={(e) =>
+                    setForm({ ...form, description: e.target.value })
+                  }
+                  rows={3}
+                  className="w-full rounded-xl bg-white/5 border border-white/10 p-3 text-white placeholder-white/40 focus:outline-none"
+                />
               </div>
-            </div>
-          );
-        })}
-      </div>
-      
-      {filteredMeetups.length === 0 && (
-        <div className="text-center py-12 text-gray-500">
-          <p>No meetups in this category</p>
-        </div>
-      )}
-    </div>
+
+              {/* WHEN */}
+              <div className="grid grid-cols-2 gap-4">
+                <input
+                  type="date"
+                  required
+                  value={form.date}
+                  onChange={(e) =>
+                    setForm({ ...form, date: e.target.value })
+                  }
+                  className="rounded-xl bg-white/5 border border-white/10 p-3 text-white"
+                />
+                <input
+                  type="time"
+                  required
+                  value={form.time}
+                  onChange={(e) =>
+                    setForm({ ...form, time: e.target.value })
+                  }
+                  className="rounded-xl bg-white/5 border border-white/10 p-3 text-white"
+                />
+              </div>
+
+              {/* WHERE */}
+              <div className="grid grid-cols-2 gap-4">
+                <input
+                  required
+                  placeholder="Place"
+                  value={form.location}
+                  onChange={(e) =>
+                    setForm({ ...form, location: e.target.value })
+                  }
+                  className="rounded-xl bg-white/5 border border-white/10 p-3 text-white"
+                />
+                <input
+                  required
+                  placeholder="City"
+                  value={form.city}
+                  onChange={(e) =>
+                    setForm({ ...form, city: e.target.value })
+                  }
+                  className="rounded-xl bg-white/5 border border-white/10 p-3 text-white"
+                />
+              </div>
+
+              {/* WHO */}
+              {!form.isPublic && friends.length > 0 && (
+                <div className="space-y-2">
+                  <p className="text-sm text-white/60">
+                    Invite friends
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {friends.map((f) => (
+                      <button
+                        key={f.id}
+                        type="button"
+                        onClick={() => toggleFriend(f.id)}
+                        className={`px-3 py-1 rounded-full text-xs transition ${
+                          form.invitedFriends.includes(f.id)
+                            ? "bg-white text-black"
+                            : "bg-white/10 text-white hover:bg-white/20"
+                        }`}
+                      >
+                        {f.name || f.username}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* ACTIONS */}
+              <div className="flex justify-end gap-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setOpen(false)}
+                  className="text-sm text-white/50 hover:text-white"
+                >
+                  Cancel
+                </button>
+                <button
+                  disabled={loading}
+                  type="submit"
+                  className="rounded-full bg-white text-black px-6 py-2 text-sm font-medium"
+                >
+                  {loading ? "Creating…" : "Create"}
+                </button>
+              </div>
+            </motion.form>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
   );
 }

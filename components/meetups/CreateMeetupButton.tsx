@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface Friend {
   id: string;
@@ -10,11 +11,11 @@ interface Friend {
 }
 
 export function CreateMeetupButton({ friends }: { friends: Friend[] }) {
-  const [showModal, setShowModal] = useState(false);
+  const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
-  
-  const [formData, setFormData] = useState({
+
+  const [form, setForm] = useState({
     title: "",
     description: "",
     date: "",
@@ -22,186 +23,178 @@ export function CreateMeetupButton({ friends }: { friends: Friend[] }) {
     location: "",
     city: "",
     isPublic: false,
-    invitedFriends: [] as string[]
+    invitedFriends: [] as string[],
   });
-  
-  async function handleSubmit(e: React.FormEvent) {
+
+  async function submit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
-    
-    try {
-      const response = await fetch("/api/meetups/create", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData)
-      });
-      
-      if (response.ok) {
-        setShowModal(false);
-        router.refresh();
-      }
-    } catch (error) {
-      console.error("Failed to create meetup:", error);
-    } finally {
-      setLoading(false);
-    }
+
+    await fetch("/api/meetups/create", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(form),
+    });
+
+    setLoading(false);
+    setOpen(false);
+    router.refresh();
   }
-  
-  function toggleFriend(friendId: string) {
-    setFormData(prev => ({
-      ...prev,
-      invitedFriends: prev.invitedFriends.includes(friendId)
-        ? prev.invitedFriends.filter(f => f !== friendId)
-        : [...prev.invitedFriends, friendId]
+
+  function toggleFriend(id: string) {
+    setForm((p) => ({
+      ...p,
+      invitedFriends: p.invitedFriends.includes(id)
+        ? p.invitedFriends.filter((f) => f !== id)
+        : [...p.invitedFriends, id],
     }));
   }
-  
+
   return (
     <>
       <button
-        onClick={() => setShowModal(true)}
-        className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+        onClick={() => setOpen(true)}
+        className="rounded-full bg-white text-black px-5 py-2 text-sm font-medium hover:opacity-90 transition"
       >
-        Create Meetup
+        Create meetup
       </button>
-      
-      {showModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto">
-          <div className="bg-white rounded-lg max-w-2xl w-full my-8">
-            <form onSubmit={handleSubmit} className="p-6 space-y-4">
-              <h2 className="text-2xl font-bold mb-4">Create Meetup</h2>
-              
-              {/* Title */}
-              <div>
-                <label className="block text-sm font-medium mb-1 text-gray-900">Title *</label>
+
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
+          >
+            <motion.form
+              onSubmit={submit}
+              initial={{ scale: 0.96, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.96, y: 20 }}
+              className="w-full max-w-2xl rounded-3xl border border-white/10 bg-black p-8 space-y-6"
+            >
+              <header className="space-y-1">
+                <h2 className="text-2xl font-semibold text-white">
+                  Create a meetup
+                </h2>
+                <p className="text-sm text-white/50">
+                  Start with intention, not logistics.
+                </p>
+              </header>
+
+              {/* WHAT */}
+              <div className="space-y-3">
                 <input
-                  type="text"
                   required
-                  value={formData.title}
-                  onChange={(e) => setFormData({...formData, title: e.target.value})}
-                  className="w-full p-2 border rounded text-gray-900"
-                  placeholder="Coffee & Chat"
+                  placeholder="What’s the plan?"
+                  value={form.title}
+                  onChange={(e) =>
+                    setForm({ ...form, title: e.target.value })
+                  }
+                  className="w-full rounded-xl bg-white/5 border border-white/10 p-3 text-white placeholder-white/40 focus:outline-none"
                 />
-              </div>
-              
-              {/* Description */}
-              <div>
-                <label className="block text-sm font-medium mb-1 text-gray-900">Description</label>
                 <textarea
-                  value={formData.description}
-                  onChange={(e) => setFormData({...formData, description: e.target.value})}
-                  className="w-full p-2 border rounded text-gray-900"
+                  placeholder="Optional context"
+                  value={form.description}
+                  onChange={(e) =>
+                    setForm({ ...form, description: e.target.value })
+                  }
                   rows={3}
-                  placeholder="Let's grab coffee and catch up!"
+                  className="w-full rounded-xl bg-white/5 border border-white/10 p-3 text-white placeholder-white/40 focus:outline-none"
                 />
               </div>
-              
-              {/* Date & Time */}
+
+              {/* WHEN */}
               <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1 text-gray-900">Date *</label>
-                  <input
-                    type="date"
-                    required
-                    value={formData.date}
-                    onChange={(e) => setFormData({...formData, date: e.target.value})}
-                    className="w-full p-2 border rounded text-gray-900"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1 text-gray-900">Time *</label>
-                  <input
-                    type="time"
-                    required
-                    value={formData.time}
-                    onChange={(e) => setFormData({...formData, time: e.target.value})}
-                    className="w-full p-2 border rounded text-gray-900"
-                  />
-                </div>
+                <input
+                  type="date"
+                  required
+                  value={form.date}
+                  onChange={(e) =>
+                    setForm({ ...form, date: e.target.value })
+                  }
+                  className="rounded-xl bg-white/5 border border-white/10 p-3 text-white"
+                />
+                <input
+                  type="time"
+                  required
+                  value={form.time}
+                  onChange={(e) =>
+                    setForm({ ...form, time: e.target.value })
+                  }
+                  className="rounded-xl bg-white/5 border border-white/10 p-3 text-white"
+                />
               </div>
-              
-              {/* Location & City */}
+
+              {/* WHERE */}
               <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1 text-gray-900">Location *</label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.location}
-                    onChange={(e) => setFormData({...formData, location: e.target.value})}
-                    className="w-full p-2 border rounded text-gray-900"
-                    placeholder="Blue Bottle Coffee"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1 text-gray-900">City *</label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.city}
-                    onChange={(e) => setFormData({...formData, city: e.target.value})}
-                    className="w-full p-2 border rounded text-gray-900"
-                    placeholder="San Francisco"
-                  />
-                </div>
+                <input
+                  required
+                  placeholder="Place"
+                  value={form.location}
+                  onChange={(e) =>
+                    setForm({ ...form, location: e.target.value })
+                  }
+                  className="rounded-xl bg-white/5 border border-white/10 p-3 text-white"
+                />
+                <input
+                  required
+                  placeholder="City"
+                  value={form.city}
+                  onChange={(e) =>
+                    setForm({ ...form, city: e.target.value })
+                  }
+                  className="rounded-xl bg-white/5 border border-white/10 p-3 text-white"
+                />
               </div>
-              
-              {/* Public/Private */}
-              <div>
-                <label className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    checked={formData.isPublic}
-                    onChange={(e) => setFormData({...formData, isPublic: e.target.checked})}
-                  />
-                  <span className="text-sm text-gray-900">Make this meetup public (discoverable by others)</span>
-                </label>
-              </div>
-              
-              {/* Invite Friends (for private meetups) */}
-              {!formData.isPublic && friends.length > 0 && (
-                <div>
-                  <label className="block text-sm font-medium mb-2 text-gray-900">
-                    Invite Friends
-                  </label>
-                  <div className="space-y-2 max-h-40 overflow-y-auto p-2 border rounded">
-                    {friends.map(friend => (
-                      <label key={friend.id} className="flex items-center gap-2">
-                        <input
-                          type="checkbox"
-                          checked={formData.invitedFriends.includes(friend.id)}
-                          onChange={() => toggleFriend(friend.id)}
-                        />
-                        <span className="text-sm text-gray-900">
-                          {friend.name || friend.username}
-                        </span>
-                      </label>
+
+              {/* WHO */}
+              {!form.isPublic && friends.length > 0 && (
+                <div className="space-y-2">
+                  <p className="text-sm text-white/60">
+                    Invite friends
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {friends.map((f) => (
+                      <button
+                        key={f.id}
+                        type="button"
+                        onClick={() => toggleFriend(f.id)}
+                        className={`px-3 py-1 rounded-full text-xs transition ${
+                          form.invitedFriends.includes(f.id)
+                            ? "bg-white text-black"
+                            : "bg-white/10 text-white hover:bg-white/20"
+                        }`}
+                      >
+                        {f.name || f.username}
+                      </button>
                     ))}
                   </div>
                 </div>
               )}
-              
-              {/* Actions */}
-              <div className="flex gap-2 pt-4">
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-blue-300 transition"
-                >
-                  {loading ? "Creating..." : "Create Meetup"}
-                </button>
+
+              {/* ACTIONS */}
+              <div className="flex justify-end gap-3 pt-4">
                 <button
                   type="button"
-                  onClick={() => setShowModal(false)}
-                  className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400 transition"
+                  onClick={() => setOpen(false)}
+                  className="text-sm text-white/50 hover:text-white"
                 >
                   Cancel
                 </button>
+                <button
+                  disabled={loading}
+                  type="submit"
+                  className="rounded-full bg-white text-black px-6 py-2 text-sm font-medium"
+                >
+                  {loading ? "Creating…" : "Create"}
+                </button>
               </div>
-            </form>
-          </div>
-        </div>
-      )}
+            </motion.form>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 }
