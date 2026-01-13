@@ -47,10 +47,11 @@ export default function SignInPage() {
         transition={{ duration: 0.8, delay: 0.3 }}
         className="relative z-10"
       >
-        <SignIn 
-          appearance={{
-            baseTheme: undefined,
-            elements: {
+        <SignIn
+        afterSignInUrl="/post-signin"
+        appearance={{
+          baseTheme: undefined,
+          elements: {
               rootBox: "mx-auto",
               card: "bg-black/60 backdrop-blur-xl border border-white/10 shadow-2xl",
               headerTitle: "text-white text-2xl",

@@ -9,8 +9,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 
 export async function POST(request: Request) {
   const body = await request.text();
-  const headersList = headers();
-  const signature = headersList.get("stripe-signature");
+  const signature = headers().get("stripe-signature");
 
   if (!signature) {
     return NextResponse.json({ error: "No signature" }, { status: 400 });
@@ -26,16 +25,13 @@ export async function POST(request: Request) {
     );
   } catch (err) {
     console.error("Webhook signature verification failed:", err);
-    return NextResponse.json(
-      { error: "Webhook signature verification failed" },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
   }
 
   try {
-    /**
-     * SUBSCRIPTION CREATED (Checkout Complete)
-     */
+    /* ----------------------------------------
+       SUBSCRIPTION CREATED
+    ---------------------------------------- */
     if (event.type === "checkout.session.completed") {
       const session = event.data.object as Stripe.Checkout.Session;
 
@@ -45,60 +41,33 @@ export async function POST(request: Request) {
             ? session.subscription
             : session.subscription.id;
 
-        const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+        const subscription = await stripe.subscriptions.retrieve(
+          subscriptionId
+        );
+
         const businessId = session.metadata?.businessId;
+        if (!businessId) throw new Error("Missing businessId metadata");
 
-        if (!businessId) {
-          console.warn("Missing businessId in checkout metadata");
-        } else {
-          // Activate business
-          await prisma.businessProfile.update({
-            where: { id: businessId },
-            data: {
-              subscriptionStatus: "ACTIVE",
-              subscriptionEndsAt: new Date(
-                subscription.current_period_end * 1000
-              ),
-            },
-          });
-
-          // Persist subscription lifecycle (NOT money)
-          await prisma.subscription.create({
-            data: {
-              businessId,
-              stripeSubscriptionId: subscription.id,
-              tier: "basic",
-              status: subscription.status,
-              currentPeriodStart: new Date(
-                subscription.current_period_start * 1000
-              ),
-              currentPeriodEnd: new Date(
-                subscription.current_period_end * 1000
-              ),
-            },
-          });
-        }
-      }
-    }
-
-    /**
-     * SUBSCRIPTION RENEWED
-     */
-    if (event.type === "invoice.paid") {
-      const invoice = event.data.object as Stripe.Invoice;
-
-      const subscriptionId =
-        typeof invoice.subscription === "string"
-          ? invoice.subscription
-          : invoice.subscription?.id;
-
-      if (subscriptionId) {
-        const subscription = await stripe.subscriptions.retrieve(subscriptionId);
-
-        await prisma.subscription.updateMany({
-          where: { stripeSubscriptionId: subscriptionId },
+        await prisma.businessProfile.update({
+          where: { id: businessId },
           data: {
+            subscriptionStatus: "ACTIVE",
+            subscriptionEndsAt: new Date(
+              subscription.current_period_end * 1000
+            ),
+          },
+        });
+
+        await prisma.subscription.create({
+          data: {
+            businessId,
+            tier: "basic",
             status: subscription.status,
+            stripeSubscriptionId: subscription.id,
+            stripeCustomerId:
+              typeof subscription.customer === "string"
+                ? subscription.customer
+                : subscription.customer.id,
             currentPeriodStart: new Date(
               subscription.current_period_start * 1000
             ),
@@ -107,28 +76,58 @@ export async function POST(request: Request) {
             ),
           },
         });
-
-        const sub = await prisma.subscription.findFirst({
-          where: { stripeSubscriptionId: subscriptionId },
-        });
-
-        if (sub) {
-          await prisma.businessProfile.update({
-            where: { id: sub.businessId },
-            data: {
-              subscriptionStatus: "ACTIVE",
-              subscriptionEndsAt: new Date(
-                subscription.current_period_end * 1000
-              ),
-            },
-          });
-        }
       }
     }
 
-    /**
-     * SUBSCRIPTION CANCELLED
-     */
+    /* ----------------------------------------
+       SUBSCRIPTION RENEWED
+    ---------------------------------------- */
+    if (event.type === "invoice.paid") {
+      const invoice = event.data.object as Stripe.Invoice;
+      if (!invoice.subscription) return NextResponse.json({ received: true });
+
+      const subscriptionId =
+        typeof invoice.subscription === "string"
+          ? invoice.subscription
+          : invoice.subscription.id;
+
+      const subscription = await stripe.subscriptions.retrieve(
+        subscriptionId
+      );
+
+      await prisma.subscription.updateMany({
+        where: { stripeSubscriptionId: subscriptionId },
+        data: {
+          status: subscription.status,
+          currentPeriodStart: new Date(
+            subscription.current_period_start * 1000
+          ),
+          currentPeriodEnd: new Date(
+            subscription.current_period_end * 1000
+          ),
+        },
+      });
+
+      const sub = await prisma.subscription.findFirst({
+        where: { stripeSubscriptionId: subscriptionId },
+      });
+
+      if (sub) {
+        await prisma.businessProfile.update({
+          where: { id: sub.businessId },
+          data: {
+            subscriptionStatus: "ACTIVE",
+            subscriptionEndsAt: new Date(
+              subscription.current_period_end * 1000
+            ),
+          },
+        });
+      }
+    }
+
+    /* ----------------------------------------
+       SUBSCRIPTION CANCELLED
+    ---------------------------------------- */
     if (event.type === "customer.subscription.deleted") {
       const subscription = event.data.object as Stripe.Subscription;
 
@@ -149,37 +148,33 @@ export async function POST(request: Request) {
       }
     }
 
-    /**
-     * PAYMENT FAILED
-     */
+    /* ----------------------------------------
+       PAYMENT FAILED
+    ---------------------------------------- */
     if (event.type === "invoice.payment_failed") {
       const invoice = event.data.object as Stripe.Invoice;
+      if (!invoice.subscription) return NextResponse.json({ received: true });
 
       const subscriptionId =
         typeof invoice.subscription === "string"
           ? invoice.subscription
-          : invoice.subscription?.id;
+          : invoice.subscription.id;
 
-      if (subscriptionId) {
-        const sub = await prisma.subscription.findFirst({
-          where: { stripeSubscriptionId: subscriptionId },
+      const sub = await prisma.subscription.findFirst({
+        where: { stripeSubscriptionId: subscriptionId },
+      });
+
+      if (sub) {
+        await prisma.businessProfile.update({
+          where: { id: sub.businessId },
+          data: { subscriptionStatus: "PAST_DUE" },
         });
-
-        if (sub) {
-          await prisma.businessProfile.update({
-            where: { id: sub.businessId },
-            data: { subscriptionStatus: "PAST_DUE" },
-          });
-        }
       }
     }
 
     return NextResponse.json({ received: true });
   } catch (error) {
-    console.error("Webhook handler error:", error);
-    return NextResponse.json(
-      { error: "Webhook handler failed" },
-      { status: 500 }
-    );
+    console.error("Stripe webhook error:", error);
+    return NextResponse.json({ error: "Webhook failed" }, { status: 500 });
   }
 }

@@ -298,25 +298,24 @@ model Listing {
 ////////////////////////
 
 model Subscription {
-  id         String @id @default(cuid())
-  businessId String
+  id                   String   @id @default(cuid())
+  businessId            String
+  business              BusinessProfile @relation(fields: [businessId], references: [id], onDelete: Cascade)
 
-  business BusinessProfile @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  stripeSubscriptionId  String   @unique
+  tier                  String
+  billingPeriod         String
+  amount                Float
+  currency              String   @default("USD")
+  status                String
 
-  tier   String
-  status String
+  currentPeriodStart    DateTime
+  currentPeriodEnd      DateTime
 
-  stripeSubscriptionId String? @unique
-  stripeCustomerId     String?
-
-  currentPeriodStart DateTime?
-  currentPeriodEnd   DateTime?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
 
   @@index([businessId])
-  @@index([status])
 }
 
 ////////////////////////
