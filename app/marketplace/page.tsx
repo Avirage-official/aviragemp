@@ -1,236 +1,252 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useUser } from "@clerk/nextjs";
 import Link from "next/link";
 
-const CATEGORIES = [
-  { id: "all", name: "All Categories" },
-  { id: "experience", name: "Experiences" },
-  { id: "retreat", name: "Retreats" },
-  { id: "coaching", name: "Coaching" },
-  { id: "workshop", name: "Workshops" },
-  { id: "event", name: "Events" },
-  { id: "service", name: "Services" },
-  { id: "product", name: "Products" }
-];
+/* -------------------------------------------------------------------------- */
+/* Types                                                                      */
+/* -------------------------------------------------------------------------- */
 
-export default function MarketplacePage() {
-  const { user } = useUser();
-  const [listings, setListings] = useState<any[]>([]);
-  const [filteredListings, setFilteredListings] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [selectedCategory, setSelectedCategory] = useState("all");
-  const [showMyMatches, setShowMyMatches] = useState(false);
-  const [userCode, setUserCode] = useState<string | null>(null);
+type Listing = {
+  id: string;
+  title: string;
+  description: string;
+  category: string;
+  price: number | null;
+  pricingType: string;
+  location: string | null;
+  city: string | null;
+  targetCodes: string[];
+  business: {
+    businessName: string;
+  };
+};
 
-  // Fetch user's code
-  useEffect(() => {
-    async function fetchUserCode() {
-      if (!user) return;
-      
-      try {
-        const response = await fetch(`/api/users/${user.id}`);
-        const data = await response.json();
-        setUserCode(data.user?.primaryCode || null);
-      } catch (error) {
-        console.error("Error fetching user code:", error);
-      }
-    }
-    
-    fetchUserCode();
-  }, [user]);
+/* -------------------------------------------------------------------------- */
+/* Reusable Components                                                         */
+/* -------------------------------------------------------------------------- */
 
-  // Fetch listings
-  useEffect(() => {
-    async function fetchListings() {
-      setIsLoading(true);
-      try {
-        const params = new URLSearchParams();
-        if (selectedCategory !== "all") {
-          params.append("category", selectedCategory);
-        }
-        
-        const response = await fetch(`/api/listings?${params}`);
-        const data = await response.json();
-        setListings(data.listings || []);
-      } catch (error) {
-        console.error("Error fetching listings:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    }
+function Section({
+  title,
+  subtitle,
+  children,
+}: {
+  title: string;
+  subtitle?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <section className="mb-16">
+      <div className="mb-6">
+        <h2 className="text-2xl font-bold tracking-tight">{title}</h2>
+        {subtitle && (
+          <p className="text-gray-600 mt-1 max-w-2xl">{subtitle}</p>
+        )}
+      </div>
+      {children}
+    </section>
+  );
+}
 
-    fetchListings();
-  }, [selectedCategory]);
-
-  // Apply "My Matches" filter
-  useEffect(() => {
-    if (showMyMatches && userCode) {
-      const matched = listings.filter(listing => 
-        listing.targetCodes.includes(userCode)
-      );
-      setFilteredListings(matched);
-    } else {
-      setFilteredListings(listings);
-    }
-  }, [listings, showMyMatches, userCode]);
+function ListingCard({
+  listing,
+  userCode,
+}: {
+  listing: Listing;
+  userCode: string | null;
+}) {
+  const isMatched = userCode
+    ? listing.targetCodes.includes(userCode)
+    : false;
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="container mx-auto p-8">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold">Discover Experiences</h1>
-          <p className="text-gray-600 mt-2">
-            Find offerings matched to your personality code
-          </p>
-        </div>
+    <Link
+      href={`/marketplace/${listing.id}`}
+      className="group block rounded-xl bg-white shadow-sm hover:shadow-xl transition overflow-hidden"
+    >
+      {/* Visual Placeholder */}
+      <div className="h-44 bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+        <span className="text-5xl opacity-90">
+          {listing.category === "retreat"
+            ? "🏔️"
+            : listing.category === "coaching"
+            ? "💬"
+            : listing.category === "workshop"
+            ? "🎨"
+            : listing.category === "experience"
+            ? "✨"
+            : listing.category === "event"
+            ? "🎉"
+            : "📦"}
+        </span>
+      </div>
 
-        {/* Filters */}
-        <div className="bg-white rounded-lg shadow p-6 mb-8">
-          <div className="flex flex-col md:flex-row gap-4">
-            {/* Category Filter */}
-            <div className="flex-1">
-              <label className="block text-sm font-semibold mb-2">Category</label>
-              <select
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-              >
-                {CATEGORIES.map(cat => (
-                  <option key={cat.id} value={cat.id}>{cat.name}</option>
-                ))}
-              </select>
-            </div>
+      <div className="p-5">
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-xs font-semibold uppercase tracking-wide text-blue-700">
+            {listing.category}
+          </span>
 
-            {/* My Matches Toggle */}
-            {userCode && (
-              <div className="flex items-end">
-                <label className="flex items-center gap-3 p-3 border-2 border-gray-300 rounded-lg cursor-pointer hover:border-blue-500">
-                  <input
-                    type="checkbox"
-                    checked={showMyMatches}
-                    onChange={(e) => setShowMyMatches(e.target.checked)}
-                    className="w-5 h-5"
-                  />
-                  <div>
-                    <p className="font-semibold">My Matches Only</p>
-                    <p className="text-sm text-gray-600">Show listings for your code</p>
-                  </div>
-                </label>
-              </div>
-            )}
-          </div>
-
-          {showMyMatches && (
-            <div className="mt-4 bg-blue-50 border border-blue-200 rounded-lg p-3">
-              <p className="text-sm text-blue-800">
-                🎯 Showing listings targeted to your personality code
-              </p>
-            </div>
+          {isMatched && (
+            <span className="text-xs font-semibold text-green-700">
+              Aligned with you
+            </span>
           )}
         </div>
 
-        {/* Results Count */}
-        <div className="mb-6">
-          <p className="text-gray-600">
-            {isLoading ? "Loading..." : `${filteredListings.length} listings found`}
+        <h3 className="text-lg font-semibold leading-snug line-clamp-2">
+          {listing.title}
+        </h3>
+
+        <p className="text-sm text-gray-600 mt-2 line-clamp-2">
+          {listing.description}
+        </p>
+
+        <div className="mt-4 pt-4 border-t flex items-center justify-between">
+          <p className="text-sm font-medium">
+            {listing.business.businessName}
+          </p>
+
+          {listing.price ? (
+            <p className="text-sm font-semibold text-blue-600">
+              ${listing.price}
+            </p>
+          ) : (
+            <p className="text-sm text-gray-500">Enquire for pricing</p>
+          )}
+        </div>
+      </div>
+    </Link>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/* Page                                                                        */
+/* -------------------------------------------------------------------------- */
+
+export default function MarketplacePage() {
+  const { user } = useUser();
+  const [listings, setListings] = useState<Listing[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [userCode, setUserCode] = useState<string | null>(null);
+
+  /* ---------------------------- Fetch user code ---------------------------- */
+  useEffect(() => {
+    async function fetchUserCode() {
+      if (!user) return;
+      const res = await fetch(`/api/users/${user.id}`);
+      const data = await res.json();
+      setUserCode(data.user?.primaryCode || null);
+    }
+    fetchUserCode();
+  }, [user]);
+
+  /* ---------------------------- Fetch listings ----------------------------- */
+  useEffect(() => {
+    async function fetchListings() {
+      setIsLoading(true);
+      const res = await fetch("/api/listings");
+      const data = await res.json();
+      setListings(data.listings || []);
+      setIsLoading(false);
+    }
+    fetchListings();
+  }, []);
+
+  /* ---------------------------- Curated groups ----------------------------- */
+  const matchedListings = useMemo(() => {
+    if (!userCode) return [];
+    return listings.filter((l) => l.targetCodes.includes(userCode)).slice(0, 9);
+  }, [listings, userCode]);
+
+  const popularListings = useMemo(() => {
+    return listings.slice(0, 9);
+  }, [listings]);
+
+  const listingsByCategory = useMemo(() => {
+    const map: Record<string, Listing[]> = {};
+    listings.forEach((l) => {
+      if (!map[l.category]) map[l.category] = [];
+      map[l.category].push(l);
+    });
+    return map;
+  }, [listings]);
+
+  /* ------------------------------------------------------------------------ */
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <div className="container mx-auto px-8 py-12">
+        {/* Context Header */}
+        <div className="mb-20 max-w-3xl">
+          <h1 className="text-4xl font-bold tracking-tight">
+            Experiences across Australia, curated by personality
+          </h1>
+          <p className="text-gray-600 mt-4 text-lg">
+            Ethos helps you discover experiences that align with how you prefer
+            to move through the world — not just what’s popular.
           </p>
         </div>
 
-        {/* Listings Grid */}
         {isLoading ? (
-          <div className="text-center py-12">
-            <div className="text-4xl mb-4">⏳</div>
-            <p className="text-gray-600">Loading listings...</p>
-          </div>
-        ) : filteredListings.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredListings.map((listing) => (
-              <Link
-                key={listing.id}
-                href={`/marketplace/${listing.id}`}
-                className="bg-white rounded-lg shadow hover:shadow-xl transition overflow-hidden"
-              >
-                {/* Image Placeholder */}
-                <div className="h-48 bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center">
-                  <span className="text-6xl">
-                    {listing.category === "retreat" ? "🏔️" :
-                     listing.category === "coaching" ? "💬" :
-                     listing.category === "workshop" ? "🎨" :
-                     listing.category === "experience" ? "✨" :
-                     listing.category === "event" ? "🎉" : "📦"}
-                  </span>
-                </div>
-
-                <div className="p-6">
-                  {/* Category Badge */}
-                  <div className="mb-3">
-                    <span className="text-xs font-semibold px-3 py-1 bg-blue-100 text-blue-800 rounded-full">
-                      {listing.category}
-                    </span>
-                  </div>
-
-                  {/* Title */}
-                  <h3 className="text-xl font-bold mb-2 line-clamp-2">
-                    {listing.title}
-                  </h3>
-
-                  {/* Description */}
-                  <p className="text-gray-600 text-sm mb-4 line-clamp-3">
-                    {listing.description}
-                  </p>
-
-                  {/* Business & Price */}
-                  <div className="flex justify-between items-center pt-4 border-t">
-                    <div>
-                      <p className="text-xs text-gray-500">By</p>
-                      <p className="text-sm font-semibold">{listing.business.businessName}</p>
-                    </div>
-                    {listing.price ? (
-                      <div className="text-right">
-                        <p className="text-lg font-bold text-blue-600">
-                          ${listing.price}
-                        </p>
-                      </div>
-                    ) : (
-                      <div className="text-right">
-                        <p className="text-sm text-gray-600">Contact for pricing</p>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Match Indicator */}
-                  {userCode && listing.targetCodes.includes(userCode) && (
-                    <div className="mt-3 px-3 py-2 bg-green-50 border border-green-200 rounded-lg">
-                      <p className="text-xs font-semibold text-green-800">
-                        🎯 Matched to your code
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </Link>
-            ))}
+          <div className="text-center py-24 text-gray-500">
+            Loading experiences…
           </div>
         ) : (
-          <div className="text-center py-12 bg-white rounded-lg shadow">
-            <div className="text-6xl mb-4">🔍</div>
-            <h3 className="text-xl font-bold mb-2">No listings found</h3>
-            <p className="text-gray-600">
-              {showMyMatches 
-                ? "Try browsing all listings or check back later"
-                : "No listings available yet. Check back soon!"}
-            </p>
-            {showMyMatches && (
-              <button
-                onClick={() => setShowMyMatches(false)}
-                className="mt-4 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          <>
+            {userCode && matchedListings.length > 0 && (
+              <Section
+                title="For You"
+                subtitle="Experiences aligned with how you naturally engage with people, places, and moments."
               >
-                Browse All Listings
-              </button>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {matchedListings.map((l) => (
+                    <ListingCard
+                      key={l.id}
+                      listing={l}
+                      userCode={userCode}
+                    />
+                  ))}
+                </div>
+              </Section>
             )}
-          </div>
+
+            <Section
+              title="Popular Across Australia"
+              subtitle="Well-loved experiences, across different ways of living and exploring."
+            >
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {popularListings.map((l) => (
+                  <ListingCard
+                    key={l.id}
+                    listing={l}
+                    userCode={userCode}
+                  />
+                ))}
+              </div>
+            </Section>
+
+            {Object.entries(listingsByCategory).map(
+              ([category, items]) =>
+                items.length > 0 && (
+                  <Section
+                    key={category}
+                    title={category.charAt(0).toUpperCase() + category.slice(1)}
+                  >
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      {items.slice(0, 6).map((l) => (
+                        <ListingCard
+                          key={l.id}
+                          listing={l}
+                          userCode={userCode}
+                        />
+                      ))}
+                    </div>
+                  </Section>
+                )
+            )}
+          </>
         )}
       </div>
     </div>
