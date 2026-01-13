@@ -6,9 +6,36 @@ import MarketplaceDetailClient, {
 
 export const dynamic = "force-dynamic";
 
+function normaliseTraits(input: unknown): {
+  energy: number;
+  social: number;
+  structure: number;
+  expression: number;
+  nature: number;
+  pace: number;
+  introspection: number;
+} | null {
+  if (!input || typeof input !== "object") return null;
+
+  const obj = input as Record<string, unknown>;
+
+  const clamp = (v: unknown, d = 50) =>
+    typeof v === "number" ? Math.max(0, Math.min(100, v)) : d;
+
+  return {
+    energy: clamp(obj.energy),
+    social: clamp(obj.social),
+    structure: clamp(obj.structure),
+    expression: clamp(obj.expression),
+    nature: clamp(obj.nature),
+    pace: clamp(obj.pace),
+    introspection: clamp(obj.introspection),
+  };
+}
+
 function safeStringArray(v: unknown): string[] {
   if (!Array.isArray(v)) return [];
-  return v.filter((x) => typeof x === "string") as string[];
+  return v.filter((x) => typeof x === "string");
 }
 
 export default async function MarketplaceDetailPage({
@@ -45,24 +72,9 @@ export default async function MarketplaceDetailPage({
   }
 
   const traits =
-    typeof (listing as any).traits === "object" && (listing as any).traits
-      ? (listing as any).traits
+    listing.traits && typeof listing.traits === "object"
+      ? listing.traits
       : null;
-
-  const whatToExpect = safeStringArray((listing as any).whatToExpect);
-  const whatHappensNext =
-    typeof (listing as any).whatHappensNext === "string"
-      ? (listing as any).whatHappensNext
-      : null;
-
-  const host =
-    (listing as any).host && typeof (listing as any).host === "object"
-      ? (listing as any).host
-      : null;
-
-  const timeline = Array.isArray((listing as any).timeline)
-    ? (listing as any).timeline
-    : null;
 
   const view: ListingDetailView = {
     id: listing.id,
@@ -93,49 +105,52 @@ export default async function MarketplaceDetailPage({
         pace: 50,
         introspection: 55,
       },
-      whatToExpect:
-        whatToExpect.length > 0
-          ? whatToExpect
-          : [
-              "A gentle pace — you can opt in or out of intensity",
-              "Clarity over pressure (no hard selling, no forced sharing)",
-              "Space to ask questions before committing",
-              "Designed to feel like fit, not funnel",
-            ],
-      whatHappensNext:
-        whatHappensNext ??
-        "After you send an inquiry, the host replies with timing options, practical details, and guidance so you can decide if it fits.",
-      host:
-        host ?? {
-          name: listing.business.businessName,
-          ethos:
-            listing.business.description ??
-            "A small operator focused on intentional, personality-aligned experiences.",
-          approach: [
-            "Low-pressure conversation first",
-            "Fit-focused guidance",
-            "Respect for autonomy",
+      whatToExpect: safeStringArray((listing as any).whatToExpect).length
+        ? safeStringArray((listing as any).whatToExpect)
+        : [
+            "A gentle pace — you can opt in or out of intensity",
+            "Clarity over pressure (no hard selling, no forced sharing)",
+            "Space to ask questions before committing",
+            "Designed to feel like fit, not funnel",
           ],
-          values: ["Clarity", "Care", "Human pace"],
-        },
-      timeline:
-        timeline ?? [
-          {
-            phase: "Inquiry",
-            description:
-              "You send a message describing your interest, constraints, and what you want from the experience.",
-          },
-          {
-            phase: "Host reply",
-            description:
-              "The host responds with options, practical details, and any preparation notes.",
-          },
-          {
-            phase: "Confirm fit",
-            description:
-              "If it feels aligned, you confirm timing and next steps—no pressure if it doesn’t.",
-          },
-        ],
+      whatHappensNext:
+        typeof (listing as any).whatHappensNext === "string"
+          ? (listing as any).whatHappensNext
+          : "After you send an inquiry, the host replies with timing options and practical details so you can decide if it fits.",
+      host:
+        (listing as any).host && typeof (listing as any).host === "object"
+          ? (listing as any).host
+          : {
+              name: listing.business.businessName,
+              ethos:
+                listing.business.description ??
+                "A small operator focused on intentional, personality-aligned experiences.",
+              approach: [
+                "Low-pressure conversation first",
+                "Fit-focused guidance",
+                "Respect for autonomy",
+              ],
+              values: ["Clarity", "Care", "Human pace"],
+            },
+      timeline: Array.isArray((listing as any).timeline)
+        ? (listing as any).timeline
+        : [
+            {
+              phase: "Inquiry",
+              description:
+                "You send a message describing your interest and constraints.",
+            },
+            {
+              phase: "Host reply",
+              description:
+                "The host responds with options and practical details.",
+            },
+            {
+              phase: "Confirm fit",
+              description:
+                "If it feels aligned, you confirm timing and next steps.",
+            },
+          ],
     },
   };
 
@@ -147,4 +162,3 @@ export default async function MarketplaceDetailPage({
     />
   );
 }
-/* -------------------------------------------------------------------------- */
