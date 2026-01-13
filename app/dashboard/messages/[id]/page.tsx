@@ -4,90 +4,67 @@ import { MessageThread } from "@/components/messages/MessageThread";
 import { MessageInput } from "@/components/messages/MessageInput";
 import { redirect } from "next/navigation";
 
-export default async function ConversationPage({ 
-  params 
-}: { 
-  params: Promise<{ id: string }> 
+export default async function ConversationPage({
+  params,
+}: {
+  params: { id: string };
 }) {
   const { userId } = await auth();
-  const { id: conversationId } = await params;
-  
-  console.log("Loading conversation:", conversationId);
-  
-  if (!userId) {
-    redirect("/sign-in");
-  }
-  
+  if (!userId) redirect("/sign-in");
+
   const user = await prisma.user.findUnique({
-    where: { clerkId: userId }
+    where: { clerkId: userId },
   });
-  
-  if (!user) {
-    redirect("/onboarding");
-  }
-  
-  console.log("Current user:", user.id);
-  
-  const messages = await prisma.message.findMany({
-    where: { conversationId },
-    include: { sender: true },
-    orderBy: { createdAt: "asc" },
-    take: 100 // Last 100 messages
-  });
-  
+  if (!user) redirect("/onboarding");
+
   const conversation = await prisma.conversation.findUnique({
-    where: { id: conversationId },
+    where: { id: params.id },
     include: {
-      participants: {
-        include: { user: true }
-      }
-    }
+      participants: { include: { user: true } },
+      messages: {
+        include: { sender: true },
+        orderBy: { createdAt: "asc" },
+        take: 100,
+      },
+    },
   });
-  
-  console.log("Conversation found:", !!conversation);
-  console.log("Participants:", conversation?.participants.length);
-  
-  if (!conversation) {
-    console.log("No conversation found - redirecting");
-    redirect("/dashboard/messages");
-  }
-  
-  // Find the other user (not current user)
-  const otherUser = conversation.participants.find(p => p.userId !== user.id)?.user;
-  
-  console.log("Other user found:", !!otherUser);
-  
-  if (!otherUser) {
-    console.log("No other user found - redirecting");
-    redirect("/dashboard/messages");
-  }
-  
+
+  if (!conversation) redirect("/dashboard/messages");
+
+  const otherUser = conversation.participants.find(
+    (p) => p.userId !== user.id
+  )?.user;
+
+  if (!otherUser) redirect("/dashboard/messages");
+
   return (
-    <div className="flex flex-col h-[calc(100vh-100px)]">
-      {/* Header */}
-      <div className="bg-white border-b p-4">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-gradient-to-br from-blue-400 to-purple-400 rounded-full flex items-center justify-center text-white font-bold">
-            {(otherUser.name || otherUser.username || "?")[0].toUpperCase()}
-          </div>
-          <div>
-            <h2 className="font-semibold text-gray-900">
-              {otherUser.name || otherUser.username}
-            </h2>
-            <p className="text-sm text-gray-600">{otherUser.primaryCode}</p>
-          </div>
+    <section className="flex h-[calc(100vh-4rem)] flex-col bg-black">
+      {/* HEADER */}
+      <div className="flex items-center gap-3 border-b border-white/10 px-6 py-4">
+        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-500 text-sm font-semibold text-white">
+          {(otherUser.name || otherUser.username || "?")[0]}
+        </div>
+        <div>
+          <p className="text-sm font-medium text-white">
+            {otherUser.name || otherUser.username}
+          </p>
+          {otherUser.primaryCode && (
+            <p className="text-xs text-white/40">
+              {otherUser.primaryCode}
+            </p>
+          )}
         </div>
       </div>
-      
-      {/* Messages */}
-      <MessageThread 
-        messages={messages} 
+
+      {/* THREAD */}
+      <MessageThread
+        messages={conversation.messages}
         currentUserId={user.id}
-        conversationId={conversationId}
+        conversationId={conversation.id}
       />
-      
-      {/* Input */}
-      <MessageInput conversationId={conversationId} />
-    </div>
+
+      {/* INPUT */}
+      <MessageInput conversationId={conversation.id} />
+    </section>
   );
 }
