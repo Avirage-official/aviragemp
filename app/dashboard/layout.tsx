@@ -15,6 +15,15 @@ import {
   ArrowRight,
 } from "lucide-react";
 
+/**
+ * TEMP PRESENCE / UNREAD STATE
+ * (UI-first, wire to real data later)
+ */
+const presence = {
+  friendsOnline: true,
+  unreadMessages: 2,
+};
+
 type NavItem = {
   label: string;
   href: string;
@@ -51,7 +60,7 @@ export default function DashboardLayout({
         <div className="border-b border-white/10 bg-black/70 backdrop-blur-xl">
           <div className="mx-auto max-w-7xl px-6">
             <div className="flex h-16 items-center justify-between">
-              {/* Left */}
+              {/* LEFT */}
               <div className="flex items-center gap-6">
                 <Link
                   href="/dashboard"
@@ -62,15 +71,16 @@ export default function DashboardLayout({
                     ETHOS
                   </span>
                   <span className="hidden sm:inline text-xs text-white/40 group-hover:text-white/60 transition">
-                    Your universe
+                    your universe
                   </span>
                 </Link>
 
-                {/* Desktop Nav */}
+                {/* DESKTOP NAV */}
                 <nav className="hidden md:flex items-center gap-2">
                   {items.map((it) => {
                     const active = isActive(it.href);
                     const Icon = it.icon;
+
                     return (
                       <Link
                         key={it.href}
@@ -82,7 +92,7 @@ export default function DashboardLayout({
                             : "text-white/65 hover:text-white hover:bg-white/5",
                         ].join(" ")}
                       >
-                        {/* Active glow */}
+                        {/* ACTIVE GLOW */}
                         {active && (
                           <span className="pointer-events-none absolute inset-0 rounded-full bg-gradient-to-r from-blue-500/20 via-purple-500/20 to-pink-500/20 blur-[10px]" />
                         )}
@@ -90,9 +100,22 @@ export default function DashboardLayout({
                         <span className="relative z-10 flex items-center gap-2">
                           <Icon className="w-4 h-4" />
                           {it.label}
+
+                          {/* PRESENCE / UNREAD */}
+                          {it.label === "Friends" &&
+                            presence.friendsOnline && (
+                              <span className="ml-1 h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+                            )}
+
+                          {it.label === "Messages" &&
+                            presence.unreadMessages > 0 && (
+                              <span className="ml-1 rounded-full bg-white/90 px-1.5 text-[10px] font-medium text-black">
+                                {presence.unreadMessages}
+                              </span>
+                            )}
                         </span>
 
-                        {/* Active underline dot */}
+                        {/* ACTIVE DOT */}
                         {active && (
                           <span className="absolute -bottom-[9px] left-1/2 h-1.5 w-1.5 -translate-x-1/2 rounded-full bg-white/70" />
                         )}
@@ -102,7 +125,7 @@ export default function DashboardLayout({
                 </nav>
               </div>
 
-              {/* Right */}
+              {/* RIGHT */}
               <div className="flex items-center gap-3">
                 <Link
                   href="/marketplace"
@@ -122,20 +145,24 @@ export default function DashboardLayout({
                   />
                 </div>
 
-                {/* Mobile */}
+                {/* MOBILE TOGGLE */}
                 <button
                   onClick={() => setOpen((v) => !v)}
                   className="md:hidden inline-flex items-center justify-center rounded-full border border-white/10 bg-white/[0.02] p-2 hover:bg-white/10 transition"
                   aria-label="Open menu"
                 >
-                  {open ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+                  {open ? (
+                    <X className="w-5 h-5" />
+                  ) : (
+                    <Menu className="w-5 h-5" />
+                  )}
                 </button>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Mobile Drawer */}
+        {/* MOBILE DRAWER */}
         <AnimatePresence>
           {open && (
             <motion.div
@@ -149,6 +176,7 @@ export default function DashboardLayout({
                 {items.map((it) => {
                   const active = isActive(it.href);
                   const Icon = it.icon;
+
                   return (
                     <Link
                       key={it.href}
@@ -164,7 +192,21 @@ export default function DashboardLayout({
                       <span className="flex items-center gap-3">
                         <Icon className="w-4 h-4" />
                         <span className="text-sm">{it.label}</span>
+
+                        {/* PRESENCE / UNREAD (MOBILE) */}
+                        {it.label === "Friends" &&
+                          presence.friendsOnline && (
+                            <span className="h-2 w-2 rounded-full bg-emerald-400" />
+                          )}
+
+                        {it.label === "Messages" &&
+                          presence.unreadMessages > 0 && (
+                            <span className="ml-1 rounded-full bg-white/90 px-2 py-0.5 text-[11px] font-medium text-black">
+                              {presence.unreadMessages}
+                            </span>
+                          )}
                       </span>
+
                       <ArrowRight className="w-4 h-4 text-white/40" />
                     </Link>
                   );
