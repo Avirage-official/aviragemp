@@ -2,13 +2,11 @@ import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { SubscriptionButton } from "@/components/business/SubscriptionButton";
+import { ArrowUpRight, Plus } from "lucide-react";
 
 export default async function BusinessDashboard() {
   const { userId } = await auth();
-
-  if (!userId) {
-    redirect("/sign-in");
-  }
+  if (!userId) redirect("/sign-in");
 
   const user = await prisma.user.findUnique({
     where: { clerkId: userId },
@@ -21,182 +19,222 @@ export default async function BusinessDashboard() {
             include: {
               bookings: {
                 where: {
-                  status: {
-                    in: ["INQUIRY", "PENDING"]
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
+                  status: { in: ["INQUIRY", "PENDING"] },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
   });
 
-  if (!user) {
-    redirect("/onboarding");
-  }
-
-  if (!user.businessProfile) {
-    redirect("/onboarding/business");
-  }
+  if (!user) redirect("/onboarding");
+  if (!user.businessProfile) redirect("/onboarding/business");
 
   const business = user.businessProfile;
-  const daysUntilTrialEnd = Math.ceil(
-    (new Date(business.subscriptionEndsAt!).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)
-  );
 
-  // Calculate total inquiries
-  const totalInquiries = business.listings?.reduce((sum, listing) => {
-    return sum + (listing.bookings?.length || 0);
-  }, 0) || 0;
+  const daysUntilTrialEnd = business.subscriptionEndsAt
+    ? Math.ceil(
+        (business.subscriptionEndsAt.getTime() - Date.now()) /
+          (1000 * 60 * 60 * 24)
+      )
+    : null;
+
+  const totalInquiries =
+    business.listings?.reduce(
+      (sum, l) => sum + (l.bookings?.length || 0),
+      0
+    ) || 0;
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="container mx-auto p-8">
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold">{business.businessName}</h1>
-          <p className="text-gray-600 mt-2">{business.category}</p>
-        </div>
+    <div className="min-h-screen bg-black text-white px-6 py-10">
+      <div className="max-w-7xl mx-auto space-y-12">
 
-        {/* Trial Status Banner */}
-        {business.subscriptionStatus === "TRIAL" && (
-          <div className="bg-yellow-50 border-l-4 border-yellow-400 p-6 rounded-lg mb-8">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-lg font-bold text-yellow-800">Free Trial Active</h3>
-                <p className="text-yellow-700 mt-1">
-                  {daysUntilTrialEnd} days remaining until {new Date(business.subscriptionEndsAt!).toLocaleDateString()}
-                </p>
-              </div>
-              <SubscriptionButton />
+        {/* Header */}
+        <header className="flex flex-col md:flex-row md:items-end md:justify-between gap-6">
+          <div>
+            <h1 className="text-4xl font-bold tracking-tight">
+              {business.businessName}
+            </h1>
+            <p className="text-white/60 mt-2">
+              {business.category}
+            </p>
+          </div>
+
+          <a
+            href="/business/listings/new"
+            className="inline-flex items-center gap-2 px-5 py-3 bg-white text-black rounded-xl font-medium hover:bg-white/90 transition"
+          >
+            <Plus size={18} />
+            New Listing
+          </a>
+        </header>
+
+        {/* Trial Banner */}
+        {business.subscriptionStatus === "TRIAL" && daysUntilTrialEnd !== null && (
+          <div className="border border-yellow-500/20 bg-yellow-500/5 rounded-2xl p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+              <p className="font-semibold text-yellow-300">
+                Free Trial Active
+              </p>
+              <p className="text-sm text-yellow-200/70 mt-1">
+                {daysUntilTrialEnd} days remaining
+              </p>
             </div>
+            <SubscriptionButton />
           </div>
         )}
 
-        {/* Quick Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div className="bg-white rounded-lg shadow p-6">
-            <p className="text-gray-600 text-sm">Active Listings</p>
-            <p className="text-3xl font-bold mt-2">{business.listings?.length || 0}</p>
-          </div>
-          <div className="bg-white rounded-lg shadow p-6">
-            <p className="text-gray-600 text-sm">Total Views</p>
-            <p className="text-3xl font-bold mt-2">0</p>
-          </div>
-          <a 
-            href="/business/inquiries"
-            className="bg-white rounded-lg shadow p-6 hover:bg-gray-50 transition cursor-pointer"
-          >
-            <p className="text-gray-600 text-sm">New Inquiries</p>
-            <p className="text-3xl font-bold mt-2 text-blue-600">{totalInquiries}</p>
-            <p className="text-xs text-gray-500 mt-1">Click to view →</p>
-          </a>
-        </div>
+        {/* Stats */}
+        <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <StatCard label="Active Listings" value={business.listings.length} />
+          <StatCard label="Profile Views" value="—" />
+          <StatCard
+            label="New Inquiries"
+            value={totalInquiries}
+            highlight
+            link="/business/inquiries"
+          />
+        </section>
 
-        {/* Listings Section */}
-        <div className="bg-white rounded-lg shadow p-8">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold">Your Listings</h2>
-            <a
-              href="/business/listings/new"
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
-            >
-              + Create Listing
-            </a>
-          </div>
-          
-          {business.listings && business.listings.length > 0 ? (
+        {/* Listings */}
+        <section className="space-y-6">
+          <h2 className="text-2xl font-semibold">Listings</h2>
+
+          {business.listings.length > 0 ? (
             <div className="space-y-4">
-              {business.listings.map((listing: any) => (
-                <div key={listing.id} className="border rounded-lg p-4 hover:bg-gray-50 transition">
-                  <div className="flex justify-between items-start">
-                    <div className="flex-1">
-                      <h3 className="font-bold text-lg">{listing.title}</h3>
-                      <p className="text-gray-600 text-sm mt-1 line-clamp-2">
+              {business.listings.map((listing) => (
+                <div
+                  key={listing.id}
+                  className="border border-white/10 rounded-2xl p-6 hover:border-white/20 transition"
+                >
+                  <div className="flex flex-col md:flex-row md:justify-between gap-6">
+                    <div className="space-y-2">
+                      <h3 className="text-lg font-semibold">
+                        {listing.title}
+                      </h3>
+                      <p className="text-sm text-white/60 line-clamp-2">
                         {listing.description}
                       </p>
-                      <div className="flex gap-4 mt-3 text-sm">
-                        <span className="text-gray-600">
-                          📁 {listing.category}
-                        </span>
-                        {listing.price && (
-                          <span className="text-gray-600">
-                            💰 ${listing.price}
-                          </span>
-                        )}
-                        <span className="text-gray-600">
-                          🎯 {listing.targetCodes.length} codes targeted
-                        </span>
+                      <div className="flex flex-wrap gap-4 text-xs text-white/50 mt-3">
+                        <span>📁 {listing.category}</span>
+                        {listing.price && <span>💰 ${listing.price}</span>}
+                        <span>🎯 {listing.targetCodes.length} codes</span>
                       </div>
                     </div>
-                    <div className="flex gap-2">
-                      <button className="px-3 py-1 text-sm border rounded hover:bg-gray-100">
-                        Edit
-                      </button>
-                      <button className="px-3 py-1 text-sm border rounded hover:bg-gray-100">
+
+                    <div className="flex items-center gap-3">
+                      <a
+                        href={`/business/listings/${listing.id}`}
+                        className="text-sm px-4 py-2 rounded-lg border border-white/15 hover:bg-white/5 transition"
+                      >
                         View
-                      </button>
+                      </a>
+                      <a
+                        href={`/business/listings/${listing.id}/edit`}
+                        className="text-sm px-4 py-2 rounded-lg border border-white/15 hover:bg-white/5 transition"
+                      >
+                        Edit
+                      </a>
                     </div>
                   </div>
                 </div>
               ))}
             </div>
           ) : (
-            <div className="text-center py-12">
-              <div className="text-6xl mb-4">📝</div>
-              <h3 className="text-xl font-bold mb-2">No listings yet</h3>
-              <p className="text-gray-600 mb-6">
-                Create your first listing to start reaching personality-matched customers
-              </p>
-              <a
-                href="/business/listings/new"
-                className="inline-block px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition"
-              >
-                Create Your First Listing
-              </a>
-            </div>
+            <EmptyState />
           )}
-        </div>
+        </section>
 
         {/* Business Info */}
-        <div className="bg-white rounded-lg shadow p-8 mt-8">
-          <h2 className="text-2xl font-bold mb-6">Business Information</h2>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <p className="text-sm text-gray-600">Contact Email</p>
-              <p className="font-semibold mt-1">{business.contactEmail}</p>
-            </div>
-            
+        <section className="border border-white/10 rounded-2xl p-8 space-y-6">
+          <h2 className="text-2xl font-semibold">Business Info</h2>
+
+          <div className="grid md:grid-cols-2 gap-6 text-sm">
+            <Info label="Email" value={business.contactEmail} />
             {business.contactPhone && (
-              <div>
-                <p className="text-sm text-gray-600">Contact Phone</p>
-                <p className="font-semibold mt-1">{business.contactPhone}</p>
-              </div>
+              <Info label="Phone" value={business.contactPhone} />
             )}
-            
             {business.website && (
-              <div>
-                <p className="text-sm text-gray-600">Website</p>
-                <a 
-                  href={business.website}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="font-semibold mt-1 text-blue-600 hover:underline"
-                >
-                  {business.website}
-                </a>
-              </div>
+              <Info
+                label="Website"
+                value={
+                  <a
+                    href={business.website}
+                    target="_blank"
+                    className="text-blue-400 hover:underline inline-flex items-center gap-1"
+                  >
+                    {business.website}
+                    <ArrowUpRight size={14} />
+                  </a>
+                }
+              />
             )}
-            
-            <div>
-              <p className="text-sm text-gray-600">Description</p>
-              <p className="mt-1">{business.description}</p>
-            </div>
+            {business.description && (
+              <Info label="Description" value={business.description} />
+            )}
           </div>
-        </div>
+        </section>
       </div>
+    </div>
+  );
+}
+
+/* ---------- UI helpers ---------- */
+
+function StatCard({
+  label,
+  value,
+  highlight,
+  link,
+}: {
+  label: string;
+  value: number | string;
+  highlight?: boolean;
+  link?: string;
+}) {
+  const card = (
+    <div
+      className={`rounded-2xl p-6 border ${
+        highlight
+          ? "border-blue-500/30 bg-blue-500/5"
+          : "border-white/10"
+      }`}
+    >
+      <p className="text-sm text-white/60">{label}</p>
+      <p className="text-3xl font-bold mt-2">{value}</p>
+      {link && (
+        <p className="text-xs text-blue-400 mt-2">View →</p>
+      )}
+    </div>
+  );
+
+  return link ? <a href={link}>{card}</a> : card;
+}
+
+function Info({ label, value }: { label: string; value: any }) {
+  return (
+    <div>
+      <p className="text-white/50">{label}</p>
+      <div className="mt-1">{value}</div>
+    </div>
+  );
+}
+
+function EmptyState() {
+  return (
+    <div className="border border-dashed border-white/15 rounded-2xl p-12 text-center">
+      <p className="text-lg font-semibold mb-2">No listings yet</p>
+      <p className="text-white/60 mb-6">
+        Create your first listing to reach personality-matched users.
+      </p>
+      <a
+        href="/business/listings/new"
+        className="inline-block px-6 py-3 bg-white text-black rounded-xl font-medium hover:bg-white/90 transition"
+      >
+        Create Listing
+      </a>
     </div>
   );
 }
