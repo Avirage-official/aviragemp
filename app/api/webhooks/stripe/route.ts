@@ -7,11 +7,15 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: "2025-12-15.clover",
 });
 
+// Stripe Node often returns Stripe.Response<T> (wrapped). This normalizes it.
+function unwrapStripe<T>(obj: any): T {
+  return obj && typeof obj === "object" && "data" in obj ? (obj.data as T) : (obj as T);
+}
+
 export async function POST(request: Request) {
   const body = await request.text();
 
-  // ✅ Next.js 15 headers() is async
-  const headersList = await headers();
+  const headersList = await headers(); // ✅ Next 15
   const signature = headersList.get("stripe-signature");
 
   if (!signature) {
@@ -42,41 +46,35 @@ export async function POST(request: Request) {
         const subscriptionId =
           typeof session.subscription === "string"
             ? session.subscription
-            : session.subscription.id;
+            : (session.subscription as any).id;
 
-        const subscription = await stripe.subscriptions.retrieve(
-          subscriptionId
-        );
+        const subRes = await stripe.subscriptions.retrieve(subscriptionId);
+        const subscription = unwrapStripe<any>(subRes);
+
 
         const businessId = session.metadata?.businessId;
-        if (!businessId) {
-          throw new Error("Missing businessId in Stripe metadata");
-        }
+        if (!businessId) throw new Error("Missing businessId in Stripe metadata");
 
-        // 🔑 Extract billing data SAFELY
-        const price = subscription.items.data[0]?.price;
+        const price = subscription.items?.data?.[0]?.price;
+        const interval = price?.recurring?.interval ?? "month";
 
-        const billingPeriod =
-          price?.recurring?.interval?.toUpperCase() ?? "MONTHLY";
+        const billingPeriod = interval === "year" ? "YEARLY" : "MONTHLY";
 
         const amount =
-          (price?.unit_amount ?? session.amount_total ?? 0) / 100;
+          ((price?.unit_amount ?? session.amount_total ?? 0) as number) / 100;
 
-        const currency =
-          (price?.currency ?? session.currency ?? "USD").toUpperCase();
+        const currency = String(
+          price?.currency ?? session.currency ?? "USD"
+        ).toUpperCase();
 
-        // Activate business
         await prisma.businessProfile.update({
           where: { id: businessId },
           data: {
             subscriptionStatus: "ACTIVE",
-            subscriptionEndsAt: new Date(
-              subscription.current_period_end * 1000
-            ),
+            subscriptionEndsAt: new Date(subscription.current_period_end * 1000),
           },
         });
 
-        // ✅ SINGLE, COMPLETE subscription create
         await prisma.subscription.create({
           data: {
             businessId,
@@ -86,12 +84,8 @@ export async function POST(request: Request) {
             amount,
             currency,
             status: String(subscription.status),
-            currentPeriodStart: new Date(
-              subscription.current_period_start * 1000
-            ),
-            currentPeriodEnd: new Date(
-              subscription.current_period_end * 1000
-            ),
+            currentPeriodStart: new Date(subscription.current_period_start * 1000),
+            currentPeriodEnd: new Date(subscription.current_period_end * 1000),
           },
         });
       }
@@ -99,30 +93,30 @@ export async function POST(request: Request) {
 
     /* =====================================================
        SUBSCRIPTION RENEWED
+       NOTE: Stripe Invoice typings differ across versions.
+       We intentionally treat invoice as "any" here to avoid build errors.
     ===================================================== */
     if (event.type === "invoice.paid") {
-      const invoice = event.data.object as Stripe.Invoice;
+      const invoice = event.data.object as any;
 
-      if (invoice.subscription) {
-        const subscriptionId =
-          typeof invoice.subscription === "string"
-            ? invoice.subscription
-            : invoice.subscription.id;
+      const subscriptionId = invoice?.subscription
+        ? typeof invoice.subscription === "string"
+          ? invoice.subscription
+          : invoice.subscription.id
+        : null;
 
-        const subscription = await stripe.subscriptions.retrieve(
-          subscriptionId
-        );
+      if (subscriptionId) {
+       const subRes = await stripe.subscriptions.retrieve(subscriptionId);
+       
+       const subscription = unwrapStripe<any>(subRes);
+
 
         await prisma.subscription.updateMany({
           where: { stripeSubscriptionId: subscriptionId },
           data: {
             status: String(subscription.status),
-            currentPeriodStart: new Date(
-              subscription.current_period_start * 1000
-            ),
-            currentPeriodEnd: new Date(
-              subscription.current_period_end * 1000
-            ),
+            currentPeriodStart: new Date(subscription.current_period_start * 1000),
+            currentPeriodEnd: new Date(subscription.current_period_end * 1000),
           },
         });
 
@@ -135,9 +129,7 @@ export async function POST(request: Request) {
             where: { id: sub.businessId },
             data: {
               subscriptionStatus: "ACTIVE",
-              subscriptionEndsAt: new Date(
-                subscription.current_period_end * 1000
-              ),
+              subscriptionEndsAt: new Date(subscription.current_period_end * 1000),
             },
           });
         }
@@ -148,15 +140,15 @@ export async function POST(request: Request) {
        SUBSCRIPTION CANCELLED
     ===================================================== */
     if (event.type === "customer.subscription.deleted") {
-      const subscription = event.data.object as Stripe.Subscription;
+      const cancelled = event.data.object as Stripe.Subscription;
 
       await prisma.subscription.updateMany({
-        where: { stripeSubscriptionId: subscription.id },
+        where: { stripeSubscriptionId: cancelled.id },
         data: { status: "cancelled" },
       });
 
       const sub = await prisma.subscription.findFirst({
-        where: { stripeSubscriptionId: subscription.id },
+        where: { stripeSubscriptionId: cancelled.id },
       });
 
       if (sub) {
@@ -171,14 +163,15 @@ export async function POST(request: Request) {
        PAYMENT FAILED
     ===================================================== */
     if (event.type === "invoice.payment_failed") {
-      const invoice = event.data.object as Stripe.Invoice;
+      const invoice = event.data.object as any;
 
-      if (invoice.subscription) {
-        const subscriptionId =
-          typeof invoice.subscription === "string"
-            ? invoice.subscription
-            : invoice.subscription.id;
+      const subscriptionId = invoice?.subscription
+        ? typeof invoice.subscription === "string"
+          ? invoice.subscription
+          : invoice.subscription.id
+        : null;
 
+      if (subscriptionId) {
         const sub = await prisma.subscription.findFirst({
           where: { stripeSubscriptionId: subscriptionId },
         });

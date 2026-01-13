@@ -1,23 +1,17 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  ArrowRight,
-  ArrowLeft,
-  Building2,
-  Target,
-  Users,
-  TrendingUp,
-} from "lucide-react";
+import { ArrowLeft, ArrowRight, Building2, Target, Users, Mail, Fingerprint } from "lucide-react";
 
-/**
- * Same code system as users
- * label = UI
- * value = DB slug
- */
+/* ======================================================
+   BUSINESS CODES (same system as users)
+   label = UI
+   value = DB slug
+====================================================== */
+
 const BUSINESS_CODES = [
   { label: "Earthlistener", value: "earthlistener" },
   { label: "Stillmind", value: "stillmind" },
@@ -42,12 +36,30 @@ const CATEGORIES = [
   { value: "other", label: "Other" },
 ];
 
+/* ======================================================
+   STEPS
+====================================================== */
+
+const STEPS = [
+  { id: 1, title: "Business identity", icon: Building2 },
+  { id: 2, title: "What you offer", icon: Target },
+  { id: 3, title: "Industry & market", icon: Users },
+  { id: 4, title: "Contact details", icon: Mail },
+  { id: 5, title: "Business personality", icon: Fingerprint },
+] as const;
+
+type StepId = (typeof STEPS)[number]["id"];
+
+/* ======================================================
+   PAGE
+====================================================== */
+
 export default function BusinessOnboardingPage() {
   const { user, isLoaded } = useUser();
   const router = useRouter();
 
-  const [step, setStep] = useState(1);
-  const [isLoading, setIsLoading] = useState(false);
+  const [step, setStep] = useState<StepId>(1);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [form, setForm] = useState({
     businessName: "",
@@ -61,40 +73,78 @@ export default function BusinessOnboardingPage() {
     tertiaryCode: "",
   });
 
-  /**
-   * 🔒 HARD GUARD
-   * If business already exists → skip onboarding
-   */
+  /* ======================================================
+     HARD GUARD (prevents onboarding loop)
+  ====================================================== */
+
   useEffect(() => {
     if (!isLoaded || !user) return;
 
-    fetch(`/api/users/${user.id}/type`)
-      .then(async (res) => {
+    let cancelled = false;
+
+    (async () => {
+      try {
+        const res = await fetch(`/api/users/${user.id}/type`);
         if (!res.ok) return;
         const data = await res.json();
-        if (data.type === "BUSINESS") {
+
+        if (!cancelled && data.type === "BUSINESS") {
           router.replace("/business/dashboard");
         }
-      })
-      .catch(() => {});
+      } catch {
+        /* silent */
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
   }, [isLoaded, user, router]);
+
+  /* ======================================================
+     CODE DEDUPING
+  ====================================================== */
+
+  const usedCodes = useMemo(
+    () =>
+      new Set(
+        [form.primaryCode, form.secondaryCode, form.tertiaryCode].filter(Boolean)
+      ),
+    [form.primaryCode, form.secondaryCode, form.tertiaryCode]
+  );
+
+  /* ======================================================
+     VALIDATION
+  ====================================================== */
+
+  const isValid =
+    (step === 1 && form.businessName.trim().length >= 2) ||
+    (step === 2 && form.description.trim().length >= 20) ||
+    (step === 3 && form.category) ||
+    (step === 4 && form.contactEmail.includes("@")) ||
+    (step === 5 && form.primaryCode);
+
+  /* ======================================================
+     NAVIGATION
+  ====================================================== */
 
   async function next() {
     if (step < 5) {
-      setStep(step + 1);
+      setStep((s) => (s + 1) as StepId);
       return;
     }
 
-    setIsLoading(true);
+    setIsSubmitting(true);
+
     try {
       const res = await fetch("/api/businesses/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          businessName: form.businessName,
-          description: form.description,
+          businessName: form.businessName.trim(),
+          description: form.description.trim(),
           category: form.category,
-          contactEmail: form.contactEmail,
+          contactEmail: form.contactEmail.trim(),
           contactPhone: form.contactPhone || null,
           website: form.website || null,
           primaryCode: form.primaryCode,
@@ -104,124 +154,157 @@ export default function BusinessOnboardingPage() {
       });
 
       if (!res.ok) throw new Error();
-
       router.push("/business/dashboard");
     } catch {
       alert("Failed to create business profile.");
     } finally {
-      setIsLoading(false);
+      setIsSubmitting(false);
     }
   }
 
-  const valid =
-    (step === 1 && form.businessName) ||
-    (step === 2 && form.description) ||
-    (step === 3 && form.category) ||
-    (step === 4 && form.contactEmail) ||
-    (step === 5 && form.primaryCode);
+  /* ======================================================
+     RENDER
+  ====================================================== */
+
+  const CurrentIcon = STEPS.find((s) => s.id === step)?.icon ?? Building2;
 
   return (
     <div className="min-h-screen bg-black flex items-center justify-center px-6">
-      <div className="w-full max-w-xl space-y-8">
-        <h1 className="text-3xl font-bold text-white">
-          {step === 1 && "Business name"}
-          {step === 2 && "What do you actually do?"}
-          {step === 3 && "Industry"}
-          {step === 4 && "Contact details"}
-          {step === 5 && "Business personality"}
-        </h1>
+      <motion.div
+        initial={{ opacity: 0, y: 24 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="w-full max-w-xl space-y-10"
+      >
+        {/* Header */}
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center">
+            <CurrentIcon className="w-6 h-6 text-white" />
+          </div>
+          <h1 className="text-3xl font-bold text-white">
+            {STEPS.find((s) => s.id === step)?.title}
+          </h1>
+        </div>
 
-        <div className="bg-white/5 border border-white/10 rounded-xl p-6">
-          {step === 1 && (
-            <input
-              value={form.businessName}
-              onChange={(e) =>
-                setForm({ ...form, businessName: e.target.value })
-              }
-              placeholder="Your Business"
-              className="w-full bg-black text-white p-4 rounded-lg"
+        {/* Progress */}
+        <div className="flex gap-2">
+          {STEPS.map((s) => (
+            <div
+              key={s.id}
+              className={`h-1 flex-1 rounded-full transition ${
+                s.id <= step ? "bg-white" : "bg-white/10"
+              }`}
             />
-          )}
+          ))}
+        </div>
 
-          {step === 2 && (
-            <textarea
-              value={form.description}
-              onChange={(e) =>
-                setForm({ ...form, description: e.target.value })
-              }
-              className="w-full bg-black text-white p-4 rounded-lg min-h-[120px]"
-            />
-          )}
-
-          {step === 3 && (
-            <select
-              value={form.category}
-              onChange={(e) =>
-                setForm({ ...form, category: e.target.value })
-              }
-              className="w-full bg-black text-white p-4 rounded-lg"
+        {/* Card */}
+        <div className="bg-white/[0.03] border border-white/10 rounded-2xl p-6">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={step}
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              className="space-y-4"
             >
-              <option value="">Select category</option>
-              {CATEGORIES.map((c) => (
-                <option key={c.value} value={c.value}>
-                  {c.label}
-                </option>
-              ))}
-            </select>
-          )}
-
-          {step === 4 && (
-            <div className="space-y-3">
-              <input
-                value={form.contactEmail}
-                onChange={(e) =>
-                  setForm({ ...form, contactEmail: e.target.value })
-                }
-                placeholder="hello@business.com"
-                className="w-full bg-black text-white p-4 rounded-lg"
-              />
-              <input
-                value={form.website}
-                onChange={(e) =>
-                  setForm({ ...form, website: e.target.value })
-                }
-                placeholder="https://yourbusiness.com"
-                className="w-full bg-black text-white p-4 rounded-lg"
-              />
-            </div>
-          )}
-
-          {step === 5 && (
-            <div className="space-y-3">
-              {["primaryCode", "secondaryCode", "tertiaryCode"].map((key) => (
-                <select
-                  key={key}
-                  value={(form as any)[key]}
+              {step === 1 && (
+                <input
+                  className="w-full bg-black text-white p-4 rounded-lg"
+                  placeholder="Your business name"
+                  value={form.businessName}
                   onChange={(e) =>
-                    setForm({ ...form, [key]: e.target.value })
+                    setForm({ ...form, businessName: e.target.value })
                   }
-                  className="w-full bg-black text-white p-3 rounded-lg"
+                />
+              )}
+
+              {step === 2 && (
+                <textarea
+                  className="w-full bg-black text-white p-4 rounded-lg min-h-[140px]"
+                  placeholder="What do you actually do?"
+                  value={form.description}
+                  onChange={(e) =>
+                    setForm({ ...form, description: e.target.value })
+                  }
+                />
+              )}
+
+              {step === 3 && (
+                <select
+                  className="w-full bg-black text-white p-4 rounded-lg"
+                  value={form.category}
+                  onChange={(e) =>
+                    setForm({ ...form, category: e.target.value })
+                  }
                 >
-                  <option value="">
-                    {key === "primaryCode"
-                      ? "Primary business code"
-                      : "Optional"}
-                  </option>
-                  {BUSINESS_CODES.map((c) => (
+                  <option value="">Select industry</option>
+                  {CATEGORIES.map((c) => (
                     <option key={c.value} value={c.value}>
                       {c.label}
                     </option>
                   ))}
                 </select>
-              ))}
-            </div>
-          )}
+              )}
+
+              {step === 4 && (
+                <>
+                  <input
+                    className="w-full bg-black text-white p-4 rounded-lg"
+                    placeholder="hello@business.com"
+                    value={form.contactEmail}
+                    onChange={(e) =>
+                      setForm({ ...form, contactEmail: e.target.value })
+                    }
+                  />
+                  <input
+                    className="w-full bg-black text-white p-4 rounded-lg"
+                    placeholder="https://yourbusiness.com"
+                    value={form.website}
+                    onChange={(e) =>
+                      setForm({ ...form, website: e.target.value })
+                    }
+                  />
+                </>
+              )}
+
+              {step === 5 && (
+                <>
+                  {(["primaryCode", "secondaryCode", "tertiaryCode"] as const).map(
+                    (key, idx) => (
+                      <select
+                        key={key}
+                        className="w-full bg-black text-white p-3 rounded-lg"
+                        value={form[key]}
+                        onChange={(e) =>
+                          setForm({ ...form, [key]: e.target.value })
+                        }
+                      >
+                        <option value="">
+                          {idx === 0
+                            ? "Primary business code (required)"
+                            : "Optional"}
+                        </option>
+                        {BUSINESS_CODES.filter(
+                          (c) => !usedCodes.has(c.value) || c.value === form[key]
+                        ).map((c) => (
+                          <option key={c.value} value={c.value}>
+                            {c.label}
+                          </option>
+                        ))}
+                      </select>
+                    )
+                  )}
+                </>
+              )}
+            </motion.div>
+          </AnimatePresence>
         </div>
 
+        {/* Actions */}
         <div className="flex gap-4">
           {step > 1 && (
             <button
-              onClick={() => setStep(step - 1)}
+              onClick={() => setStep((s) => (s - 1) as StepId)}
               className="flex-1 border border-white/10 text-white p-4 rounded-lg"
             >
               <ArrowLeft />
@@ -229,13 +312,13 @@ export default function BusinessOnboardingPage() {
           )}
           <button
             onClick={next}
-            disabled={!valid || isLoading}
-            className="flex-1 bg-white text-black p-4 rounded-lg"
+            disabled={!isValid || isSubmitting}
+            className="flex-1 bg-white text-black p-4 rounded-lg font-medium"
           >
-            {step === 5 ? "Create Business" : "Continue"} <ArrowRight />
+            {step === 5 ? "Create business" : "Continue"} <ArrowRight />
           </button>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 }
