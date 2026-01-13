@@ -33,6 +33,7 @@ export type ListingDetailView = {
       pace: number;
       introspection: number;
     };
+    tags: string[];
     whatToExpect: string[];
     whatHappensNext: string;
     host: {
