@@ -2,15 +2,16 @@
 
 import Link from "next/link";
 import clsx from "clsx";
-import { useMemo, useState, useEffect, useRef } from "react";
+import { useMemo, useState, useEffect, useRef, useId } from "react";
 
 /* -------------------------------------------------------------------------- */
-/* ETHOS MARKETPLACE (UI-FIRST)                                               */
+/* ETHOS MARKETPLACE (UI-FIRST, FORWARD-ONLY)                                 */
 /* - No ranking language (no "top", "best", "trending")                        */
 /* - No recommendations                                                       */
 /* - No infinite grid                                                         */
 /* - Lenses reorder + softly emphasize; content never disappears              */
 /* - Listing cards communicate "experience personality" visually              */
+/* - NEW: Temporal UX (tap-to-expand inline; no hover dependency)             */
 /* -------------------------------------------------------------------------- */
 
 /* -------------------------------------------------------------------------- */
@@ -254,10 +255,6 @@ const MOCK_EXPERIENCES: Experience[] = [
 /* DISCOVERY LENSES                                                           */
 /* -------------------------------------------------------------------------- */
 
-/**
- * Mood lenses are user-selected and descriptive.
- * They do NOT filter. They reorder + highlight softly.
- */
 const MOOD_LENS_TRAITS: Record<
   MoodLens,
   Partial<Record<keyof ExperienceTraits, [number, number]>>
@@ -366,7 +363,7 @@ function PersonalityStrip({
 }
 
 /* -------------------------------------------------------------------------- */
-/* MARKETPLACE NAV (permanent)                                                 */
+/* MARKETPLACE NAV (permanent)                                                */
 /* -------------------------------------------------------------------------- */
 
 function MarketplaceNav({
@@ -392,7 +389,9 @@ function MarketplaceNav({
         <div className="flex items-center gap-7">
           <div className="flex flex-col leading-tight">
             <span className="text-sm font-medium text-white/90">Marketplace</span>
-            <span className="text-[11px] text-white/45">A marketplace of ways of experiencing the world.</span>
+            <span className="text-[11px] text-white/45">
+              A marketplace of ways of experiencing the world.
+            </span>
           </div>
 
           <div className="flex items-center gap-5">
@@ -402,7 +401,9 @@ function MarketplaceNav({
                 onClick={() => setMode(item.id)}
                 className={clsx(
                   "text-sm transition",
-                  mode === item.id ? "text-white" : "text-white/50 hover:text-white/80"
+                  mode === item.id
+                    ? "text-white"
+                    : "text-white/50 hover:text-white/80"
                 )}
                 title={item.hint}
               >
@@ -535,7 +536,9 @@ function CollectionRow({
           <Pill
             key={c.key}
             active={activeCollection === c.key}
-            onClick={() => setActiveCollection(activeCollection === c.key ? null : c.key)}
+            onClick={() =>
+              setActiveCollection(activeCollection === c.key ? null : c.key)
+            }
           >
             {c.label}
           </Pill>
@@ -552,7 +555,7 @@ function CollectionRow({
 }
 
 /* -------------------------------------------------------------------------- */
-/* EXPERIENCE CARD                                                             */
+/* EXPERIENCE CARD — TEMPORAL UX (TAP TO EXPAND, NO HOVER)                      */
 /* -------------------------------------------------------------------------- */
 
 function ExperienceCard({
@@ -563,6 +566,10 @@ function ExperienceCard({
   activeCity,
   query,
   activeCollection,
+  isSaved,
+  onToggleSaved,
+  expanded,
+  onToggleExpanded,
 }: {
   experience: Experience;
   lensMode: LensMode;
@@ -571,7 +578,15 @@ function ExperienceCard({
   activeCity: string | null;
   query: string;
   activeCollection: CollectionKey | null;
+
+  isSaved: boolean;
+  onToggleSaved: () => void;
+
+  expanded: boolean;
+  onToggleExpanded: () => void;
 }) {
+  const panelId = useId();
+
   // Code resonance
   const resonates =
     activeCode !== null && experience.resonatesWith.includes(activeCode);
@@ -608,6 +623,9 @@ function ExperienceCard({
           .toLowerCase()
           .includes(q);
 
+  const emphasized =
+    resonates || moodAligned || locationAligned || collectionAligned || searchHit;
+
   // Build detail URL with context
   const href = (() => {
     const params = new URLSearchParams();
@@ -620,104 +638,204 @@ function ExperienceCard({
     return `/marketplace/${experience.id}?${params.toString()}`;
   })();
 
-  const emphasized = resonates || moodAligned || locationAligned || collectionAligned || searchHit;
+  // “Glance layer” description: tighter by default, longer when expanded (still calm)
+  const descClamp = expanded ? "line-clamp-4" : "line-clamp-2";
 
   return (
-    <Link
-      href={href}
+    <article
       className={clsx(
-        "group rounded-2xl border bg-white/5 p-6 transition",
-        "border-white/10 hover:border-white/25 hover:bg-white/[0.07]",
-        emphasized && "ring-1 ring-white/20",
-        // soft emphasis differences
-        moodAligned && "border-white/35",
-        resonates && "ring-white/30"
+        "rounded-2xl border bg-white/5 transition",
+        "border-white/10",
+        emphasized && "ring-1 ring-white/15",
+        moodAligned && "border-white/25",
+        resonates && "ring-white/25",
+        expanded ? "bg-white/[0.07] border-white/25" : "hover:bg-white/[0.06] hover:border-white/20"
       )}
     >
-      <div className="flex items-start justify-between gap-4">
-        <div className="min-w-0">
-          <h3 className="text-lg font-medium text-white">{experience.title}</h3>
-          <p className="mt-2 line-clamp-2 text-sm text-white/60">
-            {experience.description}
-          </p>
+      {/* GLANCE HEADER + ACTIONS (NO ABSOLUTE OVERLAYS) */}
+      <div className="p-6">
+        <div className="flex items-start justify-between gap-4">
+          <div className="min-w-0">
+            <h3 className="text-lg font-medium text-white">{experience.title}</h3>
+            <p className={clsx("mt-2 text-sm text-white/60", descClamp)}>
+              {experience.description}
+            </p>
 
-          <div className="mt-4 flex flex-wrap gap-3">
-            <MiniMeta label="City" value={experience.city} />
-            <MiniMeta label="Place" value={experience.location} />
-            <MiniMeta label="Duration" value={experience.duration} />
-            <MiniMeta label="Group" value={experience.groupSize} />
+            <div className="mt-4 flex flex-wrap gap-3">
+              <MiniMeta label="City" value={experience.city} />
+              <MiniMeta label="Place" value={experience.location} />
+              <MiniMeta label="Duration" value={experience.duration} />
+              <MiniMeta label="Group" value={experience.groupSize} />
+            </div>
+          </div>
+
+          <div className="shrink-0 text-right space-y-2">
+            <div className="text-xs text-white/45">{experience.priceLabel}</div>
+            <div className="inline-flex items-center justify-end gap-2">
+              <span className="rounded-full border border-white/15 bg-white/5 px-3 py-1 text-[11px] text-white/60 capitalize">
+                {experience.category}
+              </span>
+            </div>
+
+            {/* Actions */}
+            <div className="mt-3 flex items-center justify-end gap-2">
+              <button
+                type="button"
+                onClick={onToggleSaved}
+                className={clsx(
+                  "rounded-full border px-3 py-2 text-xs transition",
+                  isSaved
+                    ? "border-white/25 bg-white text-black"
+                    : "border-white/15 bg-black/40 text-white/70 hover:text-white hover:border-white/25"
+                )}
+                title="Save privately"
+                aria-label={isSaved ? "Saved" : "Save"}
+              >
+                {isSaved ? "Saved" : "Save"}
+              </button>
+
+              <Link
+                href={href}
+                className="rounded-full border border-white/15 bg-white/[0.03] px-3 py-2 text-xs text-white/70 hover:text-white hover:border-white/25 transition"
+                title="Open experience"
+              >
+                Open →
+              </Link>
+            </div>
           </div>
         </div>
 
-        <div className="shrink-0 text-right">
-          <div className="text-xs text-white/45">{experience.priceLabel}</div>
-          <div className="mt-2 rounded-full border border-white/15 bg-white/5 px-3 py-1 text-[11px] text-white/60 capitalize">
-            {experience.category}
-          </div>
-        </div>
-      </div>
-
-      {/* Experience Personality (Ethos signature) */}
-      <PersonalityStrip traits={experience.traits} />
-
-      {/* Tags */}
-      <div className="mt-4 flex flex-wrap gap-2">
-        {experience.tags.slice(0, 4).map((t) => (
-          <span
-            key={t}
-            className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-[11px] text-white/55"
+        {/* Temporal control (tap to expand) */}
+        <div className="mt-5">
+          <button
+            type="button"
+            onClick={onToggleExpanded}
+            className={clsx(
+              "w-full rounded-xl border px-4 py-3 text-left transition",
+              "border-white/10 bg-white/[0.02] hover:bg-white/[0.04] hover:border-white/20"
+            )}
+            aria-expanded={expanded}
+            aria-controls={panelId}
           >
-            {t}
-          </span>
-        ))}
+            <div className="flex items-center justify-between gap-4">
+              <div className="text-sm text-white/75">
+                {expanded ? "Close details" : "View details"}
+              </div>
+              <div className="text-xs text-white/45">
+                {expanded ? "Tap to collapse" : "Tap to expand"}
+              </div>
+            </div>
+
+            {/* Subtext stays calm, never salesy */}
+            <div className="mt-1 text-xs text-white/40">
+              Reveal personality + context when you want it — nothing is hidden by default.
+            </div>
+          </button>
+        </div>
       </div>
 
-      {/* Soft indicators (assistive, not authoritative) */}
-      {(activeCode || activeMood || activeCity || activeCollection || q) && (
-        <div className="mt-4 text-xs text-white/45">
-          {activeCode && resonates && (
-            <span>
-              Often resonates with <span className="text-white">{activeCode}</span>
-            </span>
+      {/* EXPANDED LAYER (THE STUFF THAT USED TO MAKE IT HEAVY) */}
+      {expanded && (
+        <div
+          id={panelId}
+          className="px-6 pb-6 pt-2 border-t border-white/10"
+        >
+          {/* Experience Personality (Ethos signature) */}
+          <PersonalityStrip traits={experience.traits} density="full" />
+
+          {/* Tags (editorial descriptors) */}
+          <div className="mt-6 flex flex-wrap gap-2">
+            {experience.tags.map((t) => (
+              <span
+                key={t}
+                className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-[11px] text-white/55"
+              >
+                {t}
+              </span>
+            ))}
+          </div>
+
+          {/* Soft indicators (assistive, not authoritative) */}
+          {(activeCode || activeMood || activeCity || activeCollection || q) && (
+            <div className="mt-6 text-xs text-white/45">
+              {activeCode && resonates && (
+                <span>
+                  Often resonates with{" "}
+                  <span className="text-white capitalize">{activeCode}</span>
+                </span>
+              )}
+
+              {activeMood && (
+                <span className={clsx(activeCode && resonates && "ml-2")}>
+                  <span className="text-white/60">·</span>{" "}
+                  Mood lens:{" "}
+                  <span className="text-white capitalize">{activeMood}</span>{" "}
+                  <span className="text-white/40">
+                    (match {Math.round(moodScore * 100)}%)
+                  </span>
+                </span>
+              )}
+
+              {activeCity && (
+                <span
+                  className={clsx(
+                    (activeCode && resonates) || activeMood ? "ml-2" : ""
+                  )}
+                >
+                  <span className="text-white/60">·</span>{" "}
+                  Place lens: <span className="text-white">{activeCity}</span>
+                  {locationAligned ? (
+                    <span className="text-white/40"> (here)</span>
+                  ) : null}
+                </span>
+              )}
+
+              {activeCollection && (
+                <span
+                  className={clsx(
+                    (activeCode && resonates) || activeMood || activeCity
+                      ? "ml-2"
+                      : ""
+                  )}
+                >
+                  <span className="text-white/60">·</span>{" "}
+                  Collection:{" "}
+                  <span className="text-white">
+                    {COLLECTIONS.find((c) => c.key === activeCollection)?.label}
+                  </span>
+                </span>
+              )}
+
+              {q && (
+                <span
+                  className={clsx(
+                    (activeCode && resonates) ||
+                      activeMood ||
+                      activeCity ||
+                      activeCollection
+                      ? "ml-2"
+                      : ""
+                  )}
+                >
+                  <span className="text-white/60">·</span>{" "}
+                  Search: <span className="text-white/70">{q}</span>
+                </span>
+              )}
+            </div>
           )}
 
-          {activeMood && (
-            <span className={clsx(activeCode && resonates && "ml-2")}>
-              <span className="text-white/60">·</span>{" "}
-              Mood lens: <span className="text-white">{activeMood}</span>{" "}
-              <span className="text-white/40">(match {Math.round(moodScore * 100)}%)</span>
-            </span>
-          )}
-
-          {activeCity && (
-            <span className={clsx((activeCode && resonates) || activeMood ? "ml-2" : "")}>
-              <span className="text-white/60">·</span>{" "}
-              Place lens: <span className="text-white">{activeCity}</span>
-              {locationAligned ? <span className="text-white/40"> (here)</span> : null}
-            </span>
-          )}
-
-          {activeCollection && (
-            <span className={clsx((activeCode && resonates) || activeMood || activeCity ? "ml-2" : "")}>
-              <span className="text-white/60">·</span>{" "}
-              Collection: <span className="text-white">{COLLECTIONS.find((c) => c.key === activeCollection)?.label}</span>
-            </span>
-          )}
-
-          {q && (
-            <span className={clsx((activeCode && resonates) || activeMood || activeCity || activeCollection ? "ml-2" : "")}>
-              <span className="text-white/60">·</span>{" "}
-              Search: <span className="text-white/70">{q}</span>
-            </span>
-          )}
+          {/* Reassurance line (keeps Ethos ethics visible, but not loud) */}
+          <div className="mt-5 text-xs text-white/35">
+            Lenses only change emphasis. Ethos does not rank or recommend experiences.
+          </div>
         </div>
       )}
-    </Link>
+    </article>
   );
 }
 
 /* -------------------------------------------------------------------------- */
-/* PAGE                                                                        */
+/* PAGE                                                                       */
 /* -------------------------------------------------------------------------- */
 
 export default function MarketplacePage() {
@@ -729,7 +847,9 @@ export default function MarketplacePage() {
   const [activeCity, setActiveCity] = useState<string | null>(null);
 
   // Editorial collection (browse mode)
-  const [activeCollection, setActiveCollection] = useState<CollectionKey | null>(null);
+  const [activeCollection, setActiveCollection] = useState<CollectionKey | null>(
+    null
+  );
 
   // Search (neutral; not ranking)
   const [query, setQuery] = useState("");
@@ -738,7 +858,10 @@ export default function MarketplacePage() {
   const [savedIds, setSavedIds] = useState<string[]>([]);
   const savedRef = useRef<Set<string>>(new Set());
 
-  // Keep savedRef in sync (so we can do O(1) lookups)
+  // Temporal UX: one expanded card at a time (prevents “everything open” heaviness)
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+
+  // Keep savedRef in sync (O(1) lookups)
   useEffect(() => {
     savedRef.current = new Set(savedIds);
   }, [savedIds]);
@@ -748,7 +871,12 @@ export default function MarketplacePage() {
     if (activeCode) parts.push(`Code: ${activeCode}`);
     if (activeMood) parts.push(`Mood: ${activeMood}`);
     if (activeCity) parts.push(`Place: ${activeCity}`);
-    if (activeCollection) parts.push(`Collection: ${COLLECTIONS.find((c) => c.key === activeCollection)?.label}`);
+    if (activeCollection)
+      parts.push(
+        `Collection: ${
+          COLLECTIONS.find((c) => c.key === activeCollection)?.label
+        }`
+      );
     if (query.trim()) parts.push(`Search: ${query.trim()}`);
     return parts.join(" · ");
   }, [activeCode, activeMood, activeCity, activeCollection, query]);
@@ -765,6 +893,7 @@ export default function MarketplacePage() {
     setActiveCity(null);
     setActiveCollection(null);
     setQuery("");
+    setExpandedId(null);
   };
 
   const toggleSaved = (id: string) => {
@@ -803,7 +932,7 @@ export default function MarketplacePage() {
   const experiences = useMemo(() => {
     let list: Experience[] = [...searchFiltered];
 
-    // Collections are editorial entry points (browse mode). They reorder with soft priority.
+    // Collections reorder with soft priority
     if (activeCollection) {
       const collection = COLLECTIONS.find((c) => c.key === activeCollection);
       if (collection) {
@@ -827,13 +956,14 @@ export default function MarketplacePage() {
 
     // Mood lens reorder (trait-based)
     if (activeMood) {
-      list.sort((a, b) => scoreMoodMatch(b.traits, activeMood) - scoreMoodMatch(a.traits, activeMood));
+      list.sort(
+        (a, b) => scoreMoodMatch(b.traits, activeMood) - scoreMoodMatch(a.traits, activeMood)
+      );
     }
 
-    // Saved mode reorder (saved first)
+    // Saved mode reorder (saved first; still shows all)
     if (mode === "saved") {
       list.sort((a, b) => Number(savedRef.current.has(b.id)) - Number(savedRef.current.has(a.id)));
-      // In saved mode we still show all, but saved rise to top; copy stays calm.
     }
 
     return list;
@@ -842,11 +972,15 @@ export default function MarketplacePage() {
   // Display slice to avoid “infinite grid” feel
   const [visibleCount, setVisibleCount] = useState(9);
   useEffect(() => {
-    // Reset pagination when lenses change
+    // Reset pagination + collapse expanded card when lenses change
     setVisibleCount(9);
+    setExpandedId(null);
   }, [mode, activeCode, activeMood, activeCity, activeCollection, query]);
 
-  const visibleExperiences = useMemo(() => experiences.slice(0, visibleCount), [experiences, visibleCount]);
+  const visibleExperiences = useMemo(
+    () => experiences.slice(0, visibleCount),
+    [experiences, visibleCount]
+  );
 
   return (
     <div className="min-h-screen bg-black text-white">
@@ -895,9 +1029,7 @@ export default function MarketplacePage() {
         <div className="mb-10">
           {mode === "codes" && (
             <section className="rounded-2xl border border-white/10 bg-white/[0.04] p-5">
-              <div className="mb-3 text-sm text-white/80">
-                Mythical Code lens
-              </div>
+              <div className="mb-3 text-sm text-white/80">Mythical Code lens</div>
               <div className="text-xs text-white/45 mb-4 max-w-3xl">
                 This does not label you. It doesn’t recommend. It simply highlights experiences
                 that often feel comfortable to people who share similar patterns.
@@ -993,9 +1125,7 @@ export default function MarketplacePage() {
         {/* RESULTS HEADER */}
         <div className="mb-6 flex items-end justify-between gap-6">
           <div>
-            <div className="text-sm text-white/70">
-              {experiences.length} experiences visible
-            </div>
+            <div className="text-sm text-white/70">{experiences.length} experiences visible</div>
             <div className="text-xs text-white/40 mt-1">
               No rankings. No “best”. You’re just changing emphasis.
             </div>
@@ -1023,36 +1153,25 @@ export default function MarketplacePage() {
           </div>
         ) : (
           <>
-            <section className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
+            {/* NOTE: slightly tighter gap than before, but cards are now taller only when expanded */}
+            <section className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
               {visibleExperiences.map((exp) => (
-                <div key={exp.id} className="relative">
-                  <ExperienceCard
-                    experience={exp}
-                    lensMode={mode}
-                    activeCode={activeCode}
-                    activeMood={activeMood}
-                    activeCity={activeCity}
-                    query={query}
-                    activeCollection={activeCollection}
-                  />
-
-                  {/* Save button (UI-only) */}
-                  <button
-                    onClick={(e) => {
-                      e.preventDefault();
-                      toggleSaved(exp.id);
-                    }}
-                    className={clsx(
-                      "absolute right-4 top-4 rounded-full border px-3 py-2 text-xs transition",
-                      savedRef.current.has(exp.id)
-                        ? "border-white/25 bg-white text-black"
-                        : "border-white/15 bg-black/40 text-white/70 hover:text-white hover:border-white/25"
-                    )}
-                    title="Save privately"
-                  >
-                    {savedRef.current.has(exp.id) ? "Saved" : "Save"}
-                  </button>
-                </div>
+                <ExperienceCard
+                  key={exp.id}
+                  experience={exp}
+                  lensMode={mode}
+                  activeCode={activeCode}
+                  activeMood={activeMood}
+                  activeCity={activeCity}
+                  query={query}
+                  activeCollection={activeCollection}
+                  isSaved={savedRef.current.has(exp.id)}
+                  onToggleSaved={() => toggleSaved(exp.id)}
+                  expanded={expandedId === exp.id}
+                  onToggleExpanded={() =>
+                    setExpandedId((curr) => (curr === exp.id ? null : exp.id))
+                  }
+                />
               ))}
             </section>
 
