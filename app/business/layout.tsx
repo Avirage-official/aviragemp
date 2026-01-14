@@ -8,6 +8,8 @@ import {
   PlusCircle,
   Inbox,
   Sparkles,
+  Store,
+  UserRound,
 } from "lucide-react";
 
 export default async function BusinessLayout({
@@ -63,6 +65,11 @@ export default async function BusinessLayout({
                 label="Dashboard"
               />
               <NavItem
+                href="/business/listings"
+                icon={<Store size={18} />}
+                label="Listings"
+              />
+              <NavItem
                 href="/business/listings/new"
                 icon={<Sparkles size={18} />}
                 label="Create Listing"
@@ -71,6 +78,11 @@ export default async function BusinessLayout({
                 href="/business/inquiries"
                 icon={<Inbox size={18} />}
                 label="Inquiries"
+              />
+              <NavItem
+                href="/business/profile"
+                icon={<UserRound size={18} />}
+                label="Business Identity"
               />
             </nav>
 
@@ -83,9 +95,7 @@ export default async function BusinessLayout({
                 )}
                 {business.tertiaryCode && <Pill label={`Tertiary: ${business.tertiaryCode}`} />}
                 {!business.primaryCode && !business.secondaryCode && !business.tertiaryCode && (
-                  <div className="text-sm text-white/60">
-                    Codes not set yet.
-                  </div>
+                  <div className="text-sm text-white/60">Codes not set yet.</div>
                 )}
               </div>
 
