@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { CodeTargetingSelector } from "@/components/business/CodeTargetingSelector";
+import { ArrowLeft, Save } from "lucide-react";
 
 /* -------------------------------------------------------------------------- */
 /* TYPES                                                                      */
@@ -79,7 +80,8 @@ export default function NewListingPage() {
       });
 
       if (response.ok) {
-        router.push("/business/dashboard?listing=created");
+        router.push("/business/listings");
+        router.refresh();
       } else {
         alert("Failed to create listing.");
       }
@@ -91,165 +93,307 @@ export default function NewListingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="container mx-auto p-8 max-w-4xl">
-        <h1 className="text-3xl font-bold mb-2">Create New Listing</h1>
-        <p className="text-gray-600 mb-8">
-          Describe how the experience feels — not just what it is.
-        </p>
+    <div className="space-y-8">
+      {/* Header */}
+      <div className="flex items-start justify-between gap-6">
+        <div className="min-w-0">
+          <button
+            onClick={() => router.back()}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-white/15 hover:bg-white/5 transition text-sm mb-3"
+          >
+            <ArrowLeft size={16} />
+            Back
+          </button>
 
-        <form
-          onSubmit={handleSubmit}
-          className="bg-white rounded-lg shadow-lg p-8 space-y-10"
-        >
-          {/* BASIC INFO */}
-          <section>
-            <h2 className="text-xl font-bold mb-4">Basic Information</h2>
-
-            <input
-              required
-              placeholder="Title"
-              className="w-full p-3 border rounded-lg mb-4"
-              value={formData.title}
-              onChange={(e) =>
-                setFormData({ ...formData, title: e.target.value })
-              }
-            />
-
-            <textarea
-              required
-              rows={5}
-              placeholder="Description"
-              className="w-full p-3 border rounded-lg"
-              value={formData.description}
-              onChange={(e) =>
-                setFormData({ ...formData, description: e.target.value })
-              }
-            />
-          </section>
-
-          {/* CATEGORY */}
-          <section>
-            <h2 className="text-xl font-bold mb-4">Category</h2>
-
-            <select
-              required
-              className="w-full p-3 border rounded-lg"
-              value={formData.category}
-              onChange={(e) =>
-                setFormData({ ...formData, category: e.target.value })
-              }
-            >
-              <option value="">Select category</option>
-              <option value="experience">Experience</option>
-              <option value="workshop">Workshop</option>
-              <option value="retreat">Retreat</option>
-              <option value="event">Event</option>
-              <option value="service">Service</option>
-            </select>
-          </section>
-
-          {/* EDITORIAL */}
-          <section>
-            <h2 className="text-xl font-bold mb-4">Experience Personality</h2>
-            <p className="text-gray-600 mb-6">
-              These do not rank or recommend — they describe feel and rhythm.
-            </p>
-
-            {(
-              Object.keys(formData.traits) as (keyof Traits)[]
-            ).map((key) => (
-              <div key={key} className="mb-4">
-                <label className="block font-semibold capitalize mb-1">
-                  {key}
-                </label>
-                <input
-                  type="range"
-                  min={0}
-                  max={100}
-                  value={formData.traits[key]}
-                  onChange={(e) =>
-                    updateTrait(key, Number(e.target.value))
-                  }
-                  className="w-full"
-                />
-                <div className="text-sm text-gray-500">
-                  {formData.traits[key]}
-                </div>
-              </div>
-            ))}
-          </section>
-
-          {/* TAGS */}
-          <section>
-            <h2 className="text-xl font-bold mb-4">Editorial Tags</h2>
-            <input
-              placeholder="quiet, reflective, nature-led"
-              className="w-full p-3 border rounded-lg"
-              value={formData.tags}
-              onChange={(e) =>
-                setFormData({ ...formData, tags: e.target.value })
-              }
-            />
-            <p className="text-sm text-gray-500 mt-1">
-              Comma separated. Not categories.
-            </p>
-          </section>
-
-          {/* DURATION */}
-          <section className="grid grid-cols-2 gap-4">
-            <input
-              placeholder="Duration (e.g. 2–3h)"
-              className="p-3 border rounded-lg"
-              value={formData.duration}
-              onChange={(e) =>
-                setFormData({ ...formData, duration: e.target.value })
-              }
-            />
-            <input
-              placeholder="Group size (e.g. 2–6)"
-              className="p-3 border rounded-lg"
-              value={formData.groupSize}
-              onChange={(e) =>
-                setFormData({ ...formData, groupSize: e.target.value })
-              }
-            />
-          </section>
-
-          {/* TARGET CODES */}
-          <section>
-            <h2 className="text-xl font-bold mb-4">
-              Target Mythical Codes
-            </h2>
-
-            <CodeTargetingSelector
-              selectedCodes={formData.targetCodes}
-              onChange={(codes) =>
-                setFormData({ ...formData, targetCodes: codes })
-              }
-            />
-          </section>
-
-          {/* SUBMIT */}
-          <div className="flex gap-4 pt-6 border-t">
-            <button
-              type="button"
-              onClick={() => router.back()}
-              className="px-6 py-3 bg-gray-300 rounded-lg"
-            >
-              Cancel
-            </button>
-
-            <button
-              type="submit"
-              disabled={isLoading || formData.targetCodes.length === 0}
-              className="flex-1 px-6 py-3 bg-blue-600 text-white rounded-lg disabled:bg-gray-400"
-            >
-              {isLoading ? "Creating…" : "Create Listing"}
-            </button>
-          </div>
-        </form>
+          <h1 className="text-3xl font-semibold tracking-tight">
+            Create listing
+          </h1>
+          <p className="text-white/60 mt-1">
+            You’re not posting — you’re defining an experience.
+          </p>
+        </div>
       </div>
+
+      <form
+        onSubmit={handleSubmit}
+        className="border border-white/10 rounded-2xl bg-white/[0.02] p-6 space-y-10"
+      >
+        {/* CORE */}
+        <Section title="Core">
+          <Field label="Title">
+            <Input
+              required
+              placeholder="A clear, honest title"
+              value={formData.title}
+              onChange={(v) =>
+                setFormData({ ...formData, title: v })
+              }
+            />
+          </Field>
+
+          <Field label="Description">
+            <Textarea
+              required
+              rows={6}
+              placeholder="Describe the feel, rhythm, and intent — not just logistics."
+              value={formData.description}
+              onChange={(v) =>
+                setFormData({ ...formData, description: v })
+              }
+            />
+            <p className="text-xs text-white/40 mt-2">
+              ETHOS performs best when this reads like a human invitation, not a pitch.
+            </p>
+          </Field>
+        </Section>
+
+        {/* CATEGORY */}
+        <Section title="Category">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Field label="Category">
+              <Select
+                required
+                value={formData.category}
+                onChange={(v) =>
+                  setFormData({ ...formData, category: v })
+                }
+                options={[
+                  { value: "", label: "Select category" },
+                  { value: "experience", label: "Experience" },
+                  { value: "workshop", label: "Workshop" },
+                  { value: "retreat", label: "Retreat" },
+                  { value: "event", label: "Event" },
+                  { value: "service", label: "Service" },
+                ]}
+              />
+            </Field>
+
+            <Field label="Subcategory (optional)">
+              <Input
+                placeholder="Optional"
+                value={formData.subcategory}
+                onChange={(v) =>
+                  setFormData({ ...formData, subcategory: v })
+                }
+              />
+            </Field>
+          </div>
+        </Section>
+
+        {/* EDITORIAL */}
+        <Section title="Experience personality">
+          <p className="text-sm text-white/60 mb-6">
+            These describe feel and rhythm. They don’t rank or game the system.
+          </p>
+
+          {(Object.keys(formData.traits) as (keyof Traits)[]).map((key) => (
+            <div key={key} className="mb-5">
+              <label className="block text-xs text-white/50 mb-2 capitalize">
+                {key}
+              </label>
+              <input
+                type="range"
+                min={0}
+                max={100}
+                value={formData.traits[key]}
+                onChange={(e) =>
+                  updateTrait(key, Number(e.target.value))
+                }
+                className="w-full accent-white"
+              />
+              <div className="text-xs text-white/50 mt-2">
+                {formData.traits[key]}
+              </div>
+            </div>
+          ))}
+        </Section>
+
+        {/* TAGS */}
+        <Section title="Editorial tags">
+          <Field label="Tags (comma separated)">
+            <Input
+              placeholder="quiet, reflective, nature-led"
+              value={formData.tags}
+              onChange={(v) =>
+                setFormData({ ...formData, tags: v })
+              }
+            />
+          </Field>
+          <p className="text-xs text-white/40">
+            These add texture — they are not categories.
+          </p>
+        </Section>
+
+        {/* DETAILS */}
+        <Section title="Details">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Field label="Duration (optional)">
+              <Input
+                placeholder="2–3h"
+                value={formData.duration}
+                onChange={(v) =>
+                  setFormData({ ...formData, duration: v })
+                }
+              />
+            </Field>
+
+            <Field label="Group size (optional)">
+              <Input
+                placeholder="2–6"
+                value={formData.groupSize}
+                onChange={(v) =>
+                  setFormData({ ...formData, groupSize: v })
+                }
+              />
+            </Field>
+          </div>
+        </Section>
+
+        {/* TARGETING */}
+        <Section title="Target mythical codes">
+          <CodeTargetingSelector
+            selectedCodes={formData.targetCodes}
+            onChange={(codes) =>
+              setFormData({ ...formData, targetCodes: codes })
+            }
+          />
+          <p className="text-xs text-white/40 mt-2">
+            Precision beats reach. Fewer codes with real fit perform better.
+          </p>
+        </Section>
+
+        {/* FOOTER */}
+        <div className="pt-6 border-t border-white/10 flex flex-col sm:flex-row gap-3">
+          <button
+            type="button"
+            onClick={() => router.back()}
+            className="inline-flex items-center justify-center px-6 py-3 rounded-xl border border-white/15 hover:bg-white/5 transition text-sm"
+          >
+            Cancel
+          </button>
+
+          <button
+            type="submit"
+            disabled={isLoading || formData.targetCodes.length === 0}
+            className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-white text-black font-medium hover:bg-white/90 disabled:opacity-60 transition text-sm flex-1"
+          >
+            <Save size={16} />
+            {isLoading ? "Creating…" : "Create listing"}
+          </button>
+        </div>
+      </form>
     </div>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/* UI HELPERS                                                                 */
+/* -------------------------------------------------------------------------- */
+
+function Section({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <section className="space-y-4">
+      <h2 className="text-sm font-semibold text-white/80">{title}</h2>
+      <div className="rounded-2xl border border-white/10 bg-black p-5">
+        {children}
+      </div>
+    </section>
+  );
+}
+
+function Field({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div>
+      <label className="block text-xs text-white/50 mb-1">
+        {label}
+      </label>
+      {children}
+    </div>
+  );
+}
+
+function Input({
+  value,
+  onChange,
+  placeholder,
+  required,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  placeholder?: string;
+  required?: boolean;
+}) {
+  return (
+    <input
+      required={required}
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      placeholder={placeholder}
+      className="w-full rounded-xl bg-black border border-white/15 px-4 py-3 text-white focus:outline-none focus:border-white/30"
+    />
+  );
+}
+
+function Textarea({
+  value,
+  onChange,
+  rows,
+  placeholder,
+  required,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  rows: number;
+  placeholder?: string;
+  required?: boolean;
+}) {
+  return (
+    <textarea
+      required={required}
+      rows={rows}
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      placeholder={placeholder}
+      className="w-full rounded-xl bg-black border border-white/15 px-4 py-3 text-white focus:outline-none focus:border-white/30"
+    />
+  );
+}
+
+function Select({
+  value,
+  onChange,
+  options,
+  required,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  options: Array<{ value: string; label: string }>;
+  required?: boolean;
+}) {
+  return (
+    <select
+      required={required}
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      className="w-full rounded-xl bg-black border border-white/15 px-4 py-3 text-white focus:outline-none focus:border-white/30"
+    >
+      {options.map((o) => (
+        <option key={o.value} value={o.value}>
+          {o.label}
+        </option>
+      ))}
+    </select>
   );
 }
