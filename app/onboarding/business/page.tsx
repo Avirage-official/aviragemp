@@ -1,29 +1,35 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, ArrowRight, Building2, Target, Users, Mail, Fingerprint } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  Building2,
+  Target,
+  Users,
+  Mail,
+  Fingerprint,
+} from "lucide-react";
 
-/* ======================================================
-   BUSINESS CODES (same system as users)
-   label = UI
-   value = DB slug
-====================================================== */
+/* -------------------------------------------------------------------------- */
+/* BUSINESS CODES (DB SLUGS ONLY)                                              */
+/* -------------------------------------------------------------------------- */
 
 const BUSINESS_CODES = [
-  { label: "Earthlistener", value: "earthlistener" },
-  { label: "Stillmind", value: "stillmind" },
-  { label: "Northstar", value: "northstar" },
-  { label: "Echoheart", value: "echoheart" },
-  { label: "Sparkmaker", value: "sparkmaker" },
-  { label: "Skyweaver", value: "skyweaver" },
-  { label: "Neonmuse", value: "neonmuse" },
-  { label: "Tidekeeper", value: "tidekeeper" },
-  { label: "Ironreader", value: "ironreader" },
-  { label: "Pathfinder", value: "pathfinder" },
+  { label: "Earthlistener", value: "khoisan" },
+  { label: "Stillmind", value: "sahen" },
+  { label: "Northstar", value: "namsea" },
+  { label: "Echoheart", value: "kayori" },
+  { label: "Sparkmaker", value: "enzuka" },
+  { label: "Skyweaver", value: "khoruun" },
 ];
+
+/* -------------------------------------------------------------------------- */
+/* CATEGORIES                                                                 */
+/* -------------------------------------------------------------------------- */
 
 const CATEGORIES = [
   { value: "coaching", label: "Coaching & Consulting" },
@@ -31,14 +37,13 @@ const CATEGORIES = [
   { value: "retreat", label: "Retreats & Workshops" },
   { value: "creative", label: "Creative Services" },
   { value: "hospitality", label: "Hospitality & Travel" },
-  { value: "fitness", label: "Fitness & Training" },
   { value: "education", label: "Education & Learning" },
   { value: "other", label: "Other" },
 ];
 
-/* ======================================================
-   STEPS
-====================================================== */
+/* -------------------------------------------------------------------------- */
+/* STEPS                                                                      */
+/* -------------------------------------------------------------------------- */
 
 const STEPS = [
   { id: 1, title: "Business identity", icon: Building2 },
@@ -50,9 +55,9 @@ const STEPS = [
 
 type StepId = (typeof STEPS)[number]["id"];
 
-/* ======================================================
-   PAGE
-====================================================== */
+/* -------------------------------------------------------------------------- */
+/* PAGE                                                                       */
+/* -------------------------------------------------------------------------- */
 
 export default function BusinessOnboardingPage() {
   const { user, isLoaded } = useUser();
@@ -73,37 +78,9 @@ export default function BusinessOnboardingPage() {
     tertiaryCode: "",
   });
 
-  /* ======================================================
-     HARD GUARD (prevents onboarding loop)
-  ====================================================== */
-
-  useEffect(() => {
-    if (!isLoaded || !user) return;
-
-    let cancelled = false;
-
-    (async () => {
-      try {
-        const res = await fetch(`/api/users/${user.id}/type`);
-        if (!res.ok) return;
-        const data = await res.json();
-
-        if (!cancelled && data.type === "BUSINESS") {
-          router.replace("/business/dashboard");
-        }
-      } catch {
-        /* silent */
-      }
-    })();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [isLoaded, user, router]);
-
-  /* ======================================================
-     CODE DEDUPING
-  ====================================================== */
+  /* ------------------------------------------------------------------------ */
+  /* CODE DEDUPING                                                            */
+  /* ------------------------------------------------------------------------ */
 
   const usedCodes = useMemo(
     () =>
@@ -113,26 +90,28 @@ export default function BusinessOnboardingPage() {
     [form.primaryCode, form.secondaryCode, form.tertiaryCode]
   );
 
-  /* ======================================================
-     VALIDATION
-  ====================================================== */
+  /* ------------------------------------------------------------------------ */
+  /* VALIDATION                                                               */
+  /* ------------------------------------------------------------------------ */
 
   const isValid =
     (step === 1 && form.businessName.trim().length >= 2) ||
     (step === 2 && form.description.trim().length >= 20) ||
-    (step === 3 && form.category) ||
+    (step === 3 && !!form.category) ||
     (step === 4 && form.contactEmail.includes("@")) ||
-    (step === 5 && form.primaryCode);
+    (step === 5 && !!form.primaryCode);
 
-  /* ======================================================
-     NAVIGATION
-  ====================================================== */
+  /* ------------------------------------------------------------------------ */
+  /* NAVIGATION                                                               */
+  /* ------------------------------------------------------------------------ */
 
   async function next() {
     if (step < 5) {
       setStep((s) => (s + 1) as StepId);
       return;
     }
+
+    if (!user) return;
 
     setIsSubmitting(true);
 
@@ -154,7 +133,9 @@ export default function BusinessOnboardingPage() {
       });
 
       if (!res.ok) throw new Error();
-      router.push("/business/dashboard");
+
+      // ✅ ONE-TIME REDIRECT — onboarding ends here
+      router.replace("/business/dashboard");
     } catch {
       alert("Failed to create business profile.");
     } finally {
@@ -162,11 +143,14 @@ export default function BusinessOnboardingPage() {
     }
   }
 
-  /* ======================================================
-     RENDER
-  ====================================================== */
+  /* ------------------------------------------------------------------------ */
+  /* RENDER                                                                   */
+  /* ------------------------------------------------------------------------ */
 
-  const CurrentIcon = STEPS.find((s) => s.id === step)?.icon ?? Building2;
+  if (!isLoaded) return null;
+
+  const CurrentIcon =
+    STEPS.find((s) => s.id === step)?.icon ?? Building2;
 
   return (
     <div className="min-h-screen bg-black flex items-center justify-center px-6">
@@ -190,7 +174,7 @@ export default function BusinessOnboardingPage() {
           {STEPS.map((s) => (
             <div
               key={s.id}
-              className={`h-1 flex-1 rounded-full transition ${
+              className={`h-1 flex-1 rounded-full ${
                 s.id <= step ? "bg-white" : "bg-white/10"
               }`}
             />
@@ -267,35 +251,33 @@ export default function BusinessOnboardingPage() {
                 </>
               )}
 
-              {step === 5 && (
-                <>
-                  {(["primaryCode", "secondaryCode", "tertiaryCode"] as const).map(
-                    (key, idx) => (
-                      <select
-                        key={key}
-                        className="w-full bg-black text-white p-3 rounded-lg"
-                        value={form[key]}
-                        onChange={(e) =>
-                          setForm({ ...form, [key]: e.target.value })
-                        }
-                      >
-                        <option value="">
-                          {idx === 0
-                            ? "Primary business code (required)"
-                            : "Optional"}
+              {step === 5 &&
+                (["primaryCode", "secondaryCode", "tertiaryCode"] as const).map(
+                  (key, idx) => (
+                    <select
+                      key={key}
+                      className="w-full bg-black text-white p-3 rounded-lg"
+                      value={form[key]}
+                      onChange={(e) =>
+                        setForm({ ...form, [key]: e.target.value })
+                      }
+                    >
+                      <option value="">
+                        {idx === 0
+                          ? "Primary business code (required)"
+                          : "Optional"}
+                      </option>
+                      {BUSINESS_CODES.filter(
+                        (c) =>
+                          !usedCodes.has(c.value) || c.value === form[key]
+                      ).map((c) => (
+                        <option key={c.value} value={c.value}>
+                          {c.label}
                         </option>
-                        {BUSINESS_CODES.filter(
-                          (c) => !usedCodes.has(c.value) || c.value === form[key]
-                        ).map((c) => (
-                          <option key={c.value} value={c.value}>
-                            {c.label}
-                          </option>
-                        ))}
-                      </select>
-                    )
-                  )}
-                </>
-              )}
+                      ))}
+                    </select>
+                  )
+                )}
             </motion.div>
           </AnimatePresence>
         </div>
