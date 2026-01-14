@@ -31,12 +31,12 @@ export default async function BusinessLayout({
   const business = user.businessProfile;
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-gradient-to-br from-[#0b0f1a] via-[#0e1324] to-[#0b0f1a] text-white">
       <div className="max-w-7xl mx-auto px-6 py-8">
         {/* Top bar */}
-        <div className="flex items-center justify-between gap-6 mb-8">
+        <div className="flex items-center justify-between gap-6 mb-10">
           <div className="min-w-0">
-            <p className="text-xs text-white/50">Business</p>
+            <p className="text-xs text-indigo-300/80">Business workspace</p>
             <h1 className="text-xl font-semibold tracking-tight truncate">
               {business.businessName}
             </h1>
@@ -47,7 +47,7 @@ export default async function BusinessLayout({
 
           <Link
             href="/business/listings/new"
-            className="inline-flex items-center gap-2 rounded-xl px-4 py-2 bg-white text-black font-medium hover:bg-white/90 transition"
+            className="inline-flex items-center gap-2 rounded-xl px-4 py-2 bg-indigo-500 text-white font-medium hover:bg-indigo-400 transition shadow-sm"
           >
             <PlusCircle size={18} />
             New Listing
@@ -57,8 +57,8 @@ export default async function BusinessLayout({
         {/* Shell */}
         <div className="grid grid-cols-1 lg:grid-cols-[260px_1fr] gap-8">
           {/* Sidebar */}
-          <aside className="lg:sticky lg:top-8 h-fit border border-white/10 rounded-2xl p-4 bg-white/[0.02]">
-            <nav className="space-y-2">
+          <aside className="lg:sticky lg:top-8 h-fit rounded-2xl p-4 bg-white/[0.06] backdrop-blur border border-white/10">
+            <nav className="space-y-1">
               <NavItem
                 href="/business/dashboard"
                 icon={<LayoutDashboard size={18} />}
@@ -86,39 +86,59 @@ export default async function BusinessLayout({
               />
             </nav>
 
-            <div className="mt-5 pt-5 border-t border-white/10 space-y-3">
-              <div className="text-xs text-white/50">Identity</div>
-              <div className="flex flex-wrap gap-2">
-                {business.primaryCode && <Pill label={`Primary: ${business.primaryCode}`} />}
-                {business.secondaryCode && (
-                  <Pill label={`Secondary: ${business.secondaryCode}`} />
-                )}
-                {business.tertiaryCode && <Pill label={`Tertiary: ${business.tertiaryCode}`} />}
-                {!business.primaryCode && !business.secondaryCode && !business.tertiaryCode && (
-                  <div className="text-sm text-white/60">Codes not set yet.</div>
-                )}
+            {/* Identity */}
+            <div className="mt-6 pt-6 border-t border-white/10 space-y-3">
+              <div className="text-xs uppercase tracking-wide text-white/40">
+                Identity
               </div>
 
-              <div className="text-xs text-white/50 mt-4">Subscription</div>
-              <div className="flex items-center justify-between gap-3">
-                <div className="text-sm">
-                  <span className="text-white/60">Status:</span>{" "}
-                  <span className="font-medium">{business.subscriptionStatus}</span>
+              <div className="flex flex-wrap gap-2">
+                {business.primaryCode && (
+                  <Pill label={`Primary · ${business.primaryCode}`} />
+                )}
+                {business.secondaryCode && (
+                  <Pill label={`Secondary · ${business.secondaryCode}`} />
+                )}
+                {business.tertiaryCode && (
+                  <Pill label={`Tertiary · ${business.tertiaryCode}`} />
+                )}
+                {!business.primaryCode &&
+                  !business.secondaryCode &&
+                  !business.tertiaryCode && (
+                    <div className="text-sm text-white/50">
+                      No codes assigned yet
+                    </div>
+                  )}
+              </div>
+
+              {/* Subscription */}
+              <div className="pt-4 space-y-1">
+                <div className="text-xs uppercase tracking-wide text-white/40">
+                  Subscription
                 </div>
-                <div className="text-xs text-white/50">
-                  Tier: {business.subscriptionTier}
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-white/60">
+                    {business.subscriptionStatus}
+                  </span>
+                  <span className="text-white/40">
+                    {business.subscriptionTier}
+                  </span>
                 </div>
               </div>
             </div>
           </aside>
 
           {/* Main */}
-          <main className="min-w-0">{children}</main>
+          <main className="min-w-0 space-y-10">{children}</main>
         </div>
       </div>
     </div>
   );
 }
+
+/* -------------------------------------------------------------------------- */
+/* UI HELPERS                                                                 */
+/* -------------------------------------------------------------------------- */
 
 function NavItem({
   href,
@@ -132,17 +152,17 @@ function NavItem({
   return (
     <Link
       href={href}
-      className="flex items-center gap-3 rounded-xl px-3 py-2 border border-white/10 hover:border-white/20 hover:bg-white/[0.03] transition"
+      className="flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium text-white/80 hover:text-white hover:bg-white/[0.08] transition"
     >
-      <span className="text-white/70">{icon}</span>
-      <span className="text-sm font-medium">{label}</span>
+      <span className="text-indigo-300">{icon}</span>
+      {label}
     </Link>
   );
 }
 
 function Pill({ label }: { label: string }) {
   return (
-    <span className="text-xs px-2.5 py-1 rounded-full border border-white/10 bg-white/[0.03] text-white/70">
+    <span className="text-xs px-3 py-1 rounded-full bg-indigo-500/10 text-indigo-300 border border-indigo-400/20">
       {label}
     </span>
   );

@@ -39,7 +39,6 @@ export default function NewListingPage() {
     bookingType: "INQUIRY",
     targetCodes: [] as string[],
 
-    // Editorial
     duration: "",
     groupSize: "",
     tags: "",
@@ -123,9 +122,9 @@ export default function NewListingPage() {
           <Field label="Title">
             <Input
               required
-              placeholder="A clear, honest title"
+              placeholder="Clear, human, inviting"
               value={formData.title}
-              onChange={(v) =>
+              onChange={(v: string) =>
                 setFormData({ ...formData, title: v })
               }
             />
@@ -135,15 +134,12 @@ export default function NewListingPage() {
             <Textarea
               required
               rows={6}
-              placeholder="Describe the feel, rhythm, and intent — not just logistics."
+              placeholder="Describe the feeling, not the logistics"
               value={formData.description}
-              onChange={(v) =>
+              onChange={(v: string) =>
                 setFormData({ ...formData, description: v })
               }
             />
-            <p className="text-xs text-white/40 mt-2">
-              ETHOS performs best when this reads like a human invitation, not a pitch.
-            </p>
           </Field>
         </Section>
 
@@ -154,16 +150,16 @@ export default function NewListingPage() {
               <Select
                 required
                 value={formData.category}
-                onChange={(v) =>
+                onChange={(v: string) =>
                   setFormData({ ...formData, category: v })
                 }
                 options={[
-                  { value: "", label: "Select category" },
-                  { value: "experience", label: "Experience" },
-                  { value: "workshop", label: "Workshop" },
-                  { value: "retreat", label: "Retreat" },
-                  { value: "event", label: "Event" },
-                  { value: "service", label: "Service" },
+                  ["", "Select category"],
+                  ["experience", "Experience"],
+                  ["workshop", "Workshop"],
+                  ["retreat", "Retreat"],
+                  ["event", "Event"],
+                  ["service", "Service"],
                 ]}
               />
             </Field>
@@ -172,7 +168,7 @@ export default function NewListingPage() {
               <Input
                 placeholder="Optional"
                 value={formData.subcategory}
-                onChange={(v) =>
+                onChange={(v: string) =>
                   setFormData({ ...formData, subcategory: v })
                 }
               />
@@ -180,7 +176,7 @@ export default function NewListingPage() {
           </div>
         </Section>
 
-        {/* EDITORIAL */}
+        {/* EXPERIENCE PERSONALITY */}
         <Section title="Experience personality">
           <p className="text-sm text-white/60 mb-6">
             These describe feel and rhythm. They don’t rank or game the system.
@@ -214,7 +210,7 @@ export default function NewListingPage() {
             <Input
               placeholder="quiet, reflective, nature-led"
               value={formData.tags}
-              onChange={(v) =>
+              onChange={(v: string) =>
                 setFormData({ ...formData, tags: v })
               }
             />
@@ -231,7 +227,7 @@ export default function NewListingPage() {
               <Input
                 placeholder="2–3h"
                 value={formData.duration}
-                onChange={(v) =>
+                onChange={(v: string) =>
                   setFormData({ ...formData, duration: v })
                 }
               />
@@ -241,7 +237,7 @@ export default function NewListingPage() {
               <Input
                 placeholder="2–6"
                 value={formData.groupSize}
-                onChange={(v) =>
+                onChange={(v: string) =>
                   setFormData({ ...formData, groupSize: v })
                 }
               />
@@ -253,7 +249,7 @@ export default function NewListingPage() {
         <Section title="Target mythical codes">
           <CodeTargetingSelector
             selectedCodes={formData.targetCodes}
-            onChange={(codes) =>
+            onChange={(codes: string[]) =>
               setFormData({ ...formData, targetCodes: codes })
             }
           />
@@ -299,7 +295,9 @@ function Section({
 }) {
   return (
     <section className="space-y-4">
-      <h2 className="text-sm font-semibold text-white/80">{title}</h2>
+      <h2 className="text-sm font-semibold text-white/80">
+        {title}
+      </h2>
       <div className="rounded-2xl border border-white/10 bg-black p-5">
         {children}
       </div>
@@ -331,7 +329,7 @@ function Input({
   required,
 }: {
   value: string;
-  onChange: (v: string) => void;
+  onChange: (value: string) => void;
   placeholder?: string;
   required?: boolean;
 }) {
@@ -354,7 +352,7 @@ function Textarea({
   required,
 }: {
   value: string;
-  onChange: (v: string) => void;
+  onChange: (value: string) => void;
   rows: number;
   placeholder?: string;
   required?: boolean;
@@ -378,8 +376,8 @@ function Select({
   required,
 }: {
   value: string;
-  onChange: (v: string) => void;
-  options: Array<{ value: string; label: string }>;
+  onChange: (value: string) => void;
+  options: Array<[string, string]>;
   required?: boolean;
 }) {
   return (
@@ -389,9 +387,9 @@ function Select({
       onChange={(e) => onChange(e.target.value)}
       className="w-full rounded-xl bg-black border border-white/15 px-4 py-3 text-white focus:outline-none focus:border-white/30"
     >
-      {options.map((o) => (
-        <option key={o.value} value={o.value}>
-          {o.label}
+      {options.map(([value, label]) => (
+        <option key={value} value={value}>
+          {label}
         </option>
       ))}
     </select>

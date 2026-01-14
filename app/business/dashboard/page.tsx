@@ -64,13 +64,13 @@ export default async function BusinessDashboard() {
             Dashboard
           </h2>
           <p className="text-white/60 mt-1">
-            Overview of your live presence on ETHOS
+            Your business activity at a glance
           </p>
         </div>
 
         <Link
           href="/business/listings/new"
-          className="inline-flex items-center gap-2 px-5 py-3 bg-white text-black rounded-xl font-medium hover:bg-white/90 transition"
+          className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-indigo-500 text-white font-medium hover:bg-indigo-400 transition shadow-sm"
         >
           <Plus size={18} />
           New listing
@@ -80,12 +80,12 @@ export default async function BusinessDashboard() {
       {/* Trial Banner */}
       {business.subscriptionStatus === "TRIAL" &&
         daysUntilTrialEnd !== null && (
-          <div className="border border-yellow-500/20 bg-yellow-500/5 rounded-2xl p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div className="rounded-2xl p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-yellow-400/10 border border-yellow-300/20">
             <div>
-              <p className="font-semibold text-yellow-300">
+              <p className="font-semibold text-yellow-200">
                 Trial period active
               </p>
-              <p className="text-sm text-yellow-200/70 mt-1">
+              <p className="text-sm text-yellow-100/70 mt-1">
                 {daysUntilTrialEnd} days remaining
               </p>
             </div>
@@ -118,12 +118,14 @@ export default async function BusinessDashboard() {
       {/* Listings */}
       <section className="space-y-6">
         <div className="flex items-center justify-between">
-          <h3 className="text-xl font-semibold">Your listings</h3>
+          <h3 className="text-xl font-semibold">
+            Your listings
+          </h3>
           <Link
-            href="/business/listings/new"
-            className="text-sm text-white/60 hover:text-white transition"
+            href="/business/listings"
+            className="text-sm text-indigo-300 hover:text-indigo-200 transition"
           >
-            Create another →
+            Manage →
           </Link>
         </div>
 
@@ -135,7 +137,7 @@ export default async function BusinessDashboard() {
               return (
                 <div
                   key={listing.id}
-                  className="border border-white/10 rounded-2xl p-6 bg-white/[0.02] hover:border-white/20 transition"
+                  className="rounded-2xl p-6 bg-white/[0.06] backdrop-blur border border-white/10 hover:border-indigo-400/40 transition"
                 >
                   <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
                     <div className="min-w-0 space-y-2">
@@ -155,7 +157,7 @@ export default async function BusinessDashboard() {
                           🎯 {listing.targetCodes.length} codes
                         </span>
                         {inquiryCount > 0 && (
-                          <span className="text-blue-400">
+                          <span className="text-indigo-300">
                             💬 {inquiryCount} inquiry
                             {inquiryCount > 1 ? "ies" : ""}
                           </span>
@@ -166,13 +168,13 @@ export default async function BusinessDashboard() {
                     <div className="flex items-center gap-3">
                       <Link
                         href={`/business/listings/${listing.id}`}
-                        className="text-sm px-4 py-2 rounded-lg border border-white/15 hover:bg-white/5 transition"
+                        className="text-sm px-4 py-2 rounded-lg border border-white/20 hover:bg-white/[0.08] transition"
                       >
                         View
                       </Link>
                       <Link
                         href={`/business/listings/${listing.id}/edit`}
-                        className="text-sm px-4 py-2 rounded-lg border border-white/15 hover:bg-white/5 transition"
+                        className="text-sm px-4 py-2 rounded-lg border border-white/20 hover:bg-white/[0.08] transition"
                       >
                         Edit
                       </Link>
@@ -188,8 +190,10 @@ export default async function BusinessDashboard() {
       </section>
 
       {/* Business Info */}
-      <section className="border border-white/10 rounded-2xl p-8 space-y-6 bg-white/[0.02]">
-        <h3 className="text-xl font-semibold">Business profile</h3>
+      <section className="rounded-2xl p-8 space-y-6 bg-white/[0.06] backdrop-blur border border-white/10">
+        <h3 className="text-xl font-semibold">
+          Business profile
+        </h3>
 
         <div className="grid md:grid-cols-2 gap-6 text-sm">
           <Info label="Contact email" value={business.contactEmail} />
@@ -203,7 +207,7 @@ export default async function BusinessDashboard() {
                 <a
                   href={business.website}
                   target="_blank"
-                  className="text-blue-400 hover:underline inline-flex items-center gap-1"
+                  className="text-indigo-300 hover:underline inline-flex items-center gap-1"
                 >
                   {business.website}
                   <ArrowUpRight size={14} />
@@ -244,21 +248,23 @@ function StatCard({
 }) {
   const card = (
     <div
-      className={`rounded-2xl p-6 border ${
+      className={`rounded-2xl p-6 border backdrop-blur ${
         highlight
-          ? "border-blue-500/30 bg-blue-500/5"
+          ? "bg-indigo-500/10 border-indigo-400/30"
           : subtle
-          ? "border-white/10 bg-white/[0.02]"
-          : "border-white/10"
+          ? "bg-white/[0.04] border-white/10"
+          : "bg-white/[0.06] border-white/10"
       }`}
     >
       <div className="flex items-center gap-2 text-white/60">
         {icon}
         <p className="text-sm">{label}</p>
       </div>
-      <p className="text-3xl font-bold mt-2">{value}</p>
+      <p className="text-3xl font-bold mt-2">
+        {value}
+      </p>
       {link && (
-        <p className="text-xs text-blue-400 mt-2">
+        <p className="text-xs text-indigo-300 mt-2">
           View →
         </p>
       )}
@@ -287,7 +293,7 @@ function Info({
 
 function EmptyState() {
   return (
-    <div className="border border-dashed border-white/15 rounded-2xl p-12 text-center">
+    <div className="rounded-2xl p-12 text-center bg-white/[0.04] border border-dashed border-white/15">
       <p className="text-lg font-semibold mb-2">
         No listings yet
       </p>
@@ -296,7 +302,7 @@ function EmptyState() {
       </p>
       <Link
         href="/business/listings/new"
-        className="inline-block px-6 py-3 bg-white text-black rounded-xl font-medium hover:bg-white/90 transition"
+        className="inline-block px-6 py-3 rounded-xl bg-indigo-500 text-white font-medium hover:bg-indigo-400 transition"
       >
         Create your first listing
       </Link>
