@@ -37,6 +37,7 @@ type ListingCard = {
   createdAt: string;
 };
 
+// Update BusinessDashboardClient props type to include metrics
 type Props = {
   business: {
     businessName: string;
@@ -51,9 +52,14 @@ type Props = {
   totalInquiries: number;
   activeListingsCount: number;
   listings: ListingCard[];
+  metrics: {
+    totalViews: number;
+    conversionRate: number;
+    avgResponseTime: string | null;
+    topPerformingListing: string | null;
+  };
   TrialCTA: React.ReactNode;
 };
-
 /* -------------------------------------------------------------------------- */
 /* ANIMATION VARIANTS                                                         */
 /* -------------------------------------------------------------------------- */
