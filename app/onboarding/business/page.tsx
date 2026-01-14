@@ -15,17 +15,32 @@ import {
 } from "lucide-react";
 
 /* -------------------------------------------------------------------------- */
-/* BUSINESS CODES (DB SLUGS ONLY)                                              */
+/* BUSINESS CODES (FULL + ALIGNED)                                             */
 /* -------------------------------------------------------------------------- */
 
 const BUSINESS_CODES = [
-  { label: "Earthlistener", value: "khoisan" },
-  { label: "Stillmind", value: "sahen" },
-  { label: "Northstar", value: "namsea" },
-  { label: "Echoheart", value: "kayori" },
-  { label: "Sparkmaker", value: "enzuka" },
-  { label: "Skyweaver", value: "khoruun" },
+  { label: "Earthlistener", value: "earthlistener" },
+  { label: "Stillmind", value: "stillmind" },
+  { label: "Northstar", value: "northstar" },
+  { label: "Echoheart", value: "echoheart" },
+  { label: "Sparkmaker", value: "sparkmaker" },
+  { label: "Skyweaver", value: "skyweaver" },
+  { label: "Neonmuse", value: "neonmuse" },
+  { label: "Tidekeeper", value: "tidekeeper" },
+  { label: "Ironreader", value: "ironreader" },
+  { label: "Pathfinder", value: "pathfinder" },
+  { label: "Otherseer", value: "otherseer" },
+  { label: "Lumenward", value: "lumenward" },
+  { label: "Ashcaller", value: "ashcaller" },
+  { label: "Horizonkin", value: "horizonkin" },
+  { label: "Stonebound", value: "stonebound" },
+  { label: "Waveborn", value: "waveborn" },
+  { label: "Quietforge", value: "quietforge" },
+  { label: "Brightsignal", value: "brightsignal" },
+  { label: "Deepthread", value: "deepthread" },
+  { label: "Mythwalker", value: "mythwalker" },
 ];
+
 
 /* -------------------------------------------------------------------------- */
 /* CATEGORIES                                                                 */
@@ -52,6 +67,14 @@ const STEPS = [
   { id: 4, title: "Contact details", icon: Mail },
   { id: 5, title: "Business personality", icon: Fingerprint },
 ] as const;
+
+const STEP_IMAGES = [
+  "/images/onboarding/business-1.jpg",
+  "/images/onboarding/business-2.jpg",
+  "/images/onboarding/business-3.jpg",
+  "/images/onboarding/business-4.jpg",
+  "/images/onboarding/business-5.jpg",
+];
 
 type StepId = (typeof STEPS)[number]["id"];
 
@@ -134,14 +157,11 @@ export default function BusinessOnboardingPage() {
 
       const result = await res.json();
 
-if (!res.ok) {
-  console.error("Business create failed:", result);
-  alert(result.error || "Business creation failed");
-  return;
-}
+      if (!res.ok) {
+        alert(result.error || "Business creation failed");
+        return;
+      }
 
-
-      // ✅ ONE-TIME REDIRECT — onboarding ends here
       router.replace("/business/dashboard");
     } catch {
       alert("Failed to create business profile.");
@@ -150,164 +170,181 @@ if (!res.ok) {
     }
   }
 
-  /* ------------------------------------------------------------------------ */
-  /* RENDER                                                                   */
-  /* ------------------------------------------------------------------------ */
-
   if (!isLoaded) return null;
 
   const CurrentIcon =
     STEPS.find((s) => s.id === step)?.icon ?? Building2;
 
   return (
-    <div className="min-h-screen bg-black flex items-center justify-center px-6">
-      <motion.div
-        initial={{ opacity: 0, y: 24 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-xl space-y-10"
-      >
-        {/* Header */}
-        <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center">
-            <CurrentIcon className="w-6 h-6 text-white" />
+    <div className="min-h-screen grid lg:grid-cols-2 bg-[#0B0D12] text-white">
+      {/* LEFT — IMAGE */}
+      <div className="hidden lg:block relative">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={step}
+            initial={{ opacity: 0, scale: 1.03 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 bg-cover bg-center"
+            style={{ backgroundImage: `url(${STEP_IMAGES[step - 1]})` }}
+          />
+        </AnimatePresence>
+        <div className="absolute inset-0 bg-black/45" />
+        <div className="absolute inset-0 bg-gradient-to-br from-[#4F8CFF]/20 via-transparent to-[#7CF5C8]/20" />
+      </div>
+
+      {/* RIGHT — FORM */}
+      <div className="flex items-center justify-center px-6 py-20">
+        <div className="w-full max-w-lg space-y-10">
+          {/* Header */}
+          <div className="flex items-center justify-between text-sm text-white/60">
+            <span>Step {step} of 5</span>
+            <span>Business onboarding</span>
           </div>
-          <h1 className="text-3xl font-bold text-white">
-            {STEPS.find((s) => s.id === step)?.title}
-          </h1>
-        </div>
 
-        {/* Progress */}
-        <div className="flex gap-2">
-          {STEPS.map((s) => (
-            <div
-              key={s.id}
-              className={`h-1 flex-1 rounded-full ${
-                s.id <= step ? "bg-white" : "bg-white/10"
-              }`}
-            />
-          ))}
-        </div>
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center">
+              <CurrentIcon className="w-6 h-6 text-white" />
+            </div>
+            <h1 className="text-3xl font-bold">
+              {STEPS.find((s) => s.id === step)?.title}
+            </h1>
+          </div>
 
-        {/* Card */}
-        <div className="bg-white/[0.03] border border-white/10 rounded-2xl p-6">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={step}
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              className="space-y-4"
-            >
-              {step === 1 && (
-                <input
-                  className="w-full bg-black text-white p-4 rounded-lg"
-                  placeholder="Your business name"
-                  value={form.businessName}
-                  onChange={(e) =>
-                    setForm({ ...form, businessName: e.target.value })
-                  }
-                />
-              )}
+          {/* Progress */}
+          <div className="flex gap-2">
+            {STEPS.map((s) => (
+              <div
+                key={s.id}
+                className={`h-1 flex-1 rounded-full ${
+                  s.id <= step ? "bg-white" : "bg-white/15"
+                }`}
+              />
+            ))}
+          </div>
 
-              {step === 2 && (
-                <textarea
-                  className="w-full bg-black text-white p-4 rounded-lg min-h-[140px]"
-                  placeholder="What do you actually do?"
-                  value={form.description}
-                  onChange={(e) =>
-                    setForm({ ...form, description: e.target.value })
-                  }
-                />
-              )}
-
-              {step === 3 && (
-                <select
-                  className="w-full bg-black text-white p-4 rounded-lg"
-                  value={form.category}
-                  onChange={(e) =>
-                    setForm({ ...form, category: e.target.value })
-                  }
-                >
-                  <option value="">Select industry</option>
-                  {CATEGORIES.map((c) => (
-                    <option key={c.value} value={c.value}>
-                      {c.label}
-                    </option>
-                  ))}
-                </select>
-              )}
-
-              {step === 4 && (
-                <>
+          {/* Card */}
+          <div className="rounded-2xl p-[1px] bg-gradient-to-r from-[#4F8CFF] via-[#C7B9FF] to-[#7CF5C8]">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={step}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                className="bg-black/80 backdrop-blur-xl rounded-2xl p-6 space-y-4"
+              >
+                {step === 1 && (
                   <input
-                    className="w-full bg-black text-white p-4 rounded-lg"
-                    placeholder="hello@business.com"
-                    value={form.contactEmail}
+                    className="w-full bg-black text-white p-4 rounded-xl border border-white/15"
+                    placeholder="Your business name"
+                    value={form.businessName}
                     onChange={(e) =>
-                      setForm({ ...form, contactEmail: e.target.value })
+                      setForm({ ...form, businessName: e.target.value })
                     }
                   />
-                  <input
-                    className="w-full bg-black text-white p-4 rounded-lg"
-                    placeholder="https://yourbusiness.com"
-                    value={form.website}
-                    onChange={(e) =>
-                      setForm({ ...form, website: e.target.value })
-                    }
-                  />
-                </>
-              )}
-
-              {step === 5 &&
-                (["primaryCode", "secondaryCode", "tertiaryCode"] as const).map(
-                  (key, idx) => (
-                    <select
-                      key={key}
-                      className="w-full bg-black text-white p-3 rounded-lg"
-                      value={form[key]}
-                      onChange={(e) =>
-                        setForm({ ...form, [key]: e.target.value })
-                      }
-                    >
-                      <option value="">
-                        {idx === 0
-                          ? "Primary business code (required)"
-                          : "Optional"}
-                      </option>
-                      {BUSINESS_CODES.filter(
-                        (c) =>
-                          !usedCodes.has(c.value) || c.value === form[key]
-                      ).map((c) => (
-                        <option key={c.value} value={c.value}>
-                          {c.label}
-                        </option>
-                      ))}
-                    </select>
-                  )
                 )}
-            </motion.div>
-          </AnimatePresence>
-        </div>
 
-        {/* Actions */}
-        <div className="flex gap-4">
-          {step > 1 && (
+                {step === 2 && (
+                  <textarea
+                    className="w-full bg-black text-white p-4 rounded-xl border border-white/15 min-h-[140px]"
+                    placeholder="What problem do you solve, and for whom?"
+                    value={form.description}
+                    onChange={(e) =>
+                      setForm({ ...form, description: e.target.value })
+                    }
+                  />
+                )}
+
+                {step === 3 && (
+                  <select
+                    className="w-full bg-black text-white p-4 rounded-xl border border-white/15"
+                    value={form.category}
+                    onChange={(e) =>
+                      setForm({ ...form, category: e.target.value })
+                    }
+                  >
+                    <option value="">Select industry</option>
+                    {CATEGORIES.map((c) => (
+                      <option key={c.value} value={c.value}>
+                        {c.label}
+                      </option>
+                    ))}
+                  </select>
+                )}
+
+                {step === 4 && (
+                  <>
+                    <input
+                      className="w-full bg-black text-white p-4 rounded-xl border border-white/15"
+                      placeholder="hello@business.com"
+                      value={form.contactEmail}
+                      onChange={(e) =>
+                        setForm({ ...form, contactEmail: e.target.value })
+                      }
+                    />
+                    <input
+                      className="w-full bg-black text-white p-4 rounded-xl border border-white/15"
+                      placeholder="https://yourbusiness.com"
+                      value={form.website}
+                      onChange={(e) =>
+                        setForm({ ...form, website: e.target.value })
+                      }
+                    />
+                  </>
+                )}
+
+                {step === 5 &&
+                  (["primaryCode", "secondaryCode", "tertiaryCode"] as const).map(
+                    (key, idx) => (
+                      <select
+                        key={key}
+                        className="w-full bg-black text-white p-3 rounded-xl border border-white/15"
+                        value={form[key]}
+                        onChange={(e) =>
+                          setForm({ ...form, [key]: e.target.value })
+                        }
+                      >
+                        <option value="">
+                          {idx === 0
+                            ? "Primary business code (required)"
+                            : "Optional"}
+                        </option>
+                        {BUSINESS_CODES.filter(
+                          (c) =>
+                            !usedCodes.has(c.value) || c.value === form[key]
+                        ).map((c) => (
+                          <option key={c.value} value={c.value}>
+                            {c.label}
+                          </option>
+                        ))}
+                      </select>
+                    )
+                  )}
+              </motion.div>
+            </AnimatePresence>
+          </div>
+
+          {/* Actions */}
+          <div className="flex gap-4">
+            {step > 1 && (
+              <button
+                onClick={() => setStep((s) => (s - 1) as StepId)}
+                className="flex-1 border border-white/20 rounded-xl p-4"
+              >
+                <ArrowLeft />
+              </button>
+            )}
             <button
-              onClick={() => setStep((s) => (s - 1) as StepId)}
-              className="flex-1 border border-white/10 text-white p-4 rounded-lg"
+              onClick={next}
+              disabled={!isValid || isSubmitting}
+              className="flex-1 bg-white text-black rounded-xl p-4 font-semibold flex items-center justify-center gap-2"
             >
-              <ArrowLeft />
+              {step === 5 ? "Create business" : "Continue"}
+              <ArrowRight />
             </button>
-          )}
-          <button
-            onClick={next}
-            disabled={!isValid || isSubmitting}
-            className="flex-1 bg-white text-black p-4 rounded-lg font-medium"
-          >
-            {step === 5 ? "Create business" : "Continue"} <ArrowRight />
-          </button>
+          </div>
         </div>
-      </motion.div>
+      </div>
     </div>
   );
 }
