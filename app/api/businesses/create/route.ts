@@ -84,11 +84,16 @@ export async function POST(request: Request) {
     });
 
     return NextResponse.json({ success: true, business });
-  } catch (error) {
-    console.error("Error creating business profile:", error);
-    return NextResponse.json(
-      { error: "Failed to create business profile" },
-      { status: 500 }
-    );
-  }
+  } catch (error: any) {
+  console.error("Business onboarding error:", error);
+
+  return NextResponse.json(
+    {
+      error: "Failed to create business profile",
+      prismaCode: error?.code,
+      prismaMeta: error?.meta,
+    },
+    { status: 500 }
+  );
+}
 }
