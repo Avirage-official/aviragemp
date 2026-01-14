@@ -26,7 +26,16 @@ export default async function BusinessLayout({
   });
 
   if (!user) redirect("/onboarding");
-  if (!user.businessProfile) redirect("/onboarding/business");
+
+  /**
+   * ✅ Forward-safe gating:
+   * - If businessProfile is missing, we DO NOT hard crash into a loop.
+   * - We redirect to onboarding with a return URL, so user can finish and come back.
+   * - This prevents the “stuck” feeling when creation just happened but hasn't appeared in the next request.
+   */
+  if (!user.businessProfile) {
+    redirect("/onboarding/business?returnTo=/business/dashboard");
+  }
 
   const business = user.businessProfile;
 
@@ -40,9 +49,7 @@ export default async function BusinessLayout({
             <h1 className="text-xl font-semibold tracking-tight truncate">
               {business.businessName}
             </h1>
-            <p className="text-sm text-white/60 truncate">
-              {business.category}
-            </p>
+            <p className="text-sm text-white/60 truncate">{business.category}</p>
           </div>
 
           <Link
