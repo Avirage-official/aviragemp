@@ -1,15 +1,53 @@
+// components/business/BusinessIdentityPanel.tsx
 "use client";
 
-import * as React from "react";
-import Link from "next/link";
 import { MYTHICAL_CODES, MythicalCodeKey } from "@/lib/mythicalCodes";
+import { motion, useReducedMotion } from "framer-motion";
+import {
+  Sparkles,
+  Target,
+  TrendingUp,
+  MessageSquare,
+  Palette,
+  Megaphone,
+  Lightbulb,
+  Users,
+  TrendingDown,
+  CheckCircle2,
+  AlertCircle,
+  Info
+} from "lucide-react";
+
+/* -------------------------------------------------------------------------- */
+/* TYPES                                                                      */
+/* -------------------------------------------------------------------------- */
 
 type Props = {
   businessName: string;
-  primaryKeyFallback: MythicalCodeKey; // if business has primary, pass it; otherwise pass first key
+  primaryKeyFallback: MythicalCodeKey;
   secondaryKey: MythicalCodeKey | null;
   tertiaryKey: MythicalCodeKey | null;
 };
+
+/* -------------------------------------------------------------------------- */
+/* ANIMATION VARIANTS                                                         */
+/* -------------------------------------------------------------------------- */
+
+const fadeInUp = {
+  initial: { opacity: 0, y: 20 },
+  animate: { opacity: 1, y: 0 },
+  transition: { duration: 0.4, ease: [0.22, 1, 0.36, 1] }
+};
+
+const staggerContainer = {
+  animate: {
+    transition: { staggerChildren: 0.1 }
+  }
+};
+
+/* -------------------------------------------------------------------------- */
+/* MAIN COMPONENT                                                             */
+/* -------------------------------------------------------------------------- */
 
 export function BusinessIdentityPanel({
   businessName,
@@ -17,231 +55,576 @@ export function BusinessIdentityPanel({
   secondaryKey,
   tertiaryKey,
 }: Props) {
-  const [activeKey, setActiveKey] = React.useState<MythicalCodeKey>(primaryKeyFallback);
-
-  const active = MYTHICAL_CODES[activeKey];
-
-  const allKeys = React.useMemo(
-    () => Object.keys(MYTHICAL_CODES) as MythicalCodeKey[],
-    []
-  );
-
-  const badges = React.useMemo(() => {
-    const arr: { label: string; key: MythicalCodeKey }[] = [];
-    if (primaryKeyFallback) arr.push({ label: "Primary", key: primaryKeyFallback });
-    if (secondaryKey) arr.push({ label: "Secondary", key: secondaryKey });
-    if (tertiaryKey) arr.push({ label: "Tertiary", key: tertiaryKey });
-    return arr;
-  }, [primaryKeyFallback, secondaryKey, tertiaryKey]);
+  const prefersReducedMotion = useReducedMotion();
+  
+  const primary = MYTHICAL_CODES[primaryKeyFallback];
+  const secondary = secondaryKey ? MYTHICAL_CODES[secondaryKey] : null;
+  const tertiary = tertiaryKey ? MYTHICAL_CODES[tertiaryKey] : null;
 
   return (
-    <div className="space-y-10">
-      {/* Top controls */}
-      <section className="rounded-3xl border border-white/10 bg-white/[0.03] p-6">
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
-          <div className="min-w-0">
-            <p className="text-xs text-white/50">Business</p>
-            <h2 className="text-xl font-semibold truncate">{businessName}</h2>
-
-            {badges.length > 0 ? (
-              <div className="flex flex-wrap gap-2 mt-3">
-                {badges.map((b) => (
-                  <button
-                    key={b.label}
-                    onClick={() => setActiveKey(b.key)}
-                    className={`text-xs px-3 py-1.5 rounded-full border transition ${
-                      activeKey === b.key
-                        ? "border-white/30 bg-white/[0.10] text-white"
-                        : "border-white/10 bg-white/[0.03] text-white/70 hover:border-white/20"
-                    }`}
-                    title={`View ${b.label}: ${b.key}`}
-                    type="button"
-                  >
-                    {b.label}: {MYTHICAL_CODES[b.key].label}
-                  </button>
-                ))}
+    <motion.div
+      variants={staggerContainer}
+      initial="initial"
+      animate="animate"
+      className="space-y-6"
+    >
+      {/* PRIMARY IDENTITY */}
+      <motion.div variants={fadeInUp}>
+        <IdentityCard
+          title="Primary Identity"
+          subtitle="Your core essence"
+          color="lav"
+          icon={<Sparkles className="h-5 w-5" />}
+        >
+          <div className="space-y-6">
+            {/* Code Header */}
+            <div className="flex items-start gap-4">
+              <div 
+                className="h-16 w-16 rounded-2xl border flex items-center justify-center flex-shrink-0 text-3xl"
+                style={{
+                  backgroundColor: `${primary.colorMood.primary}15`,
+                  borderColor: `${primary.colorMood.primary}40`
+                }}
+              >
+                ✨
               </div>
-            ) : (
-              <p className="text-sm text-white/60 mt-3">
-                No assigned codes yet — exploring read-only.
-              </p>
-            )}
-          </div>
-
-          {/* Explorer */}
-          <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-            <label className="text-xs text-white/50">Explore code</label>
-            <select
-              value={activeKey}
-              onChange={(e) => setActiveKey(e.target.value as MythicalCodeKey)}
-              className="h-11 rounded-xl border border-white/10 bg-black/40 px-4 text-sm text-white outline-none focus:border-white/25"
-            >
-              {allKeys.map((k) => (
-                <option key={k} value={k}>
-                  {MYTHICAL_CODES[k].label} — ({k})
-                </option>
-              ))}
-            </select>
-
-            <Link
-              href="/onboarding/business"
-              className="h-11 inline-flex items-center justify-center rounded-xl px-4 border border-white/15 hover:bg-white/5 transition text-sm"
-            >
-              Edit identity
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* Hero */}
-      <section
-        className="rounded-[32px] p-10 border border-white/10"
-        style={{
-          background: active.colorMood.surface,
-          color: "#0f172a",
-        }}
-      >
-        <p className="text-xs uppercase tracking-widest opacity-60">Identity signal</p>
-        <h3 className="text-4xl font-bold mt-2">{active.label}</h3>
-        <p className="text-xl mt-6 max-w-3xl">{active.essence}</p>
-
-        <div className="grid md:grid-cols-3 gap-8 mt-10">
-          <InsightBlock title="Core Strengths" items={active.strengths} />
-          <InsightBlock title="Blind Spots" items={active.blindSpots} subtle />
-          <InsightBlock title="Ideal Audience" items={active.idealAudience} />
-        </div>
-      </section>
-
-      {/* Perception */}
-      <section className="grid md:grid-cols-2 gap-6">
-        <Panel title="How users experience you">
-          <ul className="space-y-2">
-            {active.positioningGuidance.map((g) => (
-              <li key={g}>• {g}</li>
-            ))}
-          </ul>
-        </Panel>
-
-        <Panel title="Who may not resonate">
-          <ul className="space-y-2 text-white/70">
-            {active.strugglesWith.map((s) => (
-              <li key={s}>• {s}</li>
-            ))}
-          </ul>
-        </Panel>
-      </section>
-
-      {/* Brand expression */}
-      <section className="grid md:grid-cols-3 gap-6">
-        <Panel title="Brand tone">
-          <div className="space-y-1 text-sm">
-            <div>
-              <span className="opacity-60">Voice:</span>{" "}
-              <span className="capitalize">{active.brandTone.voice}</span>
+              <div className="flex-1 min-w-0">
+                <h3 className="text-2xl font-bold text-white/95 mb-1">
+                  {primary.label}
+                </h3>
+                <p className="text-sm text-white/60 leading-relaxed">
+                  {primary.essence}
+                </p>
+              </div>
             </div>
-            <div>
-              <span className="opacity-60">Pace:</span>{" "}
-              <span className="capitalize">{active.brandTone.pace}</span>
+
+            {/* Brand Tone */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <AttributeCard
+                icon={<MessageSquare className="h-4 w-4" />}
+                label="Voice"
+                value={primary.brandTone.voice}
+                color="lav"
+              />
+              <AttributeCard
+                icon={<Palette className="h-4 w-4" />}
+                label="Pace"
+                value={primary.brandTone.pace}
+                color="lav"
+              />
+              <AttributeCard
+                icon={<Megaphone className="h-4 w-4" />}
+                label="Posture"
+                value={primary.brandTone.posture}
+                color="lav"
+              />
             </div>
-            <div>
-              <span className="opacity-60">Posture:</span>{" "}
-              <span className="capitalize">{active.brandTone.posture}</span>
+
+            {/* Strengths & Blind Spots */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <ListCard
+                icon={<CheckCircle2 className="h-4 w-4" />}
+                label="Strengths"
+                items={primary.strengths}
+                color="lav"
+                positive
+              />
+              <ListCard
+                icon={<AlertCircle className="h-4 w-4" />}
+                label="Blind Spots"
+                items={primary.blindSpots}
+                color="lav"
+                positive={false}
+              />
             </div>
+
+            {/* Positioning Guidance */}
+            <div className="rounded-xl bg-gradient-to-br from-[#C7B9FF]/5 to-transparent border border-[#C7B9FF]/20 p-5">
+              <div className="flex items-center gap-2 mb-3">
+                <Target className="h-4 w-4 text-[#C7B9FF]" />
+                <p className="text-sm font-semibold text-white/90">Positioning Guidance</p>
+              </div>
+              <ul className="space-y-2">
+                {primary.positioningGuidance.map((item, i) => (
+                  <li key={i} className="text-sm text-white/70 leading-relaxed flex items-start gap-2">
+                    <span className="text-[#C7B9FF] mt-0.5">•</span>
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Content Angles */}
+            <div className="rounded-xl bg-gradient-to-br from-[#C7B9FF]/5 to-transparent border border-[#C7B9FF]/20 p-5">
+              <div className="flex items-center gap-2 mb-3">
+                <Lightbulb className="h-4 w-4 text-[#C7B9FF]" />
+                <p className="text-sm font-semibold text-white/90">Content Angles</p>
+              </div>
+              <ul className="space-y-2">
+                {primary.contentAngles.map((item, i) => (
+                  <li key={i} className="text-sm text-white/70 leading-relaxed flex items-start gap-2">
+                    <span className="text-[#C7B9FF] mt-0.5">•</span>
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Offering Style */}
+            <div className="rounded-xl bg-gradient-to-br from-[#C7B9FF]/5 to-transparent border border-[#C7B9FF]/20 p-5">
+              <div className="flex items-center gap-2 mb-3">
+                <Users className="h-4 w-4 text-[#C7B9FF]" />
+                <p className="text-sm font-semibold text-white/90">Offering Style</p>
+              </div>
+              <ul className="space-y-2">
+                {primary.offeringStyle.map((item, i) => (
+                  <li key={i} className="text-sm text-white/70 leading-relaxed flex items-start gap-2">
+                    <span className="text-[#C7B9FF] mt-0.5">•</span>
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Primary Advice */}
+            <InfoBox color="lav">
+              <strong className="font-semibold">Primary Advice:</strong>{" "}
+              {primary.primaryAdvice}
+            </InfoBox>
+
+            {/* Ideal Audience */}
+            <AudienceSection
+              idealAudience={primary.idealAudience}
+              strugglesWith={primary.strugglesWith}
+            />
           </div>
-        </Panel>
+        </IdentityCard>
+      </motion.div>
 
-        <Panel title="Color energy">
-          <div className="flex gap-3 mt-2">
-            <ColorSwatch color={active.colorMood.primary} />
-            <ColorSwatch color={active.colorMood.accent} />
-            <ColorSwatch color={active.colorMood.surface} />
-          </div>
-        </Panel>
+      {/* SECONDARY IDENTITY */}
+      {secondary && (
+        <motion.div variants={fadeInUp}>
+          <IdentityCard
+            title="Secondary Influence"
+            subtitle="Adds depth and nuance"
+            color="blue"
+            icon={<Target className="h-5 w-5" />}
+          >
+            <div className="space-y-6">
+              {/* Code Header */}
+              <div className="flex items-start gap-4">
+                <div 
+                  className="h-14 w-14 rounded-xl border flex items-center justify-center flex-shrink-0 text-2xl"
+                  style={{
+                    backgroundColor: `${secondary.colorMood.primary}15`,
+                    borderColor: `${secondary.colorMood.primary}40`
+                  }}
+                >
+                  🎯
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-xl font-bold text-white/95 mb-1">
+                    {secondary.label}
+                  </h3>
+                  <p className="text-sm text-white/60 leading-relaxed">
+                    {secondary.essence}
+                  </p>
+                </div>
+              </div>
 
-        <Panel title="Content direction">
-          <ul className="space-y-1 text-sm">
-            {active.contentAngles.map((c) => (
-              <li key={c}>• {c}</li>
-            ))}
-          </ul>
-        </Panel>
-      </section>
+              {/* Brand Tone Layering */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <AttributeCard
+                  icon={<MessageSquare className="h-4 w-4" />}
+                  label="Voice Layer"
+                  value={secondary.brandTone.voice}
+                  color="blue"
+                />
+                <AttributeCard
+                  icon={<Palette className="h-4 w-4" />}
+                  label="Pace Layer"
+                  value={secondary.brandTone.pace}
+                  color="blue"
+                />
+                <AttributeCard
+                  icon={<Megaphone className="h-4 w-4" />}
+                  label="Posture Layer"
+                  value={secondary.brandTone.posture}
+                  color="blue"
+                />
+              </div>
 
-      {/* Guidance */}
-      <section className="grid md:grid-cols-3 gap-6">
-        <Panel title="Offering style">
-          <ul className="space-y-1 text-sm">
-            {active.offeringStyle.map((o) => (
-              <li key={o}>• {o}</li>
-            ))}
-          </ul>
-        </Panel>
-
-        <Panel title="Primary advice">
-          <p className="text-white/80">{active.primaryAdvice}</p>
-        </Panel>
-
-        <Panel title="Modifiers">
-          <div className="space-y-3 text-sm text-white/80">
-            <div>
-              <p className="text-white/50">Secondary effect</p>
-              <p>{active.secondaryEffect}</p>
+              {/* Secondary Effect */}
+              <InfoBox color="blue">
+                <strong className="font-semibold">Secondary Effect:</strong>{" "}
+                {secondary.secondaryEffect}
+              </InfoBox>
             </div>
-            <div>
-              <p className="text-white/50">Tertiary effect</p>
-              <p>{active.tertiaryEffect}</p>
+          </IdentityCard>
+        </motion.div>
+      )}
+
+      {/* TERTIARY IDENTITY */}
+      {tertiary && (
+        <motion.div variants={fadeInUp}>
+          <IdentityCard
+            title="Tertiary Influence"
+            subtitle="Your unexpected edge"
+            color="mint"
+            icon={<TrendingUp className="h-5 w-5" />}
+          >
+            <div className="space-y-6">
+              {/* Code Header */}
+              <div className="flex items-start gap-4">
+                <div 
+                  className="h-14 w-14 rounded-xl border flex items-center justify-center flex-shrink-0 text-2xl"
+                  style={{
+                    backgroundColor: `${tertiary.colorMood.primary}15`,
+                    borderColor: `${tertiary.colorMood.primary}40`
+                  }}
+                >
+                  💫
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-xl font-bold text-white/95 mb-1">
+                    {tertiary.label}
+                  </h3>
+                  <p className="text-sm text-white/60 leading-relaxed">
+                    {tertiary.essence}
+                  </p>
+                </div>
+              </div>
+
+              {/* Edge Quality */}
+              <div className="rounded-xl bg-gradient-to-br from-[#7CF5C8]/5 to-transparent border border-[#7CF5C8]/20 p-5">
+                <div className="flex items-center gap-2 mb-3">
+                  <Sparkles className="h-4 w-4 text-[#7CF5C8]" />
+                  <p className="text-sm font-semibold text-white/90">What Makes You Unexpected</p>
+                </div>
+                <ul className="space-y-2">
+                  {tertiary.contentAngles.map((item, i) => (
+                    <li key={i} className="text-sm text-white/70 leading-relaxed flex items-start gap-2">
+                      <span className="text-[#7CF5C8] mt-0.5">•</span>
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Tertiary Effect */}
+              <InfoBox color="mint">
+                <strong className="font-semibold">Tertiary Effect:</strong>{" "}
+                {tertiary.tertiaryEffect}
+              </InfoBox>
             </div>
-          </div>
-        </Panel>
-      </section>
-    </div>
+          </IdentityCard>
+        </motion.div>
+      )}
+
+      {/* SYNTHESIS */}
+      <motion.div variants={fadeInUp}>
+        <SynthesisCard
+          businessName={businessName}
+          primary={primary}
+          secondary={secondary}
+          tertiary={tertiary}
+        />
+      </motion.div>
+    </motion.div>
   );
 }
 
-function Panel({
+/* -------------------------------------------------------------------------- */
+/* UI COMPONENTS                                                              */
+/* -------------------------------------------------------------------------- */
+
+function IdentityCard({
   title,
-  children,
+  subtitle,
+  color,
+  icon,
+  children
 }: {
   title: string;
+  subtitle: string;
+  color: "lav" | "blue" | "mint";
+  icon: React.ReactNode;
   children: React.ReactNode;
 }) {
+  const colors = {
+    lav: {
+      gradient: "from-[#C7B9FF]/5 via-transparent to-transparent",
+      icon: "text-[#C7B9FF]",
+      glow: "from-[#C7B9FF]/5 via-[#9b7fd8]/5 to-transparent"
+    },
+    blue: {
+      gradient: "from-[#4F8CFF]/5 via-transparent to-transparent",
+      icon: "text-[#4F8CFF]",
+      glow: "from-[#4F8CFF]/5 via-[#3b6bd8]/5 to-transparent"
+    },
+    mint: {
+      gradient: "from-[#7CF5C8]/5 via-transparent to-transparent",
+      icon: "text-[#7CF5C8]",
+      glow: "from-[#7CF5C8]/5 via-[#5cd4a8]/5 to-transparent"
+    }
+  }[color];
+
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-6">
-      <h4 className="font-semibold mb-3">{title}</h4>
-      <div className="text-white/80">{children}</div>
+    <div className="relative group">
+      <div className={`absolute -inset-[1px] rounded-[28px] bg-gradient-to-br ${colors.glow} opacity-0 group-hover:opacity-100 blur-xl transition-opacity duration-700`} />
+      
+      <div className="relative rounded-[28px] bg-white/[0.03] backdrop-blur-2xl border border-white/[0.08] overflow-hidden">
+        <div className={`px-6 sm:px-8 py-5 border-b border-white/[0.08] bg-gradient-to-r ${colors.gradient}`}>
+          <div className="flex items-center gap-3">
+            <div className={colors.icon}>
+              {icon}
+            </div>
+            <div>
+              <h2 className="text-lg font-semibold text-white/90">
+                {title}
+              </h2>
+              <p className="text-xs text-white/50">
+                {subtitle}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="p-6 sm:p-8">
+          {children}
+        </div>
+      </div>
     </div>
   );
 }
 
-function InsightBlock({
-  title,
-  items,
-  subtle,
+function AttributeCard({
+  icon,
+  label,
+  value,
+  color
 }: {
-  title: string;
-  items: readonly string[];
-  subtle?: boolean;
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+  color: "lav" | "blue" | "mint";
 }) {
+  const colors = {
+    lav: {
+      bg: "from-[#C7B9FF]/5 to-transparent",
+      border: "border-[#C7B9FF]/20",
+      icon: "text-[#C7B9FF]"
+    },
+    blue: {
+      bg: "from-[#4F8CFF]/5 to-transparent",
+      border: "border-[#4F8CFF]/20",
+      icon: "text-[#4F8CFF]"
+    },
+    mint: {
+      bg: "from-[#7CF5C8]/5 to-transparent",
+      border: "border-[#7CF5C8]/20",
+      icon: "text-[#7CF5C8]"
+    }
+  }[color];
+
   return (
-    <div>
-      <h4 className={`font-semibold mb-3 ${subtle ? "opacity-70" : ""}`}>
-        {title}
-      </h4>
-      <ul className="space-y-1 text-sm">
-        {items.map((i) => (
-          <li key={i}>– {i}</li>
+    <div className={`rounded-xl bg-gradient-to-br ${colors.bg} border ${colors.border} p-4`}>
+      <div className="flex items-center gap-2 mb-2">
+        <div className={colors.icon}>
+          {icon}
+        </div>
+        <p className="text-xs font-semibold text-white/70 uppercase tracking-wider">
+          {label}
+        </p>
+      </div>
+      <p className="text-sm text-white/90 leading-relaxed capitalize">
+        {value}
+      </p>
+    </div>
+  );
+}
+
+function ListCard({
+  icon,
+  label,
+  items,
+  color,
+  positive
+}: {
+  icon: React.ReactNode;
+  label: string;
+  items: readonly string[];  // ✅ FIXED: Added readonly
+  color: "lav" | "blue" | "mint";
+  positive: boolean;
+}) {
+  const colors = {
+    lav: {
+      bg: "from-[#C7B9FF]/5 to-transparent",
+      border: "border-[#C7B9FF]/20",
+      icon: "text-[#C7B9FF]",
+      bullet: "text-[#C7B9FF]"
+    },
+    blue: {
+      bg: "from-[#4F8CFF]/5 to-transparent",
+      border: "border-[#4F8CFF]/20",
+      icon: "text-[#4F8CFF]",
+      bullet: "text-[#4F8CFF]"
+    },
+    mint: {
+      bg: "from-[#7CF5C8]/5 to-transparent",
+      border: "border-[#7CF5C8]/20",
+      icon: "text-[#7CF5C8]",
+      bullet: "text-[#7CF5C8]"
+    }
+  }[color];
+
+  return (
+    <div className={`rounded-xl bg-gradient-to-br ${colors.bg} border ${colors.border} p-4`}>
+      <div className="flex items-center gap-2 mb-3">
+        <div className={colors.icon}>
+          {icon}
+        </div>
+        <p className="text-xs font-semibold text-white/90 uppercase tracking-wider">
+          {label}
+        </p>
+      </div>
+      <ul className="space-y-2">
+        {items.map((item, i) => (
+          <li key={i} className="text-xs text-white/70 leading-relaxed flex items-start gap-2">
+            <span className={`${colors.bullet} mt-0.5 flex-shrink-0`}>{positive ? "✓" : "⚠"}</span>
+            <span>{item}</span>
+          </li>
         ))}
       </ul>
     </div>
   );
 }
 
-function ColorSwatch({ color }: { color: string }) {
+function AudienceSection({
+  idealAudience,
+  strugglesWith
+}: {
+  idealAudience: readonly string[];  // ✅ FIXED: Added readonly
+  strugglesWith: readonly string[];  // ✅ FIXED: Added readonly
+}) {
   return (
-    <div
-      className="w-8 h-8 rounded-full border border-white/20"
-      style={{ backgroundColor: color }}
-      title={color}
-    />
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="rounded-xl bg-gradient-to-br from-[#7CF5C8]/5 to-transparent border border-[#7CF5C8]/20 p-4">
+        <div className="flex items-center gap-2 mb-3">
+          <CheckCircle2 className="h-4 w-4 text-[#7CF5C8]" />
+          <p className="text-xs font-semibold text-white/90 uppercase tracking-wider">
+            Ideal Audience
+          </p>
+        </div>
+        <ul className="space-y-2">
+          {idealAudience.map((item, i) => (
+            <li key={i} className="text-xs text-white/70 leading-relaxed flex items-start gap-2">
+              <span className="text-[#7CF5C8] mt-0.5">•</span>
+              <span>{item}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <div className="rounded-xl bg-gradient-to-br from-red-500/5 to-transparent border border-red-500/20 p-4">
+        <div className="flex items-center gap-2 mb-3">
+          <TrendingDown className="h-4 w-4 text-red-400" />
+          <p className="text-xs font-semibold text-white/90 uppercase tracking-wider">
+            Struggles With
+          </p>
+        </div>
+        <ul className="space-y-2">
+          {strugglesWith.map((item, i) => (
+            <li key={i} className="text-xs text-white/70 leading-relaxed flex items-start gap-2">
+              <span className="text-red-400 mt-0.5">•</span>
+              <span>{item}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  );
+}
+
+function InfoBox({
+  children,
+  color
+}: {
+  children: React.ReactNode;
+  color: "lav" | "blue" | "mint";
+}) {
+  const colors = {
+    lav: {
+      bg: "bg-[#C7B9FF]/5",
+      border: "border-[#C7B9FF]/20",
+      icon: "text-[#C7B9FF]"
+    },
+    blue: {
+      bg: "bg-[#4F8CFF]/5",
+      border: "border-[#4F8CFF]/20",
+      icon: "text-[#4F8CFF]"
+    },
+    mint: {
+      bg: "bg-[#7CF5C8]/5",
+      border: "border-[#7CF5C8]/20",
+      icon: "text-[#7CF5C8]"
+    }
+  }[color];
+
+  return (
+    <div className={`rounded-xl ${colors.bg} border ${colors.border} px-4 py-3 flex items-start gap-3`}>
+      <Info className={`h-4 w-4 ${colors.icon} flex-shrink-0 mt-0.5`} />
+      <p className="text-xs text-white/70 leading-relaxed">
+        {children}
+      </p>
+    </div>
+  );
+}
+
+function SynthesisCard({
+  businessName,
+  primary,
+  secondary,
+  tertiary
+}: {
+  businessName: string;
+  primary: any;
+  secondary: any | null;
+  tertiary: any | null;
+}) {
+  const synthesisText = `${businessName} embodies the essence of ${primary.label}, ${primary.essence.toLowerCase()}${
+    secondary ? ` This is layered with ${secondary.label} influence, which ${secondary.secondaryEffect.toLowerCase()}` : ""
+  }${
+    tertiary ? ` The unexpected edge comes from ${tertiary.label}, where ${tertiary.tertiaryEffect.toLowerCase()}` : ""
+  }.`;
+
+  return (
+    <div className="relative group">
+      <div className="absolute -inset-[1px] rounded-[28px] bg-gradient-to-r from-[#C7B9FF]/10 via-[#4F8CFF]/10 to-[#7CF5C8]/10 opacity-0 group-hover:opacity-100 blur-xl transition-opacity duration-700" />
+      
+      <div className="relative rounded-[28px] bg-white/[0.03] backdrop-blur-2xl border border-white/[0.08] overflow-hidden">
+        <div className="px-6 sm:px-8 py-5 border-b border-white/[0.08] bg-gradient-to-r from-[#4F8CFF]/5 via-[#C7B9FF]/5 to-[#7CF5C8]/5">
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-[#C7B9FF]/20 via-[#4F8CFF]/20 to-[#7CF5C8]/20 border border-white/10 flex items-center justify-center">
+              <Sparkles className="h-5 w-5 text-white/80" />
+            </div>
+            <div>
+              <h2 className="text-lg font-semibold text-white/90">
+                Identity Synthesis
+              </h2>
+              <p className="text-xs text-white/50">
+                How your codes combine to create your unique presence
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="p-6 sm:p-8">
+          <p className="text-base text-white/80 leading-relaxed">
+            {synthesisText}
+          </p>
+        </div>
+      </div>
+    </div>
   );
 }
