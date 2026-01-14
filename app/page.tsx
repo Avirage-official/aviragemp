@@ -3,28 +3,28 @@
 import { useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { motion, useScroll, useTransform } from "framer-motion";
-import { ArrowRight, Sparkles, Users, Compass, Heart } from "lucide-react";
+import { motion } from "framer-motion";
+import {
+  ArrowRight,
+  Sparkles,
+  Compass,
+  Users,
+  Zap,
+} from "lucide-react";
 
 export default function HomePage() {
   const { user } = useUser();
   const router = useRouter();
-  
-  const { scrollY } = useScroll();
-  const y = useTransform(scrollY, [0, 500], [0, 150]);
-  const opacity = useTransform(scrollY, [0, 300], [1, 0]);
 
-  // Function to handle CTA clicks
-  async function handleGetStarted() {
+  async function handlePrimaryCTA() {
     if (!user) {
-      router.push("/sign-up");
+      router.push("/onboarding");
       return;
     }
 
-    // User is logged in, check their status
     try {
-      const response = await fetch(`/api/users/${user.id}`);
-      const data = await response.json();
+      const res = await fetch(`/api/users/${user.id}`);
+      const data = await res.json();
 
       if (!data.user || !data.user.primaryCode) {
         router.push("/onboarding");
@@ -33,232 +33,158 @@ export default function HomePage() {
       } else {
         router.push("/dashboard");
       }
-    } catch (error) {
-      console.error("Error:", error);
+    } catch {
       router.push("/onboarding");
     }
   }
 
   return (
-    <div className="min-h-screen bg-black">
-      {/* Hero Section */}
-      <section className="relative h-screen overflow-hidden">
-        <motion.div 
-          style={{ y }}
-          className="absolute inset-0 w-full h-[120vh]"
-        >
-          <div 
-            className="w-full h-full bg-cover bg-center"
-            style={{ 
-              backgroundImage: 'url(/images/backgrounds/Landing-page-background.jpg)',
-            }}
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-black"></div>
-        </motion.div>
+    <div className="min-h-screen bg-[#0b0d12] text-white overflow-hidden">
+      {/* HERO */}
+      <section className="relative min-h-screen flex items-center justify-center px-6">
+        <div className="absolute inset-0 bg-gradient-to-br from-[#4f8cff]/20 via-[#b38cff]/20 to-[#7cf5c8]/20 blur-3xl" />
 
-        <motion.div 
-          style={{ opacity }}
-          className="relative z-10 h-full flex items-center justify-center px-6"
-        >
-          <div className="max-w-4xl mx-auto text-center space-y-8">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.2 }}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20"
-            >
-              <Sparkles className="w-4 h-4 text-blue-400" />
-              <span className="text-sm font-medium text-white">Discover Your Mythical Code</span>
-            </motion.div>
-
-            <motion.h1
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.4 }}
-              className="text-5xl md:text-7xl lg:text-8xl font-bold tracking-tight text-white"
-            >
-              Find your tribe.
-              <br />
-              <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
-                Live authentically.
-              </span>
-            </motion.h1>
-
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.6 }}
-              className="text-xl md:text-2xl text-gray-300 max-w-2xl mx-auto leading-relaxed"
-            >
-              Connect with personality-matched experiences, discover your people, and explore a marketplace built around who you truly are.
-            </motion.p>
-
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.8 }}
-              className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4"
-            >
-              <button
-                onClick={handleGetStarted}
-                className="group px-8 py-4 bg-white text-black rounded-xl font-semibold transition-all duration-300 flex items-center gap-2 shadow-2xl hover:shadow-white/20 hover:scale-105"
-              >
-                {user ? "Continue" : "Get Started Free"}
-                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-              </button>
-              
-              {!user && (
-                <Link
-                  href="/sign-in"
-                  className="px-8 py-4 bg-white/10 backdrop-blur-sm hover:bg-white/20 text-white rounded-xl font-semibold transition-all duration-300 border border-white/20"
-                >
-                  Sign In
-                </Link>
-              )}
-            </motion.div>
-
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.8, delay: 1 }}
-              className="text-sm text-gray-400 pt-4"
-            >
-              Join thousands discovering their authentic path
-            </motion.p>
-          </div>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 1, delay: 1.2 }}
-          className="absolute bottom-10 left-1/2 -translate-x-1/2 z-10"
-        >
-          <div className="flex flex-col items-center gap-2">
-            <span className="text-xs text-gray-400 uppercase tracking-wider">Scroll to explore</span>
-            <motion.div
-              animate={{ y: [0, 8, 0] }}
-              transition={{ duration: 1.5, repeat: Infinity }}
-              className="w-6 h-10 rounded-full border-2 border-white/30 flex justify-center pt-2"
-            >
-              <div className="w-1 h-2 bg-white/60 rounded-full"></div>
-            </motion.div>
-          </div>
-        </motion.div>
-      </section>
-
-      {/* Features */}
-      <section className="relative py-32 px-6 bg-black">
-        <div className="max-w-6xl mx-auto">
+        <div className="relative z-10 max-w-5xl mx-auto text-center space-y-10">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="text-center mb-16"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 border border-white/20 backdrop-blur"
           >
-            <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
-              Your journey starts here
-            </h2>
-            <p className="text-xl text-gray-400 max-w-2xl mx-auto">
-              Three simple steps to discover your authentic self
-            </p>
+            <Sparkles className="w-4 h-4 text-[#7cf5c8]" />
+            <span className="text-sm text-white/90">
+              ETHOS · Identity-based social layer
+            </span>
           </motion.div>
 
-          <div className="grid md:grid-cols-3 gap-8">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 0.1 }}
-              className="group relative"
-            >
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-purple-500/10 rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-300"></div>
-              <div className="relative bg-white/[0.02] backdrop-blur-xl border border-white/10 rounded-2xl p-8 hover:bg-white/[0.04] transition-all duration-300 h-full">
-                <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center mb-6">
-                  <Sparkles className="w-7 h-7 text-white" />
-                </div>
-                <h3 className="text-2xl font-semibold mb-3 text-white">Find Your Code</h3>
-                <p className="text-gray-400 leading-relaxed">
-                  Discover your personality archetype through our unique assessment system
-                </p>
-              </div>
-            </motion.div>
+          <motion.h1
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.1 }}
+            className="text-5xl md:text-7xl font-bold tracking-tight"
+          >
+            Find people.
+            <br />
+            <span className="bg-gradient-to-r from-[#4f8cff] via-[#b38cff] to-[#7cf5c8] bg-clip-text text-transparent">
+              Not noise.
+            </span>
+          </motion.h1>
 
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="group relative"
-            >
-              <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 to-pink-500/10 rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-300"></div>
-              <div className="relative bg-white/[0.02] backdrop-blur-xl border border-white/10 rounded-2xl p-8 hover:bg-white/[0.04] transition-all duration-300 h-full">
-                <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center mb-6">
-                  <Users className="w-7 h-7 text-white" />
-                </div>
-                <h3 className="text-2xl font-semibold mb-3 text-white">Connect with Friends</h3>
-                <p className="text-gray-400 leading-relaxed">
-                  Build meaningful connections with compatible personalities
-                </p>
-              </div>
-            </motion.div>
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.2 }}
+            className="text-xl text-white/70 max-w-2xl mx-auto"
+          >
+            ETHOS maps how you think, feel, and move through the world —  
+            then connects you to people, places, and experiences that actually fit.
+          </motion.p>
 
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 0.3 }}
-              className="group relative"
-            >
-              <div className="absolute inset-0 bg-gradient-to-r from-pink-500/10 to-blue-500/10 rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-300"></div>
-              <div className="relative bg-white/[0.02] backdrop-blur-xl border border-white/10 rounded-2xl p-8 hover:bg-white/[0.04] transition-all duration-300 h-full">
-                <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-pink-500 to-pink-600 flex items-center justify-center mb-6">
-                  <Compass className="w-7 h-7 text-white" />
-                </div>
-                <h3 className="text-2xl font-semibold mb-3 text-white">Matched Experiences</h3>
-                <p className="text-gray-400 leading-relaxed">
-                  Explore curated offerings aligned with your unique code
-                </p>
-              </div>
-            </motion.div>
-          </div>
-        </div>
-      </section>
-
-      {/* CTA */}
-      <section className="relative py-32 px-6 bg-gradient-to-b from-black to-blue-950/20">
-        <div className="max-w-4xl mx-auto text-center">
+          {/* SEGMENTED CTAs */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.3 }}
+            className="flex flex-col md:flex-row items-center justify-center gap-4 pt-6"
           >
-            <Heart className="w-16 h-16 text-blue-400 mx-auto mb-6" />
-            <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
-              Ready to discover your path?
-            </h2>
-            <p className="text-xl text-gray-400 mb-8">
-              Join our community and start your journey today
-            </p>
             <button
-              onClick={handleGetStarted}
-              className="inline-flex items-center gap-2 px-10 py-5 bg-white text-black rounded-xl font-semibold text-lg hover:scale-105 transition-all duration-300 shadow-2xl"
+              onClick={handlePrimaryCTA}
+              className="px-8 py-4 rounded-xl bg-white text-black font-semibold flex items-center gap-2 hover:scale-105 transition"
             >
-              {user ? "Continue to Dashboard" : "Get Started Free"}
+              {user ? "Continue" : "Discover your Code"}
               <ArrowRight className="w-5 h-5" />
             </button>
+
+            {!user && (
+              <Link
+                href="/sign-in"
+                className="px-8 py-4 rounded-xl bg-white/10 border border-white/20 backdrop-blur hover:bg-white/20 transition font-semibold"
+              >
+                I already have an account
+              </Link>
+            )}
           </motion.div>
+
+          <p className="text-sm text-white/40 pt-4">
+            New here? Start curious. No pressure.
+          </p>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="border-t border-white/10 py-12 px-6 bg-black">
-        <div className="max-w-6xl mx-auto text-center text-gray-500 text-sm">
-          <p>© 2026 ETHOS. All rights reserved.</p>
+      {/* WHAT IS ETHOS */}
+      <section className="py-32 px-6">
+        <div className="max-w-6xl mx-auto text-center space-y-16">
+          <div>
+            <h2 className="text-4xl md:text-5xl font-bold mb-4">
+              What is ETHOS?
+            </h2>
+            <p className="text-xl text-white/60 max-w-3xl mx-auto">
+              ETHOS is not another social network.  
+              It’s an identity layer — built to reduce mismatch, burnout, and social noise.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            <Feature
+              icon={<Compass />}
+              title="Understand yourself"
+              text="A multi-framework system that maps how you naturally operate."
+            />
+            <Feature
+              icon={<Users />}
+              title="Meet aligned people"
+              text="Connect without forcing chemistry or performance."
+            />
+            <Feature
+              icon={<Zap />}
+              title="Choose better experiences"
+              text="Travel, events, and spaces that match how you feel."
+            />
+          </div>
         </div>
+      </section>
+
+      {/* FINAL CTA */}
+      <section className="py-32 px-6 text-center bg-gradient-to-b from-transparent to-black">
+        <h2 className="text-4xl md:text-5xl font-bold mb-6">
+          Ready when you are.
+        </h2>
+        <p className="text-xl text-white/60 mb-10">
+          Start with curiosity.  
+          The rest reveals itself.
+        </p>
+
+        <button
+          onClick={handlePrimaryCTA}
+          className="px-10 py-5 rounded-xl bg-white text-black font-semibold text-lg hover:scale-105 transition"
+        >
+          {user ? "Go to my space" : "Begin the journey"}
+        </button>
+      </section>
+
+      <footer className="py-12 text-center text-white/40 text-sm">
+        © 2026 ETHOS
       </footer>
+    </div>
+  );
+}
+
+function Feature({
+  icon,
+  title,
+  text,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  text: string;
+}) {
+  return (
+    <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-8 backdrop-blur">
+      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#4f8cff] to-[#b38cff] flex items-center justify-center mb-6">
+        {icon}
+      </div>
+      <h3 className="text-2xl font-semibold mb-3">{title}</h3>
+      <p className="text-white/60 leading-relaxed">{text}</p>
     </div>
   );
 }
