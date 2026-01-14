@@ -11,6 +11,7 @@ import {
   Store,
   UserRound,
   TrendingUp,
+  ShoppingBag,
 } from "lucide-react";
 import { MainNav } from "@/components/navigation/MainNav";
 
@@ -121,31 +122,37 @@ export default async function BusinessLayout({
                 
                 <nav className="relative space-y-1">
                   <NavItem
-                    href="/business/dashboard"
-                    icon={<LayoutDashboard size={18} />}
-                    label="Dashboard"
+                  href="/business/dashboard"
+                  icon={<LayoutDashboard size={18} />}
+                  label="Dashboard"
                   />
                   <NavItem
-                    href="/business/listings"
-                    icon={<Store size={18} />}
-                    label="Listings"
+                  href="/business/listings"
+                  icon={<Store size={18} />}
+                  label="Listings"
                   />
                   <NavItem
-                    href="/business/listings/new"
-                    icon={<Sparkles size={18} />}
-                    label="Create Listing"
+                  href="/business/listings/new"
+                  icon={<Sparkles size={18} />}
+                  label="Create Listing"
                   />
                   <NavItem
-                    href="/business/inquiries"
-                    icon={<Inbox size={18} />}
-                    label="Inquiries"
+                  href="/business/inquiries"
+                  icon={<Inbox size={18} />}
+                  label="Inquiries"
                   />
                   <NavItem
-                    href="/business/profile"
-                    icon={<UserRound size={18} />}
-                    label="Business Identity"
+                  href="/marketplace"
+                  icon={<ShoppingBag size={18} />}
+                  label="Marketplace"
                   />
-                </nav>
+                  <NavItem
+                  href="/business/profile"
+                  icon={<UserRound size={18} />}
+                  label="Business Identity"
+                  />
+                  </nav>
+
               </div>
             </div>
 
