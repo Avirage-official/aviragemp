@@ -132,7 +132,14 @@ export default function BusinessOnboardingPage() {
         }),
       });
 
-      if (!res.ok) throw new Error();
+      const result = await res.json();
+
+if (!res.ok) {
+  console.error("Business create failed:", result);
+  alert(result.error || "Business creation failed");
+  return;
+}
+
 
       // ✅ ONE-TIME REDIRECT — onboarding ends here
       router.replace("/business/dashboard");
