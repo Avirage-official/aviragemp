@@ -1,632 +1,306 @@
-// components/business/BusinessIdentityPanel.tsx
-"use client";
-
+// app/business/profile/page.tsx
+import { auth } from "@clerk/nextjs/server";
+import { prisma } from "@/lib/prisma";
+import { redirect } from "next/navigation";
 import { MYTHICAL_CODES, MythicalCodeKey } from "@/lib/mythicalCodes";
-import { motion, useReducedMotion } from "framer-motion";
-import {
-  Sparkles,
-  Target,
-  TrendingUp,
-  MessageSquare,
-  Palette,
-  Megaphone,
-  Lightbulb,
-  Users,
-  Shield,
-  TrendingDown,
-  CheckCircle2,
-  AlertCircle,
-  Info
-} from "lucide-react";
+import { BusinessIdentityPanel } from "@/components/business/BusinessIdentityPanel";
+import { Sparkles, Target, Info, Edit3 } from "lucide-react";
+import Link from "next/link";
 
-/* -------------------------------------------------------------------------- */
-/* TYPES                                                                      */
-/* -------------------------------------------------------------------------- */
+function isMythicalCodeKey(key: string): key is MythicalCodeKey {
+  return key in MYTHICAL_CODES;
+}
 
-type Props = {
-  businessName: string;
-  primaryKeyFallback: MythicalCodeKey;
-  secondaryKey: MythicalCodeKey | null;
-  tertiaryKey: MythicalCodeKey | null;
-};
+// ✅ ONLY DEFAULT EXPORT ALLOWED IN NEXT.JS PAGES
+export default async function BusinessProfilePage() {
+  const { userId } = await auth();
 
-/* -------------------------------------------------------------------------- */
-/* ANIMATION VARIANTS                                                         */
-/* -------------------------------------------------------------------------- */
-
-const fadeInUp = {
-  initial: { opacity: 0, y: 20 },
-  animate: { opacity: 1, y: 0 },
-  transition: { duration: 0.4, ease: [0.22, 1, 0.36, 1] }
-};
-
-const staggerContainer = {
-  animate: {
-    transition: { staggerChildren: 0.1 }
+  if (!userId) {
+    redirect("/sign-in");
   }
-};
 
-/* -------------------------------------------------------------------------- */
-/* MAIN COMPONENT                                                             */
-/* -------------------------------------------------------------------------- */
+  const user = await prisma.user.findUnique({
+    where: { clerkId: userId },
+    include: {
+      businessProfile: true,
+    },
+  });
 
-export function BusinessIdentityPanel({
-  businessName,
-  primaryKeyFallback,
-  secondaryKey,
-  tertiaryKey,
-}: Props) {
-  const prefersReducedMotion = useReducedMotion();
-  
-  const primary = MYTHICAL_CODES[primaryKeyFallback];
-  const secondary = secondaryKey ? MYTHICAL_CODES[secondaryKey] : null;
-  const tertiary = tertiaryKey ? MYTHICAL_CODES[tertiaryKey] : null;
+  if (!user?.businessProfile) {
+    redirect("/business/dashboard");
+  }
+
+  const business = user.businessProfile;
+  const hasCodes = Boolean(business.primaryCode);
 
   return (
-    <motion.div
-      variants={staggerContainer}
-      initial="initial"
-      animate="animate"
-      className="space-y-6"
-    >
-      {/* PRIMARY IDENTITY */}
-      <motion.div variants={fadeInUp}>
-        <IdentityCard
-          title="Primary Identity"
-          subtitle="Your core essence"
-          color="lav"
-          icon={<Sparkles className="h-5 w-5" />}
-        >
-          <div className="space-y-6">
-            {/* Code Header */}
-            <div className="flex items-start gap-4">
-              <div 
-                className="h-16 w-16 rounded-2xl border flex items-center justify-center flex-shrink-0 text-3xl"
-                style={{
-                  backgroundColor: `${primary.colorMood.primary}15`,
-                  borderColor: `${primary.colorMood.primary}40`
-                }}
-              >
-                ✨
-              </div>
-              <div className="flex-1 min-w-0">
-                <h3 className="text-2xl font-bold text-white/95 mb-1">
-                  {primary.label}
-                </h3>
-                <p className="text-sm text-white/60 leading-relaxed">
-                  {primary.essence}
-                </p>
-              </div>
+    <div className="min-h-screen pb-20">
+      {/* Hero Header */}
+      <div className="mb-8">
+        <div className="flex items-start justify-between mb-4">
+          <div>
+            <div className="flex items-center gap-3 mb-2">
+              <Sparkles className="h-6 w-6 text-[#C7B9FF]" />
+              <h1 className="text-4xl font-bold text-white/95">
+                Business Identity
+              </h1>
             </div>
-
-            {/* Brand Tone */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <AttributeCard
-                icon={<MessageSquare className="h-4 w-4" />}
-                label="Voice"
-                value={primary.brandTone.voice}
-                color="lav"
-              />
-              <AttributeCard
-                icon={<Palette className="h-4 w-4" />}
-                label="Pace"
-                value={primary.brandTone.pace}
-                color="lav"
-              />
-              <AttributeCard
-                icon={<Megaphone className="h-4 w-4" />}
-                label="Posture"
-                value={primary.brandTone.posture}
-                color="lav"
-              />
-            </div>
-
-            {/* Strengths & Blind Spots */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <ListCard
-                icon={<CheckCircle2 className="h-4 w-4" />}
-                label="Strengths"
-                items={primary.strengths}
-                color="lav"
-                positive
-              />
-              <ListCard
-                icon={<AlertCircle className="h-4 w-4" />}
-                label="Blind Spots"
-                items={primary.blindSpots}
-                color="lav"
-                positive={false}
-              />
-            </div>
-
-            {/* Positioning Guidance */}
-            <div className="rounded-xl bg-gradient-to-br from-[#C7B9FF]/5 to-transparent border border-[#C7B9FF]/20 p-5">
-              <div className="flex items-center gap-2 mb-3">
-                <Target className="h-4 w-4 text-[#C7B9FF]" />
-                <p className="text-sm font-semibold text-white/90">Positioning Guidance</p>
-              </div>
-              <ul className="space-y-2">
-                {primary.positioningGuidance.map((item, i) => (
-                  <li key={i} className="text-sm text-white/70 leading-relaxed flex items-start gap-2">
-                    <span className="text-[#C7B9FF] mt-0.5">•</span>
-                    <span>{item}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Content Angles */}
-            <div className="rounded-xl bg-gradient-to-br from-[#C7B9FF]/5 to-transparent border border-[#C7B9FF]/20 p-5">
-              <div className="flex items-center gap-2 mb-3">
-                <Lightbulb className="h-4 w-4 text-[#C7B9FF]" />
-                <p className="text-sm font-semibold text-white/90">Content Angles</p>
-              </div>
-              <ul className="space-y-2">
-                {primary.contentAngles.map((item, i) => (
-                  <li key={i} className="text-sm text-white/70 leading-relaxed flex items-start gap-2">
-                    <span className="text-[#C7B9FF] mt-0.5">•</span>
-                    <span>{item}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Offering Style */}
-            <div className="rounded-xl bg-gradient-to-br from-[#C7B9FF]/5 to-transparent border border-[#C7B9FF]/20 p-5">
-              <div className="flex items-center gap-2 mb-3">
-                <Users className="h-4 w-4 text-[#C7B9FF]" />
-                <p className="text-sm font-semibold text-white/90">Offering Style</p>
-              </div>
-              <ul className="space-y-2">
-                {primary.offeringStyle.map((item, i) => (
-                  <li key={i} className="text-sm text-white/70 leading-relaxed flex items-start gap-2">
-                    <span className="text-[#C7B9FF] mt-0.5">•</span>
-                    <span>{item}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Primary Advice */}
-            <InfoBox color="lav">
-              <strong className="font-semibold">Primary Advice:</strong>{" "}
-              {primary.primaryAdvice}
-            </InfoBox>
-
-            {/* Ideal Audience */}
-            <AudienceSection
-              idealAudience={primary.idealAudience}
-              strugglesWith={primary.strugglesWith}
-            />
+            <p className="text-base text-white/60">
+              Your mythical codes shape how customers perceive and connect with your brand
+            </p>
           </div>
-        </IdentityCard>
-      </motion.div>
 
-      {/* SECONDARY IDENTITY */}
-      {secondary && (
-        <motion.div variants={fadeInUp}>
-          <IdentityCard
-            title="Secondary Influence"
-            subtitle="Adds depth and nuance"
-            color="blue"
-            icon={<Target className="h-5 w-5" />}
-          >
-            <div className="space-y-6">
-              {/* Code Header */}
-              <div className="flex items-start gap-4">
-                <div 
-                  className="h-14 w-14 rounded-xl border flex items-center justify-center flex-shrink-0 text-2xl"
-                  style={{
-                    backgroundColor: `${secondary.colorMood.primary}15`,
-                    borderColor: `${secondary.colorMood.primary}40`
-                  }}
-                >
-                  🎯
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h3 className="text-xl font-bold text-white/95 mb-1">
-                    {secondary.label}
-                  </h3>
-                  <p className="text-sm text-white/60 leading-relaxed">
-                    {secondary.essence}
-                  </p>
-                </div>
-              </div>
+          {hasCodes && (
+            <Link
+              href="/business/profile/edit"
+              className="px-4 py-2 rounded-xl bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.08] hover:border-white/20 text-white/90 hover:text-white transition-all duration-200 flex items-center gap-2 group"
+            >
+              <Edit3 className="h-4 w-4 group-hover:scale-110 transition-transform duration-200" />
+              <span>Edit Identity</span>
+            </Link>
+          )}
+        </div>
 
-              {/* Brand Tone Layering */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <AttributeCard
-                  icon={<MessageSquare className="h-4 w-4" />}
-                  label="Voice Layer"
-                  value={secondary.brandTone.voice}
-                  color="blue"
-                />
-                <AttributeCard
-                  icon={<Palette className="h-4 w-4" />}
-                  label="Pace Layer"
-                  value={secondary.brandTone.pace}
-                  color="blue"
-                />
-                <AttributeCard
-                  icon={<Megaphone className="h-4 w-4" />}
-                  label="Posture Layer"
-                  value={secondary.brandTone.posture}
-                  color="blue"
-                />
-              </div>
+        {/* Info Box */}
+        <div className="rounded-xl bg-[#4F8CFF]/5 border border-[#4F8CFF]/20 px-4 py-3 flex items-start gap-3">
+          <Info className="h-4 w-4 text-[#4F8CFF] flex-shrink-0 mt-0.5" />
+          <p className="text-sm text-white/70 leading-relaxed">
+            Your identity codes determine how you position your business, communicate with customers,
+            and design your offerings. They're the foundation of your brand strategy.
+          </p>
+        </div>
+      </div>
 
-              {/* Secondary Effect */}
-              <InfoBox color="blue">
-                <strong className="font-semibold">Secondary Effect:</strong>{" "}
-                {secondary.secondaryEffect}
-              </InfoBox>
-            </div>
-          </IdentityCard>
-        </motion.div>
-      )}
-
-      {/* TERTIARY IDENTITY */}
-      {tertiary && (
-        <motion.div variants={fadeInUp}>
-          <IdentityCard
-            title="Tertiary Influence"
-            subtitle="Your unexpected edge"
-            color="mint"
-            icon={<TrendingUp className="h-5 w-5" />}
-          >
-            <div className="space-y-6">
-              {/* Code Header */}
-              <div className="flex items-start gap-4">
-                <div 
-                  className="h-14 w-14 rounded-xl border flex items-center justify-center flex-shrink-0 text-2xl"
-                  style={{
-                    backgroundColor: `${tertiary.colorMood.primary}15`,
-                    borderColor: `${tertiary.colorMood.primary}40`
-                  }}
-                >
-                  💫
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h3 className="text-xl font-bold text-white/95 mb-1">
-                    {tertiary.label}
-                  </h3>
-                  <p className="text-sm text-white/60 leading-relaxed">
-                    {tertiary.essence}
-                  </p>
-                </div>
-              </div>
-
-              {/* Edge Quality */}
-              <div className="rounded-xl bg-gradient-to-br from-[#7CF5C8]/5 to-transparent border border-[#7CF5C8]/20 p-5">
-                <div className="flex items-center gap-2 mb-3">
-                  <Sparkles className="h-4 w-4 text-[#7CF5C8]" />
-                  <p className="text-sm font-semibold text-white/90">What Makes You Unexpected</p>
-                </div>
-                <ul className="space-y-2">
-                  {tertiary.contentAngles.map((item, i) => (
-                    <li key={i} className="text-sm text-white/70 leading-relaxed flex items-start gap-2">
-                      <span className="text-[#7CF5C8] mt-0.5">•</span>
-                      <span>{item}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              {/* Tertiary Effect */}
-              <InfoBox color="mint">
-                <strong className="font-semibold">Tertiary Effect:</strong>{" "}
-                {tertiary.tertiaryEffect}
-              </InfoBox>
-            </div>
-          </IdentityCard>
-        </motion.div>
-      )}
-
-      {/* SYNTHESIS */}
-      <motion.div variants={fadeInUp}>
-        <SynthesisCard
-          businessName={businessName}
-          primary={primary}
-          secondary={secondary}
-          tertiary={tertiary}
+      {/* Main Content */}
+      {!hasCodes ? (
+        <EmptyState businessName={business.businessName} />
+      ) : (
+        <ActiveIdentity
+          businessName={business.businessName}
+          primaryCode={business.primaryCode!}
+          secondaryCode={business.secondaryCode}
+          tertiaryCode={business.tertiaryCode}
         />
-      </motion.div>
-    </motion.div>
+      )}
+    </div>
   );
 }
 
 /* -------------------------------------------------------------------------- */
-/* UI COMPONENTS                                                              */
+/* EMPTY STATE - INTERNAL COMPONENT                                           */
 /* -------------------------------------------------------------------------- */
 
-function IdentityCard({
-  title,
-  subtitle,
-  color,
-  icon,
-  children
-}: {
-  title: string;
-  subtitle: string;
-  color: "lav" | "blue" | "mint";
-  icon: React.ReactNode;
-  children: React.ReactNode;
-}) {
-  const colors = {
-    lav: {
-      gradient: "from-[#C7B9FF]/5 via-transparent to-transparent",
-      icon: "text-[#C7B9FF]",
-      glow: "from-[#C7B9FF]/5 via-[#9b7fd8]/5 to-transparent"
-    },
-    blue: {
-      gradient: "from-[#4F8CFF]/5 via-transparent to-transparent",
-      icon: "text-[#4F8CFF]",
-      glow: "from-[#4F8CFF]/5 via-[#3b6bd8]/5 to-transparent"
-    },
-    mint: {
-      gradient: "from-[#7CF5C8]/5 via-transparent to-transparent",
-      icon: "text-[#7CF5C8]",
-      glow: "from-[#7CF5C8]/5 via-[#5cd4a8]/5 to-transparent"
-    }
-  }[color];
-
+function EmptyState({ businessName }: { businessName: string }) {
   return (
-    <div className="relative group">
-      <div className={`absolute -inset-[1px] rounded-[28px] bg-gradient-to-br ${colors.glow} opacity-0 group-hover:opacity-100 blur-xl transition-opacity duration-700`} />
-      
-      <div className="relative rounded-[28px] bg-white/[0.03] backdrop-blur-2xl border border-white/[0.08] overflow-hidden">
-        <div className={`px-6 sm:px-8 py-5 border-b border-white/[0.08] bg-gradient-to-r ${colors.gradient}`}>
-          <div className="flex items-center gap-3">
-            <div className={colors.icon}>
-              {icon}
+    <div className="space-y-6">
+      {/* Empty State Card */}
+      <div className="relative group">
+        <div className="absolute -inset-[1px] rounded-[28px] bg-gradient-to-br from-[#4F8CFF]/10 via-[#C7B9FF]/10 to-[#7CF5C8]/10 opacity-0 group-hover:opacity-100 blur-xl transition-opacity duration-700" />
+        
+        <div className="relative rounded-[28px] bg-white/[0.03] backdrop-blur-2xl border border-white/[0.08] p-8 sm:p-12">
+          <div className="max-w-2xl mx-auto text-center space-y-6">
+            <div className="inline-flex h-20 w-20 rounded-2xl bg-gradient-to-br from-[#C7B9FF]/20 via-[#4F8CFF]/20 to-[#7CF5C8]/20 border border-white/10 items-center justify-center mx-auto">
+              <Target className="h-10 w-10 text-white/60" />
             </div>
+
             <div>
-              <h2 className="text-lg font-semibold text-white/90">
-                {title}
+              <h2 className="text-2xl font-bold text-white/95 mb-2">
+                Your business identity awaits
               </h2>
-              <p className="text-xs text-white/50">
-                {subtitle}
+              <p className="text-base text-white/60 leading-relaxed">
+                Set your mythical codes to unlock personalized positioning guidance, 
+                content strategies, and audience insights tailored to {businessName}.
               </p>
             </div>
+
+            <div className="inline-flex px-4 py-2 rounded-full bg-yellow-500/10 border border-yellow-500/20">
+              <p className="text-sm text-yellow-200/90 font-medium">
+                ⚠️ Identity not configured
+              </p>
+            </div>
+
+            <Link
+              href="/business/profile/edit"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-[#4F8CFF] hover:bg-[#4F8CFF]/90 text-white font-medium transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
+            >
+              <Sparkles className="h-5 w-5" />
+              <span>Set Your Identity</span>
+            </Link>
           </div>
         </div>
-
-        <div className="p-6 sm:p-8">
-          {children}
-        </div>
       </div>
+
+      {/* Benefits Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <BenefitCard
+          icon={<Sparkles className="h-5 w-5" />}
+          label="Core Essence"
+          description="Understand your business's natural strengths and blind spots"
+        />
+        <BenefitCard
+          icon={<Target className="h-5 w-5" />}
+          label="Nuanced Depth"
+          description="Layer secondary traits that add complexity to your positioning"
+        />
+        <BenefitCard
+          icon={<Info className="h-5 w-5" />}
+          label="Unique Edge"
+          description="Discover unexpected qualities that differentiate your brand"
+        />
+      </div>
+
+      {/* Preview Section */}
+      <PreviewSection />
     </div>
   );
 }
 
-function AttributeCard({
-  icon,
-  label,
-  value,
-  color
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: string;
-  color: "lav" | "blue" | "mint";
-}) {
-  const colors = {
-    lav: {
-      bg: "from-[#C7B9FF]/5 to-transparent",
-      border: "border-[#C7B9FF]/20",
-      icon: "text-[#C7B9FF]"
-    },
-    blue: {
-      bg: "from-[#4F8CFF]/5 to-transparent",
-      border: "border-[#4F8CFF]/20",
-      icon: "text-[#4F8CFF]"
-    },
-    mint: {
-      bg: "from-[#7CF5C8]/5 to-transparent",
-      border: "border-[#7CF5C8]/20",
-      icon: "text-[#7CF5C8]"
-    }
-  }[color];
+/* -------------------------------------------------------------------------- */
+/* ACTIVE IDENTITY - INTERNAL COMPONENT                                       */
+/* -------------------------------------------------------------------------- */
 
-  return (
-    <div className={`rounded-xl bg-gradient-to-br ${colors.bg} border ${colors.border} p-4`}>
-      <div className="flex items-center gap-2 mb-2">
-        <div className={colors.icon}>
-          {icon}
-        </div>
-        <p className="text-xs font-semibold text-white/70 uppercase tracking-wider">
-          {label}
-        </p>
-      </div>
-      <p className="text-sm text-white/90 leading-relaxed capitalize">
-        {value}
-      </p>
-    </div>
-  );
-}
-
-function ListCard({
-  icon,
-  label,
-  items,
-  color,
-  positive
-}: {
-  icon: React.ReactNode;
-  label: string;
-  items: readonly string[];  // Changed from string[]
-  color: "lav" | "blue" | "mint";
-  positive: boolean;
-}) {
-
-  const colors = {
-    lav: {
-      bg: "from-[#C7B9FF]/5 to-transparent",
-      border: "border-[#C7B9FF]/20",
-      icon: "text-[#C7B9FF]",
-      bullet: "text-[#C7B9FF]"
-    },
-    blue: {
-      bg: "from-[#4F8CFF]/5 to-transparent",
-      border: "border-[#4F8CFF]/20",
-      icon: "text-[#4F8CFF]",
-      bullet: "text-[#4F8CFF]"
-    },
-    mint: {
-      bg: "from-[#7CF5C8]/5 to-transparent",
-      border: "border-[#7CF5C8]/20",
-      icon: "text-[#7CF5C8]",
-      bullet: "text-[#7CF5C8]"
-    }
-  }[color];
-
-  return (
-    <div className={`rounded-xl bg-gradient-to-br ${colors.bg} border ${colors.border} p-4`}>
-      <div className="flex items-center gap-2 mb-3">
-        <div className={colors.icon}>
-          {icon}
-        </div>
-        <p className="text-xs font-semibold text-white/90 uppercase tracking-wider">
-          {label}
-        </p>
-      </div>
-      <ul className="space-y-2">
-        {items.map((item, i) => (
-          <li key={i} className="text-xs text-white/70 leading-relaxed flex items-start gap-2">
-            <span className={`${colors.bullet} mt-0.5 flex-shrink-0`}>{positive ? "✓" : "⚠"}</span>
-            <span>{item}</span>
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-}
-
-function AudienceSection({
-  idealAudience,
-  strugglesWith
-}: {
-  idealAudience: readonly string[];  // Changed from string[]
-  strugglesWith: readonly string[];  // Changed from string[]
-}) {
-  return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-      <div className="rounded-xl bg-gradient-to-br from-[#7CF5C8]/5 to-transparent border border-[#7CF5C8]/20 p-4">
-        <div className="flex items-center gap-2 mb-3">
-          <CheckCircle2 className="h-4 w-4 text-[#7CF5C8]" />
-          <p className="text-xs font-semibold text-white/90 uppercase tracking-wider">
-            Ideal Audience
-          </p>
-        </div>
-        <ul className="space-y-2">
-          {idealAudience.map((item, i) => (
-            <li key={i} className="text-xs text-white/70 leading-relaxed flex items-start gap-2">
-              <span className="text-[#7CF5C8] mt-0.5">•</span>
-              <span>{item}</span>
-            </li>
-          ))}
-        </ul>
-      </div>
-
-      <div className="rounded-xl bg-gradient-to-br from-red-500/5 to-transparent border border-red-500/20 p-4">
-        <div className="flex items-center gap-2 mb-3">
-          <TrendingDown className="h-4 w-4 text-red-400" />
-          <p className="text-xs font-semibold text-white/90 uppercase tracking-wider">
-            Struggles With
-          </p>
-        </div>
-        <ul className="space-y-2">
-          {strugglesWith.map((item, i) => (
-            <li key={i} className="text-xs text-white/70 leading-relaxed flex items-start gap-2">
-              <span className="text-red-400 mt-0.5">•</span>
-              <span>{item}</span>
-            </li>
-          ))}
-        </ul>
-      </div>
-    </div>
-  );
-}
-
-function InfoBox({
-  children,
-  color
-}: {
-  children: React.ReactNode;
-  color: "lav" | "blue" | "mint";
-}) {
-  const colors = {
-    lav: {
-      bg: "bg-[#C7B9FF]/5",
-      border: "border-[#C7B9FF]/20",
-      icon: "text-[#C7B9FF]"
-    },
-    blue: {
-      bg: "bg-[#4F8CFF]/5",
-      border: "border-[#4F8CFF]/20",
-      icon: "text-[#4F8CFF]"
-    },
-    mint: {
-      bg: "bg-[#7CF5C8]/5",
-      border: "border-[#7CF5C8]/20",
-      icon: "text-[#7CF5C8]"
-    }
-  }[color];
-
-  return (
-    <div className={`rounded-xl ${colors.bg} border ${colors.border} px-4 py-3 flex items-start gap-3`}>
-      <Info className={`h-4 w-4 ${colors.icon} flex-shrink-0 mt-0.5`} />
-      <p className="text-xs text-white/70 leading-relaxed">
-        {children}
-      </p>
-    </div>
-  );
-}
-
-function SynthesisCard({
+function ActiveIdentity({
   businessName,
-  primary,
-  secondary,
-  tertiary
+  primaryCode,
+  secondaryCode,
+  tertiaryCode,
 }: {
   businessName: string;
-  primary: any;
-  secondary: any | null;
-  tertiary: any | null;
+  primaryCode: string;
+  secondaryCode: string | null;
+  tertiaryCode: string | null;
 }) {
-  const synthesisText = `${businessName} embodies the essence of ${primary.label}, ${primary.essence.toLowerCase()}${
-    secondary ? ` This is layered with ${secondary.label} influence, which ${secondary.secondaryEffect.toLowerCase()}` : ""
-  }${
-    tertiary ? ` The unexpected edge comes from ${tertiary.label}, where ${tertiary.tertiaryEffect.toLowerCase()}` : ""
-  }.`;
+  // Validate codes
+  const validPrimary = isMythicalCodeKey(primaryCode) ? primaryCode : "lhumir";
+  const validSecondary = secondaryCode && isMythicalCodeKey(secondaryCode) ? secondaryCode : null;
+  const validTertiary = tertiaryCode && isMythicalCodeKey(tertiaryCode) ? tertiaryCode : null;
 
   return (
-    <div className="relative group">
-      <div className="absolute -inset-[1px] rounded-[28px] bg-gradient-to-r from-[#C7B9FF]/10 via-[#4F8CFF]/10 to-[#7CF5C8]/10 opacity-0 group-hover:opacity-100 blur-xl transition-opacity duration-700" />
-      
-      <div className="relative rounded-[28px] bg-white/[0.03] backdrop-blur-2xl border border-white/[0.08] overflow-hidden">
-        <div className="px-6 sm:px-8 py-5 border-b border-white/[0.08] bg-gradient-to-r from-[#4F8CFF]/5 via-[#C7B9FF]/5 to-[#7CF5C8]/5">
-          <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-[#C7B9FF]/20 via-[#4F8CFF]/20 to-[#7CF5C8]/20 border border-white/10 flex items-center justify-center">
-              <Sparkles className="h-5 w-5 text-white/80" />
-            </div>
-            <div>
-              <h2 className="text-lg font-semibold text-white/90">
-                Identity Synthesis
-              </h2>
-              <p className="text-xs text-white/50">
-                How your codes combine to create your unique presence
-              </p>
-            </div>
-          </div>
-        </div>
+    <div className="space-y-8">
+      {/* Identity Badges */}
+      <div className="flex flex-wrap items-center gap-3">
+        <IdentityBadge
+          type="primary"
+          label="Primary"
+          codeName={MYTHICAL_CODES[validPrimary].label}
+        />
+        {validSecondary && (
+          <IdentityBadge
+            type="secondary"
+            label="Secondary"
+            codeName={MYTHICAL_CODES[validSecondary].label}
+          />
+        )}
+        {validTertiary && (
+          <IdentityBadge
+            type="tertiary"
+            label="Tertiary"
+            codeName={MYTHICAL_CODES[validTertiary].label}
+          />
+        )}
+      </div>
 
-        <div className="p-6 sm:p-8">
-          <p className="text-base text-white/80 leading-relaxed">
-            {synthesisText}
-          </p>
+      {/* Identity Panel */}
+      <BusinessIdentityPanel
+        businessName={businessName}
+        primaryKeyFallback={validPrimary}
+        secondaryKey={validSecondary}
+        tertiaryKey={validTertiary}
+      />
+    </div>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/* UI COMPONENTS - INTERNAL ONLY                                              */
+/* -------------------------------------------------------------------------- */
+
+function BenefitCard({
+  icon,
+  label,
+  description,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  description: string;
+}) {
+  return (
+    <div className="rounded-xl bg-white/[0.03] border border-white/[0.08] p-6 hover:bg-white/[0.05] hover:border-white/20 transition-all duration-200">
+      <div className="flex items-start gap-4">
+        <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-[#4F8CFF]/20 to-[#C7B9FF]/20 border border-white/10 flex items-center justify-center flex-shrink-0 text-white/80">
+          {icon}
+        </div>
+        <div className="flex-1 min-w-0">
+          <h3 className="text-base font-semibold text-white/90 mb-1">{label}</h3>
+          <p className="text-sm text-white/60 leading-relaxed">{description}</p>
         </div>
       </div>
     </div>
   );
 }
+
+function IdentityBadge({
+  type,
+  label,
+  codeName,
+}: {
+  type: "primary" | "secondary" | "tertiary";
+  label: string;
+  codeName: string;
+}) {
+  const colors = {
+    primary: {
+      dot: "bg-[#C7B9FF]",
+      bg: "bg-[#C7B9FF]/10",
+      border: "border-[#C7B9FF]/30",
+      text: "text-[#C7B9FF]",
+    },
+    secondary: {
+      dot: "bg-[#4F8CFF]",
+      bg: "bg-[#4F8CFF]/10",
+      border: "border-[#4F8CFF]/30",
+      text: "text-[#4F8CFF]",
+    },
+    tertiary: {
+      dot: "bg-[#7CF5C8]",
+      bg: "bg-[#7CF5C8]/10",
+      border: "border-[#7CF5C8]/30",
+      text: "text-[#7CF5C8]",
+    },
+  }[type];
+
+  return (
+    <div
+      className={`inline-flex items-center gap-2 px-4 py-2 rounded-full ${colors.bg} border ${colors.border}`}
+    >
+      <div className={`h-2 w-2 rounded-full ${colors.dot}`} />
+      <span className="text-xs font-medium text-white/70">{label}:</span>
+      <span className={`text-sm font-semibold ${colors.text}`}>{codeName}</span>
+    </div>
+  );
+}
+
+function PreviewSection() {
+  return (
+    <div className="rounded-xl bg-white/[0.03] border border-white/[0.08] p-6 sm:p-8">
+      <div className="mb-6">
+        <h3 className="text-lg font-semibold text-white/90 mb-2">
+          What you'll unlock
+        </h3>
+        <p className="text-sm text-white/60">
+          Here's a preview of the insights you'll receive once you configure your identity
+        </p>
+      </div>
+
+      <div className="rounded-xl bg-white/[0.02] border border-white/[0.05] p-6 opacity-60">
+        <div className="space-y-4">
+          <div className="h-4 w-3/4 bg-white/10 rounded animate-pulse" />
+          <div className="h-4 w-full bg-white/10 rounded animate-pulse" />
+          <div className="h-4 w-5/6 bg-white/10 rounded animate-pulse" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ✅ NO OTHER EXPORTS - ONLY DEFAULT EXPORT ALLOWED
