@@ -19,13 +19,30 @@ export default async function BusinessProfilePage() {
   if (!user || !user.businessProfile)
     redirect("/onboarding/business");
 
-  const business = user.businessProfile;
+const business = user.businessProfile;
 
-  const primary = business.primaryCode as MythicalCodeKey;
-  const secondary = business.secondaryCode as MythicalCodeKey | null;
-  const tertiary = business.tertiaryCode as MythicalCodeKey | null;
+const primaryRaw = business.primaryCode;
+const secondaryRaw = business.secondaryCode;
+const tertiaryRaw = business.tertiaryCode;
 
-  const primaryCode = MYTHICAL_CODES[primary];
+// HARD GUARD — REQUIRED FOR SERVER COMPONENTS
+if (!primaryRaw || !(primaryRaw in MYTHICAL_CODES)) {
+  redirect("/onboarding/business");
+}
+
+const primary = primaryRaw as MythicalCodeKey;
+const secondary =
+  secondaryRaw && secondaryRaw in MYTHICAL_CODES
+    ? (secondaryRaw as MythicalCodeKey)
+    : null;
+
+const tertiary =
+  tertiaryRaw && tertiaryRaw in MYTHICAL_CODES
+    ? (tertiaryRaw as MythicalCodeKey)
+    : null;
+
+const primaryCode = MYTHICAL_CODES[primary];
+
 
   return (
     <div className="space-y-16">
