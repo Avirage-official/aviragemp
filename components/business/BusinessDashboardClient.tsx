@@ -66,27 +66,26 @@ export function BusinessDashboardClient({
   });
 
   return (
-    <div className="min-h-screen px-4 md:px-8 py-8 text-[#FAFAFA]">
-      {/* BACKGROUND — OPTION 2 LOCKED */}
-      <div className="fixed inset-0 -z-10 bg-[#111827]" />
-      <div className="fixed inset-0 -z-10">
-        <div className="absolute -top-40 -right-40 h-[520px] w-[520px] rounded-full blur-[200px] bg-[#4F8CFF]/20" />
-        <div className="absolute top-32 -left-48 h-[480px] w-[480px] rounded-full blur-[220px] bg-[#C7B9FF]/18" />
-        <div className="absolute bottom-[-200px] left-1/3 h-[600px] w-[600px] rounded-full blur-[240px] bg-[#7CF5C8]/16" />
+    <div className="relative min-h-screen px-4 md:px-8 py-10 text-[#0f172a] bg-[#FAFAFA] overflow-hidden">
+      {/* PASTEL FIELD BACKGROUND */}
+      <div className="pointer-events-none fixed inset-0 -z-10">
+        <div className="absolute -top-32 -left-32 h-[520px] w-[520px] rounded-full blur-[160px] bg-[#4F8CFF]/25" />
+        <div className="absolute top-40 -right-40 h-[520px] w-[520px] rounded-full blur-[180px] bg-[#C7B9FF]/30" />
+        <div className="absolute bottom-[-240px] left-1/3 h-[600px] w-[600px] rounded-full blur-[200px] bg-[#7CF5C8]/35" />
       </div>
 
-      <div className="max-w-6xl mx-auto space-y-10">
+      <div className="max-w-6xl mx-auto space-y-12">
         {/* HERO */}
         <motion.section
-          initial={{ opacity: 0, y: 14 }}
+          initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          className="rounded-3xl bg-white/[0.04] border border-white/10 backdrop-blur-xl p-6 md:p-8"
+          className="rounded-[32px] bg-white/80 border border-black/5 backdrop-blur-xl p-6 md:p-8 shadow-sm"
         >
           <div className="flex flex-col md:flex-row md:justify-between gap-6">
             <div className="space-y-3">
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/[0.06] border border-white/10">
-                <BadgeCheck className="w-4 h-4 text-[#7CF5C8]" />
-                <span className="text-sm text-white/80">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#7CF5C8]/30 text-[#065f46]">
+                <BadgeCheck className="w-4 h-4" />
+                <span className="text-sm font-medium">
                   {business.subscriptionStatus === "TRIAL" ? "Trial mode" : "Live"}
                 </span>
               </div>
@@ -95,19 +94,19 @@ export function BusinessDashboardClient({
                 {business.businessName}
               </h1>
 
-              <p className="text-white/65">
+              <p className="text-slate-600 max-w-xl">
                 {totalInquiries > 0
                   ? `You have ${totalInquiries} open inquiry${totalInquiries === 1 ? "" : "ies"}.`
                   : activeListingsCount > 0
-                  ? "Your storefront is live."
-                  : "Create your first listing to get discovered."}
+                  ? "Your storefront is live and discoverable."
+                  : "Create your first listing to start matching with people."}
               </p>
             </div>
 
             <div className="flex gap-3">
               <Link
                 href="/business/listings/new"
-                className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl bg-[#4F8CFF] text-black font-semibold hover:opacity-90 transition"
+                className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl bg-[#4F8CFF] text-white font-semibold hover:opacity-90 transition"
               >
                 <Plus size={18} />
                 New listing
@@ -115,7 +114,7 @@ export function BusinessDashboardClient({
 
               <Link
                 href="/business/listings"
-                className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl bg-white/[0.06] border border-white/10 hover:bg-white/[0.1] transition font-semibold"
+                className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl bg-white border border-black/10 hover:bg-black/5 transition font-semibold"
               >
                 Manage
                 <ChevronRight size={18} />
@@ -124,10 +123,10 @@ export function BusinessDashboardClient({
           </div>
 
           {business.subscriptionStatus === "TRIAL" && daysUntilTrialEnd !== null && (
-            <div className="mt-6 rounded-2xl p-5 bg-white/[0.05] border border-white/10 flex justify-between items-center">
+            <div className="mt-6 rounded-2xl p-5 bg-[#C7B9FF]/20 border border-[#C7B9FF]/30 flex justify-between items-center">
               <div>
                 <p className="font-semibold">Trial active</p>
-                <p className="text-sm text-white/60">
+                <p className="text-sm text-slate-600">
                   {daysUntilTrialEnd} days remaining
                 </p>
               </div>
@@ -150,18 +149,18 @@ export function BusinessDashboardClient({
         </section>
 
         {/* NEXT ACTION */}
-        <section className="rounded-3xl bg-white/[0.04] border border-white/10 backdrop-blur-xl p-6">
-          <div className="flex items-center gap-2 text-white/70">
+        <section className="rounded-[28px] bg-white/80 border border-black/5 backdrop-blur-xl p-6">
+          <div className="flex items-center gap-2 text-slate-500">
             <Sparkles className="w-4 h-4 text-[#C7B9FF]" />
             <p className="text-sm">Next best action</p>
           </div>
 
           <h3 className="text-lg font-semibold mt-3">{nextAction.title}</h3>
-          <p className="text-white/65 mt-2">{nextAction.description}</p>
+          <p className="text-slate-600 mt-2">{nextAction.description}</p>
 
           <Link
             href={nextAction.href}
-            className="inline-flex items-center gap-2 mt-4 text-[#7CF5C8] font-semibold"
+            className="inline-flex items-center gap-2 mt-4 text-[#4F8CFF] font-semibold"
           >
             {nextAction.cta}
             <ArrowUpRight size={16} />
@@ -179,10 +178,10 @@ export function BusinessDashboardClient({
               {listings.map((l) => (
                 <div
                   key={l.id}
-                  className="rounded-3xl p-6 bg-white/[0.04] border border-white/10 backdrop-blur-xl"
+                  className="rounded-[28px] p-6 bg-white/80 border border-black/5 backdrop-blur-xl"
                 >
                   <h3 className="font-semibold">{l.title}</h3>
-                  <p className="text-sm text-white/65 line-clamp-2 mt-1">
+                  <p className="text-sm text-slate-600 line-clamp-2 mt-1">
                     {l.description}
                   </p>
 
@@ -201,14 +200,14 @@ export function BusinessDashboardClient({
         </section>
 
         {/* PROFILE */}
-        <section className="rounded-3xl bg-white/[0.04] border border-white/10 backdrop-blur-xl p-6">
+        <section className="rounded-[28px] bg-white/80 border border-black/5 backdrop-blur-xl p-6">
           <h2 className="text-xl font-semibold mb-4">Business profile</h2>
           <Info label="Email" value={business.contactEmail} />
           {business.website && (
             <Info
               label="Website"
               value={
-                <a href={business.website} className="text-[#7CF5C8] underline">
+                <a href={business.website} className="text-[#4F8CFF] underline">
                   {business.website}
                 </a>
               }
@@ -239,13 +238,13 @@ function KpiCard({
 }) {
   const card = (
     <div
-      className={`rounded-3xl p-6 border backdrop-blur-xl ${
+      className={`rounded-[28px] p-6 border bg-white/80 backdrop-blur-xl ${
         highlight
-          ? "bg-[#4F8CFF]/10 border-[#4F8CFF]/30"
-          : "bg-white/[0.04] border-white/10"
+          ? "border-[#4F8CFF]/30 shadow-sm"
+          : "border-black/5"
       }`}
     >
-      <div className="flex items-center gap-2 text-white/70">
+      <div className="flex items-center gap-2 text-slate-500">
         {icon}
         <span className="text-sm">{label}</span>
       </div>
@@ -269,10 +268,10 @@ function MetaPill({
     <span
       className={`text-xs px-3 py-1 rounded-full border ${
         alert
-          ? "bg-[#C7B9FF]/15 border-[#C7B9FF]/30 text-[#C7B9FF]"
+          ? "bg-[#C7B9FF]/25 border-[#C7B9FF]/40 text-[#6b21a8]"
           : muted
-          ? "bg-white/[0.04] border-white/10 text-white/50"
-          : "bg-white/[0.06] border-white/10 text-white/70"
+          ? "bg-black/5 border-black/10 text-slate-400"
+          : "bg-black/5 border-black/10 text-slate-600"
       }`}
     >
       {label}
@@ -283,22 +282,22 @@ function MetaPill({
 function Info({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div className="mb-3">
-      <p className="text-white/50">{label}</p>
-      <div className="text-white/80">{value}</div>
+      <p className="text-slate-500">{label}</p>
+      <div className="text-slate-800">{value}</div>
     </div>
   );
 }
 
 function EmptyState() {
   return (
-    <div className="rounded-3xl p-12 text-center bg-white/[0.04] border border-dashed border-white/15">
+    <div className="rounded-[32px] p-12 text-center bg-white/80 border border-dashed border-black/10">
       <p className="font-semibold mb-2">No listings yet</p>
-      <p className="text-white/65 mb-6">
+      <p className="text-slate-600 mb-6">
         Create one and ETHOS can start matching you.
       </p>
       <Link
         href="/business/listings/new"
-        className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-[#4F8CFF] text-black font-semibold"
+        className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-[#4F8CFF] text-white font-semibold"
       >
         <Plus size={18} />
         Create listing
