@@ -1,4 +1,3 @@
-// app/api/businesses/update-identity/route.ts
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
@@ -8,14 +7,10 @@ export async function PATCH(req: Request) {
   try {
     const { userId } = await auth();
     if (!userId) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const body = await req.json();
-
     const {
       primaryCode,
       secondaryCode,
@@ -26,56 +21,27 @@ export async function PATCH(req: Request) {
       tertiaryCode?: MythicalCodeKey | null;
     } = body;
 
-    /* ---------------------------------------------------------------------- */
-    /* HARD VALIDATION                                                         */
-    /* ---------------------------------------------------------------------- */
-
     if (!primaryCode || !(primaryCode in MYTHICAL_CODES)) {
-      return NextResponse.json(
-        { error: "Invalid primary code" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Invalid primary code" }, { status: 400 });
     }
 
-    if (
-      secondaryCode &&
-      !(secondaryCode in MYTHICAL_CODES)
-    ) {
-      return NextResponse.json(
-        { error: "Invalid secondary code" },
-        { status: 400 }
-      );
+    if (secondaryCode && !(secondaryCode in MYTHICAL_CODES)) {
+      return NextResponse.json({ error: "Invalid secondary code" }, { status: 400 });
     }
 
-    if (
-      tertiaryCode &&
-      !(tertiaryCode in MYTHICAL_CODES)
-    ) {
-      return NextResponse.json(
-        { error: "Invalid tertiary code" },
-        { status: 400 }
-      );
+    if (tertiaryCode && !(tertiaryCode in MYTHICAL_CODES)) {
+      return NextResponse.json({ error: "Invalid tertiary code" }, { status: 400 });
     }
-
-    /* ---------------------------------------------------------------------- */
-    /* FIND BUSINESS                                                           */
-    /* ---------------------------------------------------------------------- */
 
     const user = await prisma.user.findUnique({
       where: { clerkId: userId },
       include: { businessProfile: true },
     });
 
-    if (!user || !user.businessProfile) {
-      return NextResponse.json(
-        { error: "Business profile not found" },
-        { status: 404 }
-      );
+    // ✅ KEY FIX: If business does NOT exist yet, do nothing (onboarding safe)
+    if (!user?.businessProfile) {
+      return NextResponse.json({ success: true });
     }
-
-    /* ---------------------------------------------------------------------- */
-    /* UPDATE                                                                  */
-    /* ---------------------------------------------------------------------- */
 
     await prisma.businessProfile.update({
       where: { id: user.businessProfile.id },
