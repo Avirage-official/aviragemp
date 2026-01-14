@@ -7,6 +7,7 @@ import { NextResponse } from "next/server";
  * - Safe on refresh / retry
  * - No schema changes
  * - No lock states
+ * - Backend is source of truth
  */
 export async function POST(request: Request) {
   try {
@@ -17,6 +18,20 @@ export async function POST(request: Request) {
     }
 
     const data = await request.json();
+
+    /* ------------------------------------------------------------------ */
+    /* HARD BACKEND VALIDATION (REQUIRED FIELDS)                           */
+    /* ------------------------------------------------------------------ */
+    if (
+      !data.businessName?.trim() ||
+      !data.category?.trim() ||
+      !data.contactEmail?.trim()
+    ) {
+      return NextResponse.json(
+        { error: "Missing required business fields" },
+        { status: 400 }
+      );
+    }
 
     const user = await prisma.user.findUnique({
       where: { clerkId: userId },
@@ -37,37 +52,34 @@ export async function POST(request: Request) {
     trialEndDate.setDate(trialEndDate.getDate() + 7);
 
     const business = await prisma.businessProfile.upsert({
-      where: {
-        userId: user.id, // UNIQUE
-      },
+      where: { userId: user.id },
       create: {
         userId: user.id,
 
-        businessName: data.businessName,
-        description: data.description ?? null,
-        category: data.category,
+        businessName: data.businessName.trim(),
+        description: data.description?.trim() || null,
+        category: data.category.trim(),
 
-        primaryCode: data.primaryCode ?? null,
-        secondaryCode: data.secondaryCode ?? null,
-        tertiaryCode: data.tertiaryCode ?? null,
+        primaryCode: data.primaryCode || null,
+        secondaryCode: data.secondaryCode || null,
+        tertiaryCode: data.tertiaryCode || null,
 
-        country: data.country ?? null,
-        city: data.city ?? null,
-        timezone: data.timezone ?? null,
+        country: data.country || null,
+        city: data.city || null,
+        timezone: data.timezone || null,
 
-        contactEmail: data.contactEmail,
-        contactPhone: data.contactPhone ?? null,
-        website: data.website ?? null,
+        contactEmail: data.contactEmail.trim(),
+        contactPhone: data.contactPhone || null,
+        website: data.website || null,
 
         subscriptionStatus: "TRIAL",
         subscriptionTier: "basic",
         subscriptionEndsAt: trialEndDate,
       },
       update: {
-        // allow safe retries / edits
-        businessName: data.businessName ?? undefined,
-        description: data.description ?? undefined,
-        category: data.category ?? undefined,
+        businessName: data.businessName.trim(),
+        description: data.description?.trim() || null,
+        category: data.category.trim(),
 
         primaryCode: data.primaryCode ?? undefined,
         secondaryCode: data.secondaryCode ?? undefined,
@@ -77,7 +89,7 @@ export async function POST(request: Request) {
         city: data.city ?? undefined,
         timezone: data.timezone ?? undefined,
 
-        contactEmail: data.contactEmail ?? undefined,
+        contactEmail: data.contactEmail.trim(),
         contactPhone: data.contactPhone ?? undefined,
         website: data.website ?? undefined,
       },
@@ -85,15 +97,15 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ success: true, business });
   } catch (error: any) {
-  console.error("Business onboarding error:", error);
+    console.error("Business onboarding error:", error);
 
-  return NextResponse.json(
-    {
-      error: "Failed to create business profile",
-      prismaCode: error?.code,
-      prismaMeta: error?.meta,
-    },
-    { status: 500 }
-  );
-}
+    return NextResponse.json(
+      {
+        error: "Failed to create business profile",
+        prismaCode: error?.code,
+        prismaMeta: error?.meta,
+      },
+      { status: 500 }
+    );
+  }
 }
