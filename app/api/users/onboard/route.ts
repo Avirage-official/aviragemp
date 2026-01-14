@@ -1,27 +1,54 @@
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
+/**
+ * User onboarding (idempotent)
+ * - Safe to call multiple times
+ * - Handles retry, partial state, and re-onboarding
+ * - Required for BOTH personal and business flows
+ */
 export async function POST(request: Request) {
   try {
     const data = await request.json();
 
-    const user = await prisma.user.create({
-      data: {
+    if (!data.clerkId || !data.email) {
+      return NextResponse.json(
+        { error: "Missing required auth fields" },
+        { status: 400 }
+      );
+    }
+
+    const user = await prisma.user.upsert({
+      where: {
+        clerkId: data.clerkId,
+      },
+      create: {
         clerkId: data.clerkId,
         email: data.email,
         name: data.name ?? null,
         username: data.username ?? null,
-        type: "CONSUMER",
+        type: data.type ?? "CONSUMER",
 
-        // Identity codes (now 3)
         primaryCode: data.primaryCode ?? null,
         secondaryCode: data.secondaryCode ?? null,
         tertiaryCode: data.tertiaryCode ?? null,
 
-        // Location
         city: data.city ?? null,
         country: data.country ?? null,
         timezone: data.timezone ?? null,
+      },
+      update: {
+        // only update fields that may change during onboarding retries
+        name: data.name ?? undefined,
+        username: data.username ?? undefined,
+
+        primaryCode: data.primaryCode ?? undefined,
+        secondaryCode: data.secondaryCode ?? undefined,
+        tertiaryCode: data.tertiaryCode ?? undefined,
+
+        city: data.city ?? undefined,
+        country: data.country ?? undefined,
+        timezone: data.timezone ?? undefined,
       },
     });
 
@@ -29,7 +56,7 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error("User onboarding error:", error);
     return NextResponse.json(
-      { error: "Failed to create user" },
+      { error: "User onboarding failed" },
       { status: 500 }
     );
   }
