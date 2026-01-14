@@ -40,17 +40,20 @@ export default function HomePage() {
     <div className="min-h-screen bg-[#0B0D12] text-white">
       {/* HERO */}
       <section className="relative h-screen overflow-hidden">
-        {/* Background Image (FULL, untouched) */}
+        {/* VIDEO BACKGROUND */}
         <motion.div style={{ y }} className="absolute inset-0">
-          <div
-            className="w-full h-full bg-cover bg-center"
-            style={{
-              backgroundImage:
-                "url(/images/backgrounds/Landing-page-background.jpg)",
-            }}
+          <video
+            className="w-full h-full object-cover"
+            src="/videos/landing-page.mp4"
+            autoPlay
+            loop
+            muted
+            playsInline
           />
-          {/* Very light neon wash — image stays visible */}
-          <div className="absolute inset-0 bg-gradient-to-br from-[#4F8CFF]/25 via-[#C7B9FF]/15 to-[#7CF5C8]/25" />
+
+          {/* Neon pastel wash (kept subtle) */}
+          <div className="absolute inset-0 bg-gradient-to-br from-[#4F8CFF]/20 via-[#C7B9FF]/15 to-[#7CF5C8]/20" />
+          {/* Contrast layer */}
           <div className="absolute inset-0 bg-black/40" />
         </motion.div>
 
@@ -96,7 +99,7 @@ export default function HomePage() {
               fit.
             </motion.p>
 
-            {/* CTAs — CLEAR SEGMENTATION */}
+            {/* CTAs */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
