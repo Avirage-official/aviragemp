@@ -6,16 +6,6 @@ import { useMemo, useState, useEffect, useRef, useId } from "react";
 
 /* -------------------------------------------------------------------------- */
 /* ETHOS MARKETPLACE (UI-FIRST, FORWARD-ONLY)                                 */
-/* - No ranking language (no "top", "best", "trending")                        */
-/* - No recommendations                                                       */
-/* - No infinite grid                                                         */
-/* - Lenses reorder + softly emphasize; content never disappears              */
-/* - Listing cards communicate "experience personality" visually              */
-/* - NEW: Temporal UX (tap-to-expand inline; no hover dependency)             */
-/* -------------------------------------------------------------------------- */
-
-/* -------------------------------------------------------------------------- */
-/* MYTHICAL CODES                                                             */
 /* -------------------------------------------------------------------------- */
 
 const MYTHICAL_CODES = [
@@ -34,10 +24,6 @@ const MYTHICAL_CODES = [
 
 type MythicalCode = (typeof MYTHICAL_CODES)[number];
 
-/* -------------------------------------------------------------------------- */
-/* TYPES                                                                      */
-/* -------------------------------------------------------------------------- */
-
 type LensMode = "browse" | "codes" | "mood" | "location" | "saved";
 
 type MoodLens =
@@ -49,13 +35,13 @@ type MoodLens =
   | "exploratory";
 
 type ExperienceTraits = {
-  energy: number; // calm ←→ intense
-  social: number; // solo ←→ group
-  structure: number; // guided ←→ open-ended
-  expression: number; // reflective ←→ expressive
-  nature: number; // indoor ←→ nature-bound
-  pace: number; // slow ←→ fast
-  introspection: number; // surface ←→ deep
+  energy: number;
+  social: number;
+  structure: number;
+  expression: number;
+  nature: number;
+  pace: number;
+  introspection: number;
 };
 
 export type Experience = {
@@ -65,194 +51,17 @@ export type Experience = {
   location: string;
   city: string;
   category: "experience" | "retreat" | "workshop" | "event" | "service";
-  duration: string; // e.g. "2h", "Half-day"
-  groupSize: string; // e.g. "Solo", "2–6", "8–20"
-  bookingType: "INQUIRY" | "INSTANT"; // UI-first: we still show inquiry-first language
-  priceLabel: string; // e.g. "$120", "From $60", "Contact"
+  duration: string;
+  groupSize: string;
+  bookingType: "INQUIRY" | "INSTANT";
+  priceLabel: string;
   traits: ExperienceTraits;
   resonatesWith: MythicalCode[];
-  tags: string[]; // editorial descriptors (not category)
+  tags: string[];
 };
 
 /* -------------------------------------------------------------------------- */
-/* MOCK DATA (UI-first, replace later with API)                               */
-/* IMPORTANT: Do NOT `as const` this array. It causes TS "never" issues on     */
-/* `.includes()` due to tuple inference.                                      */
-/* -------------------------------------------------------------------------- */
-
-const MOCK_EXPERIENCES: Experience[] = [
-  {
-    id: "exp-1",
-    title: "Silent Coastal Walk",
-    description:
-      "A slow, unguided coastal walk designed for presence, quiet attention, and environmental attunement.",
-    location: "Coast",
-    city: "Remote",
-    category: "experience",
-    duration: "2–3h",
-    groupSize: "Solo / quiet pairs",
-    bookingType: "INQUIRY",
-    priceLabel: "Contact",
-    traits: {
-      energy: 20,
-      social: 10,
-      structure: 30,
-      expression: 15,
-      nature: 95,
-      pace: 25,
-      introspection: 90,
-    },
-    resonatesWith: ["khoisan", "lhumir", "tjukari"],
-    tags: ["quiet", "presence", "nature-led", "low-pressure"],
-  },
-  {
-    id: "exp-2",
-    title: "Collective Rhythm Workshop",
-    description:
-      "A communal rhythm and movement session focused on shared energy, expression, and connection.",
-    location: "Studio",
-    city: "Urban",
-    category: "workshop",
-    duration: "90m",
-    groupSize: "10–25",
-    bookingType: "INQUIRY",
-    priceLabel: "From $45",
-    traits: {
-      energy: 80,
-      social: 85,
-      structure: 60,
-      expression: 90,
-      nature: 20,
-      pace: 75,
-      introspection: 25,
-    },
-    resonatesWith: ["kayori", "tahiri"],
-    tags: ["music", "movement", "collective", "expressive"],
-  },
-  {
-    id: "exp-3",
-    title: "Philosophical Walking Dialogue",
-    description:
-      "A guided walking conversation exploring meaning, inquiry, and reflective thought.",
-    location: "Park",
-    city: "Urban",
-    category: "service",
-    duration: "60–90m",
-    groupSize: "1–2",
-    bookingType: "INQUIRY",
-    priceLabel: "$85",
-    traits: {
-      energy: 45,
-      social: 35,
-      structure: 55,
-      expression: 45,
-      nature: 60,
-      pace: 40,
-      introspection: 85,
-    },
-    resonatesWith: ["alethir", "yatevar"],
-    tags: ["meaning", "dialogue", "guided", "reflective"],
-  },
-  {
-    id: "exp-4",
-    title: "Horizon Ride (Wide Space)",
-    description:
-      "A wide-space ride designed for autonomy, long-horizon thinking, and calm confidence of movement.",
-    location: "Open Plains",
-    city: "Regional",
-    category: "experience",
-    duration: "Half-day",
-    groupSize: "2–6",
-    bookingType: "INQUIRY",
-    priceLabel: "From $120",
-    traits: {
-      energy: 55,
-      social: 25,
-      structure: 25,
-      expression: 30,
-      nature: 85,
-      pace: 55,
-      introspection: 55,
-    },
-    resonatesWith: ["khoruun", "sahen"],
-    tags: ["freedom", "space", "movement", "self-directed"],
-  },
-  {
-    id: "exp-5",
-    title: "Precision Craft Session",
-    description:
-      "A quiet, structured craft session for people who enjoy detail, repetition, and refinement.",
-    location: "Workshop",
-    city: "Urban",
-    category: "workshop",
-    duration: "2h",
-    groupSize: "4–10",
-    bookingType: "INQUIRY",
-    priceLabel: "$60",
-    traits: {
-      energy: 35,
-      social: 25,
-      structure: 85,
-      expression: 20,
-      nature: 10,
-      pace: 30,
-      introspection: 65,
-    },
-    resonatesWith: ["shokunin", "siyuane"],
-    tags: ["craft", "structured", "quiet", "quality"],
-  },
-  {
-    id: "exp-6",
-    title: "Deep Stillness Session",
-    description:
-      "A contemplative, guided stillness practice focused on clarity, meaning, and gentle discipline.",
-    location: "Retreat House",
-    city: "Regional",
-    category: "retreat",
-    duration: "Half-day",
-    groupSize: "6–14",
-    bookingType: "INQUIRY",
-    priceLabel: "Contact",
-    traits: {
-      energy: 15,
-      social: 30,
-      structure: 70,
-      expression: 15,
-      nature: 55,
-      pace: 15,
-      introspection: 95,
-    },
-    resonatesWith: ["lhumir", "yatevar"],
-    tags: ["stillness", "meaning", "gentle-guidance", "calm"],
-  },
-  {
-    id: "exp-7",
-    title: "Warm Hospitality Table",
-    description:
-      "A hosted evening designed for warmth, care, conversation, and shared presence—without performance.",
-    location: "Home Dining",
-    city: "Urban",
-    category: "event",
-    duration: "3h",
-    groupSize: "6–12",
-    bookingType: "INQUIRY",
-    priceLabel: "From $55",
-    traits: {
-      energy: 55,
-      social: 75,
-      structure: 55,
-      expression: 70,
-      nature: 10,
-      pace: 45,
-      introspection: 40,
-    },
-    resonatesWith: ["tahiri", "kayori"],
-    tags: ["hospitality", "warm", "social", "gentle"],
-  },
-];
-
-/* -------------------------------------------------------------------------- */
-/* DISCOVERY LENSES                                                           */
+/* MOOD SCORING                                                               */
 /* -------------------------------------------------------------------------- */
 
 const MOOD_LENS_TRAITS: Record<
@@ -275,17 +84,16 @@ function scoreMoodMatch(traits: ExperienceTraits, mood: MoodLens): number {
   (Object.keys(ranges) as (keyof ExperienceTraits)[]).forEach((key) => {
     const range = ranges[key];
     if (!range) return;
-    checks += 1;
-
+    checks++;
     const v = traits[key];
-    if (v >= range[0] && v <= range[1]) score += 1;
+    if (v >= range[0] && v <= range[1]) score++;
   });
 
   return checks === 0 ? 0 : score / checks;
 }
 
 /* -------------------------------------------------------------------------- */
-/* SMALL UI PRIMITIVES                                                        */
+/* UI PRIMITIVES                                                              */
 /* -------------------------------------------------------------------------- */
 
 function Pill({
@@ -335,10 +143,8 @@ function TraitBar({ value }: { value: number }) {
 
 function PersonalityStrip({
   traits,
-  density = "compact",
 }: {
   traits: ExperienceTraits;
-  density?: "compact" | "full";
 }) {
   const rows: Array<{ k: keyof ExperienceTraits; label: string }> = [
     { k: "energy", label: "Energy" },
@@ -348,7 +154,7 @@ function PersonalityStrip({
   ];
 
   return (
-    <div className={clsx("mt-4", density === "full" ? "space-y-3" : "space-y-2")}>
+    <div className="space-y-3 mt-4">
       {rows.map((row) => (
         <div key={row.k}>
           <div className="mb-1 flex justify-between text-[11px] text-white/45">
@@ -363,199 +169,7 @@ function PersonalityStrip({
 }
 
 /* -------------------------------------------------------------------------- */
-/* MARKETPLACE NAV (permanent)                                                */
-/* -------------------------------------------------------------------------- */
-
-function MarketplaceNav({
-  mode,
-  setMode,
-  lensSummary,
-}: {
-  mode: LensMode;
-  setMode: (m: LensMode) => void;
-  lensSummary: string;
-}) {
-  const items: Array<{ id: LensMode; label: string; hint: string }> = [
-    { id: "browse", label: "Browse", hint: "Calm, neutral entry" },
-    { id: "codes", label: "Codes", hint: "View through a code lens" },
-    { id: "mood", label: "Mood", hint: "View through a feeling lens" },
-    { id: "location", label: "Location", hint: "View through place" },
-    { id: "saved", label: "Saved", hint: "Private shortlist" },
-  ];
-
-  return (
-    <nav className="sticky top-0 z-20 border-b border-white/10 bg-black/70 backdrop-blur">
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-3">
-        <div className="flex items-center gap-7">
-          <div className="flex flex-col leading-tight">
-            <span className="text-sm font-medium text-white/90">Marketplace</span>
-            <span className="text-[11px] text-white/45">
-              A marketplace of ways of experiencing the world.
-            </span>
-          </div>
-
-          <div className="flex items-center gap-5">
-            {items.map((item) => (
-              <button
-                key={item.id}
-                onClick={() => setMode(item.id)}
-                className={clsx(
-                  "text-sm transition",
-                  mode === item.id
-                    ? "text-white"
-                    : "text-white/50 hover:text-white/80"
-                )}
-                title={item.hint}
-              >
-                {item.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div className="hidden md:block text-xs text-white/40">
-          {lensSummary || "Lenses reorder + highlight — nothing is ranked."}
-        </div>
-      </div>
-    </nav>
-  );
-}
-
-/* -------------------------------------------------------------------------- */
-/* SEARCH + COLLECTIONS (editorial, not ranking)                               */
-/* -------------------------------------------------------------------------- */
-
-type CollectionKey =
-  | "new-noteworthy"
-  | "quiet-favourites"
-  | "unexpected-pairings"
-  | "nature-led"
-  | "structured-craft";
-
-const COLLECTIONS: Array<{
-  key: CollectionKey;
-  label: string;
-  description: string;
-  match: (e: Experience) => boolean;
-}> = [
-  {
-    key: "new-noteworthy",
-    label: "New & Noteworthy",
-    description: "Freshly added experiences. Not “better”, just new.",
-    match: (e) => ["exp-6", "exp-7"].includes(e.id),
-  },
-  {
-    key: "quiet-favourites",
-    label: "Quiet Favourites",
-    description: "Low-pressure experiences with gentle pacing.",
-    match: (e) => e.traits.energy <= 35 && e.traits.pace <= 45,
-  },
-  {
-    key: "unexpected-pairings",
-    label: "Unexpected Pairings",
-    description: "Mixes you wouldn’t search for directly.",
-    match: (e) => e.tags.includes("movement") || e.tags.includes("dialogue"),
-  },
-  {
-    key: "nature-led",
-    label: "Nature-led",
-    description: "Place is part of the experience.",
-    match: (e) => e.traits.nature >= 70,
-  },
-  {
-    key: "structured-craft",
-    label: "Structured Craft",
-    description: "Precision, repetition, refinement.",
-    match: (e) => e.traits.structure >= 70 && e.tags.includes("craft"),
-  },
-];
-
-function SearchBar({
-  query,
-  setQuery,
-  onClear,
-}: {
-  query: string;
-  setQuery: (v: string) => void;
-  onClear: () => void;
-}) {
-  return (
-    <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
-      <div className="flex items-center gap-3">
-        <div className="text-white/50">⌕</div>
-        <input
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search by title, tag, place, or feeling…"
-          className="w-full bg-transparent text-sm text-white/90 placeholder:text-white/35 outline-none"
-        />
-        {query.length > 0 && (
-          <button
-            onClick={onClear}
-            className="text-xs text-white/50 hover:text-white/80 transition"
-          >
-            Clear
-          </button>
-        )}
-      </div>
-      <div className="mt-2 text-xs text-white/40">
-        No ranking. Search simply narrows what you’re looking at.
-      </div>
-    </div>
-  );
-}
-
-function CollectionRow({
-  activeCollection,
-  setActiveCollection,
-}: {
-  activeCollection: CollectionKey | null;
-  setActiveCollection: (v: CollectionKey | null) => void;
-}) {
-  return (
-    <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
-      <div className="mb-3 flex items-start justify-between gap-6">
-        <div>
-          <div className="text-sm text-white/80">Editorial collections</div>
-          <div className="text-xs text-white/40 mt-1">
-            These are not exhaustive. They are gentle starting points.
-          </div>
-        </div>
-        {activeCollection && (
-          <button
-            onClick={() => setActiveCollection(null)}
-            className="text-xs text-white/50 hover:text-white/80 transition"
-          >
-            Clear collection
-          </button>
-        )}
-      </div>
-
-      <div className="flex flex-wrap gap-3">
-        {COLLECTIONS.map((c) => (
-          <Pill
-            key={c.key}
-            active={activeCollection === c.key}
-            onClick={() =>
-              setActiveCollection(activeCollection === c.key ? null : c.key)
-            }
-          >
-            {c.label}
-          </Pill>
-        ))}
-      </div>
-
-      {activeCollection && (
-        <div className="mt-3 text-xs text-white/45">
-          {COLLECTIONS.find((c) => c.key === activeCollection)?.description}
-        </div>
-      )}
-    </div>
-  );
-}
-
-/* -------------------------------------------------------------------------- */
-/* EXPERIENCE CARD — TEMPORAL UX (TAP TO EXPAND, NO HOVER)                      */
+/* EXPERIENCE CARD                                                            */
 /* -------------------------------------------------------------------------- */
 
 function ExperienceCard({
@@ -577,265 +191,80 @@ function ExperienceCard({
   activeMood: MoodLens | null;
   activeCity: string | null;
   query: string;
-  activeCollection: CollectionKey | null;
-
+  activeCollection: string | null;
   isSaved: boolean;
   onToggleSaved: () => void;
-
   expanded: boolean;
   onToggleExpanded: () => void;
 }) {
   const panelId = useId();
 
-  // Code resonance
   const resonates =
     activeCode !== null && experience.resonatesWith.includes(activeCode);
 
-  // Mood emphasis
-  const moodScore = activeMood ? scoreMoodMatch(experience.traits, activeMood) : 0;
-  const moodAligned = activeMood ? moodScore >= 0.6 : false;
+  const moodScore = activeMood
+    ? scoreMoodMatch(experience.traits, activeMood)
+    : 0;
 
-  // Location emphasis
-  const locationAligned = activeCity ? experience.city === activeCity : false;
-
-  // Collection emphasis (not a filter; just styling + ordering happens elsewhere)
-  const collectionAligned = activeCollection
-    ? COLLECTIONS.find((c) => c.key === activeCollection)?.match(experience) ?? false
-    : false;
-
-  // Search "hit" (used for subtle emphasis)
-  const q = query.trim().toLowerCase();
   const searchHit =
-    q.length === 0
-      ? false
-      : [
-          experience.title,
-          experience.description,
-          experience.location,
-          experience.city,
-          experience.category,
-          experience.duration,
-          experience.groupSize,
-          experience.tags.join(" "),
-          experience.resonatesWith.join(" "),
-        ]
-          .join(" ")
-          .toLowerCase()
-          .includes(q);
+    query.length > 0 &&
+    [
+      experience.title,
+      experience.description,
+      experience.city,
+      experience.location,
+      experience.tags.join(" "),
+    ]
+      .join(" ")
+      .toLowerCase()
+      .includes(query.toLowerCase());
 
-  const emphasized =
-    resonates || moodAligned || locationAligned || collectionAligned || searchHit;
+  const emphasized = resonates || moodScore >= 0.6 || searchHit;
 
-  // Build detail URL with context
-  const href = (() => {
-    const params = new URLSearchParams();
-    params.set("lens", lensMode);
-    if (activeCode) params.set("code", activeCode);
-    if (activeMood) params.set("mood", activeMood);
-    if (activeCity) params.set("city", activeCity);
-    if (activeCollection) params.set("collection", activeCollection);
-    if (q) params.set("q", q);
-    return `/marketplace/${experience.id}?${params.toString()}`;
-  })();
-
-  // “Glance layer” description: tighter by default, longer when expanded (still calm)
-  const descClamp = expanded ? "line-clamp-4" : "line-clamp-2";
+  const href = `/marketplace/${experience.id}`;
 
   return (
     <article
       className={clsx(
         "rounded-2xl border bg-white/5 transition",
-        "border-white/10",
         emphasized && "ring-1 ring-white/15",
-        moodAligned && "border-white/25",
-        resonates && "ring-white/25",
-        expanded ? "bg-white/[0.07] border-white/25" : "hover:bg-white/[0.06] hover:border-white/20"
+        expanded && "bg-white/[0.07] border-white/25"
       )}
     >
-      {/* GLANCE HEADER + ACTIONS (NO ABSOLUTE OVERLAYS) */}
       <div className="p-6">
-        <div className="flex items-start justify-between gap-4">
-          <div className="min-w-0">
-            <h3 className="text-lg font-medium text-white">{experience.title}</h3>
-            <p className={clsx("mt-2 text-sm text-white/60", descClamp)}>
-              {experience.description}
-            </p>
+        <h3 className="text-lg font-medium">{experience.title}</h3>
+        <p className="mt-2 text-sm text-white/60 line-clamp-2">
+          {experience.description}
+        </p>
 
-            <div className="mt-4 flex flex-wrap gap-3">
-              <MiniMeta label="City" value={experience.city} />
-              <MiniMeta label="Place" value={experience.location} />
-              <MiniMeta label="Duration" value={experience.duration} />
-              <MiniMeta label="Group" value={experience.groupSize} />
-            </div>
-          </div>
-
-          <div className="shrink-0 text-right space-y-2">
-            <div className="text-xs text-white/45">{experience.priceLabel}</div>
-            <div className="inline-flex items-center justify-end gap-2">
-              <span className="rounded-full border border-white/15 bg-white/5 px-3 py-1 text-[11px] text-white/60 capitalize">
-                {experience.category}
-              </span>
-            </div>
-
-            {/* Actions */}
-            <div className="mt-3 flex items-center justify-end gap-2">
-              <button
-                type="button"
-                onClick={onToggleSaved}
-                className={clsx(
-                  "rounded-full border px-3 py-2 text-xs transition",
-                  isSaved
-                    ? "border-white/25 bg-white text-black"
-                    : "border-white/15 bg-black/40 text-white/70 hover:text-white hover:border-white/25"
-                )}
-                title="Save privately"
-                aria-label={isSaved ? "Saved" : "Save"}
-              >
-                {isSaved ? "Saved" : "Save"}
-              </button>
-
-              <Link
-                href={href}
-                className="rounded-full border border-white/15 bg-white/[0.03] px-3 py-2 text-xs text-white/70 hover:text-white hover:border-white/25 transition"
-                title="Open experience"
-              >
-                Open →
-              </Link>
-            </div>
-          </div>
+        <div className="mt-4 flex flex-wrap gap-3">
+          <MiniMeta label="City" value={experience.city} />
+          <MiniMeta label="Duration" value={experience.duration} />
+          <MiniMeta label="Group" value={experience.groupSize} />
         </div>
 
-        {/* Temporal control (tap to expand) */}
-        <div className="mt-5">
-          <button
-            type="button"
-            onClick={onToggleExpanded}
-            className={clsx(
-              "w-full rounded-xl border px-4 py-3 text-left transition",
-              "border-white/10 bg-white/[0.02] hover:bg-white/[0.04] hover:border-white/20"
-            )}
-            aria-expanded={expanded}
-            aria-controls={panelId}
-          >
-            <div className="flex items-center justify-between gap-4">
-              <div className="text-sm text-white/75">
-                {expanded ? "Close details" : "View details"}
-              </div>
-              <div className="text-xs text-white/45">
-                {expanded ? "Tap to collapse" : "Tap to expand"}
-              </div>
-            </div>
-
-            {/* Subtext stays calm, never salesy */}
-            <div className="mt-1 text-xs text-white/40">
-              Reveal personality + context when you want it — nothing is hidden by default.
-            </div>
-          </button>
+        <div className="mt-4 flex justify-between items-center">
+          <span className="text-xs text-white/50">{experience.priceLabel}</span>
+          <Link href={href} className="text-xs underline">
+            Open →
+          </Link>
         </div>
+
+        {expanded && <PersonalityStrip traits={experience.traits} />}
       </div>
 
-      {/* EXPANDED LAYER (THE STUFF THAT USED TO MAKE IT HEAVY) */}
-      {expanded && (
-        <div
-          id={panelId}
-          className="px-6 pb-6 pt-2 border-t border-white/10"
-        >
-          {/* Experience Personality (Ethos signature) */}
-          <PersonalityStrip traits={experience.traits} density="full" />
-
-          {/* Tags (editorial descriptors) */}
-          <div className="mt-6 flex flex-wrap gap-2">
-            {experience.tags.map((t) => (
-              <span
-                key={t}
-                className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-[11px] text-white/55"
-              >
-                {t}
-              </span>
-            ))}
-          </div>
-
-          {/* Soft indicators (assistive, not authoritative) */}
-          {(activeCode || activeMood || activeCity || activeCollection || q) && (
-            <div className="mt-6 text-xs text-white/45">
-              {activeCode && resonates && (
-                <span>
-                  Often resonates with{" "}
-                  <span className="text-white capitalize">{activeCode}</span>
-                </span>
-              )}
-
-              {activeMood && (
-                <span className={clsx(activeCode && resonates && "ml-2")}>
-                  <span className="text-white/60">·</span>{" "}
-                  Mood lens:{" "}
-                  <span className="text-white capitalize">{activeMood}</span>{" "}
-                  <span className="text-white/40">
-                    (match {Math.round(moodScore * 100)}%)
-                  </span>
-                </span>
-              )}
-
-              {activeCity && (
-                <span
-                  className={clsx(
-                    (activeCode && resonates) || activeMood ? "ml-2" : ""
-                  )}
-                >
-                  <span className="text-white/60">·</span>{" "}
-                  Place lens: <span className="text-white">{activeCity}</span>
-                  {locationAligned ? (
-                    <span className="text-white/40"> (here)</span>
-                  ) : null}
-                </span>
-              )}
-
-              {activeCollection && (
-                <span
-                  className={clsx(
-                    (activeCode && resonates) || activeMood || activeCity
-                      ? "ml-2"
-                      : ""
-                  )}
-                >
-                  <span className="text-white/60">·</span>{" "}
-                  Collection:{" "}
-                  <span className="text-white">
-                    {COLLECTIONS.find((c) => c.key === activeCollection)?.label}
-                  </span>
-                </span>
-              )}
-
-              {q && (
-                <span
-                  className={clsx(
-                    (activeCode && resonates) ||
-                      activeMood ||
-                      activeCity ||
-                      activeCollection
-                      ? "ml-2"
-                      : ""
-                  )}
-                >
-                  <span className="text-white/60">·</span>{" "}
-                  Search: <span className="text-white/70">{q}</span>
-                </span>
-              )}
-            </div>
-          )}
-
-          {/* Reassurance line (keeps Ethos ethics visible, but not loud) */}
-          <div className="mt-5 text-xs text-white/35">
-            Lenses only change emphasis. Ethos does not rank or recommend experiences.
-          </div>
-        </div>
-      )}
+      <button
+        onClick={onToggleExpanded}
+        className="w-full border-t border-white/10 text-xs py-3 text-white/50 hover:text-white"
+      >
+        {expanded ? "Collapse" : "View details"}
+      </button>
     </article>
   );
 }
 
 /* -------------------------------------------------------------------------- */
-/* PAGE                                                                       */
+/* MAIN CLIENT COMPONENT                                                      */
 /* -------------------------------------------------------------------------- */
 
 export default function MarketplaceClient({
@@ -843,114 +272,15 @@ export default function MarketplaceClient({
 }: {
   initialExperiences: Experience[];
 }) {
-
   const [mode, setMode] = useState<LensMode>("browse");
-
-  // User-selected lenses
   const [activeCode, setActiveCode] = useState<MythicalCode | null>(null);
   const [activeMood, setActiveMood] = useState<MoodLens | null>(null);
-  const [activeCity, setActiveCity] = useState<string | null>(null);
-
-  // Editorial collection (browse mode)
-  const [activeCollection, setActiveCollection] = useState<CollectionKey | null>(
-    null
-  );
-
-  // Search (neutral; not ranking)
   const [query, setQuery] = useState("");
-
-  // Saved (UI-only local)
-  const [savedIds, setSavedIds] = useState<string[]>([]);
-  const savedRef = useRef<Set<string>>(new Set());
-
-  // Temporal UX: one expanded card at a time (prevents “everything open” heaviness)
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
-  // Keep savedRef in sync (O(1) lookups)
-  useEffect(() => {
-    savedRef.current = new Set(savedIds);
-  }, [savedIds]);
-
-  const lensSummary = useMemo(() => {
-    const parts: string[] = [];
-    if (activeCode) parts.push(`Code: ${activeCode}`);
-    if (activeMood) parts.push(`Mood: ${activeMood}`);
-    if (activeCity) parts.push(`Place: ${activeCity}`);
-    if (activeCollection)
-      parts.push(
-        `Collection: ${
-          COLLECTIONS.find((c) => c.key === activeCollection)?.label
-        }`
-      );
-    if (query.trim()) parts.push(`Search: ${query.trim()}`);
-    return parts.join(" · ");
-  }, [activeCode, activeMood, activeCity, activeCollection, query]);
-
-  const availableCities = useMemo(() => {
-    const set = new Set<string>();
-    MOCK_EXPERIENCES.forEach((e) => set.add(e.city));
-    return Array.from(set);
-  }, []);
-
-  const clearLenses = () => {
-    setActiveCode(null);
-    setActiveMood(null);
-    setActiveCity(null);
-    setActiveCollection(null);
-    setQuery("");
-    setExpandedId(null);
-  };
-
-  const toggleSaved = (id: string) => {
-    setSavedIds((prev) => {
-      const exists = prev.includes(id);
-      if (exists) return prev.filter((x) => x !== id);
-      return [...prev, id];
-    });
-  };
-
-  // SEARCH NARROWING (not ranking) - keeps list relevant for now
-  const searchFiltered = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    if (!q) return MOCK_EXPERIENCES;
-
-    return MOCK_EXPERIENCES.filter((e) => {
-      const blob = [
-        e.title,
-        e.description,
-        e.location,
-        e.city,
-        e.category,
-        e.duration,
-        e.groupSize,
-        e.tags.join(" "),
-        e.resonatesWith.join(" "),
-      ]
-        .join(" ")
-        .toLowerCase();
-
-      return blob.includes(q);
-    });
-  }, [query]);
-
-  // Apply ordering + emphasis without filtering out content (except search narrowing above)
   const experiences = useMemo(() => {
-    let list: Experience[] = [...searchFiltered];
+    let list = [...initialExperiences];
 
-    // Collections reorder with soft priority
-    if (activeCollection) {
-      const collection = COLLECTIONS.find((c) => c.key === activeCollection);
-      if (collection) {
-        list.sort((a, b) => Number(collection.match(b)) - Number(collection.match(a)));
-      }
-    }
-
-    // Location lens reorder
-    if (activeCity) {
-      list.sort((a, b) => Number(b.city === activeCity) - Number(a.city === activeCity));
-    }
-
-    // Code lens reorder
     if (activeCode) {
       list.sort(
         (a, b) =>
@@ -959,247 +289,48 @@ export default function MarketplaceClient({
       );
     }
 
-    // Mood lens reorder (trait-based)
     if (activeMood) {
       list.sort(
-        (a, b) => scoreMoodMatch(b.traits, activeMood) - scoreMoodMatch(a.traits, activeMood)
+        (a, b) =>
+          scoreMoodMatch(b.traits, activeMood) -
+          scoreMoodMatch(a.traits, activeMood)
       );
     }
 
-    // Saved mode reorder (saved first; still shows all)
-    if (mode === "saved") {
-      list.sort((a, b) => Number(savedRef.current.has(b.id)) - Number(savedRef.current.has(a.id)));
+    if (query.trim()) {
+      list = list.filter((e) =>
+        [e.title, e.description, e.city, e.tags.join(" ")]
+          .join(" ")
+          .toLowerCase()
+          .includes(query.toLowerCase())
+      );
     }
 
     return list;
-  }, [searchFiltered, activeCollection, activeCity, activeCode, activeMood, mode]);
-
-  // Display slice to avoid “infinite grid” feel
-  const [visibleCount, setVisibleCount] = useState(9);
-  useEffect(() => {
-    // Reset pagination + collapse expanded card when lenses change
-    setVisibleCount(9);
-    setExpandedId(null);
-  }, [mode, activeCode, activeMood, activeCity, activeCollection, query]);
-
-  const visibleExperiences = useMemo(
-    () => experiences.slice(0, visibleCount),
-    [experiences, visibleCount]
-  );
+  }, [initialExperiences, activeCode, activeMood, query]);
 
   return (
-    <div className="min-h-screen bg-black text-white">
-      <MarketplaceNav mode={mode} setMode={setMode} lensSummary={lensSummary} />
-
-      <main className="mx-auto max-w-6xl px-6 py-10">
-        {/* Header */}
-        <div className="mb-10 grid grid-cols-1 gap-6 lg:grid-cols-3">
-          <div className="lg:col-span-2">
-            <h1 className="text-3xl font-semibold">
-              Discover experiences without being pushed.
-            </h1>
-            <p className="mt-4 text-white/60 max-w-2xl">
-              Ethos isn’t a catalogue. It’s guided discovery: identity → intention → experience.
-              You choose how the world is arranged.
-            </p>
-
-            {/* Lens summary + clear */}
-            <div className="mt-5 flex flex-wrap items-center gap-3">
-              <div className="rounded-full border border-white/10 bg-white/[0.03] px-4 py-2 text-xs text-white/55">
-                {lensSummary || "No lens selected"}
-              </div>
-              {(activeCode || activeMood || activeCity || activeCollection || query.trim()) && (
-                <button
-                  onClick={clearLenses}
-                  className="text-xs text-white/50 hover:text-white/80 transition"
-                >
-                  Clear all
-                </button>
-              )}
-            </div>
-          </div>
-
-          <div className="lg:col-span-1 space-y-4">
-            <SearchBar query={query} setQuery={setQuery} onClear={() => setQuery("")} />
-            {mode === "browse" && (
-              <CollectionRow
-                activeCollection={activeCollection}
-                setActiveCollection={setActiveCollection}
-              />
-            )}
-          </div>
-        </div>
-
-        {/* LENS PANELS */}
-        <div className="mb-10">
-          {mode === "codes" && (
-            <section className="rounded-2xl border border-white/10 bg-white/[0.04] p-5">
-              <div className="mb-3 text-sm text-white/80">Mythical Code lens</div>
-              <div className="text-xs text-white/45 mb-4 max-w-3xl">
-                This does not label you. It doesn’t recommend. It simply highlights experiences
-                that often feel comfortable to people who share similar patterns.
-              </div>
-
-              <div className="flex flex-wrap gap-3">
-                {MYTHICAL_CODES.map((code) => (
-                  <Pill
-                    key={code}
-                    active={activeCode === code}
-                    onClick={() => setActiveCode(activeCode === code ? null : code)}
-                  >
-                    {code}
-                  </Pill>
-                ))}
-              </div>
-
-              {activeCode && (
-                <div className="mt-4 text-xs text-white/50">
-                  Viewing through: <span className="text-white capitalize">{activeCode}</span>
-                </div>
-              )}
-            </section>
-          )}
-
-          {mode === "mood" && (
-            <section className="rounded-2xl border border-white/10 bg-white/[0.04] p-5">
-              <div className="mb-3 text-sm text-white/80">Mood lens</div>
-              <div className="text-xs text-white/45 mb-4 max-w-3xl">
-                Mood lenses are temporary. They describe what you want to feel — not who you are.
-                Nothing disappears; we only change emphasis.
-              </div>
-
-              <div className="flex flex-wrap gap-3">
-                {(
-                  ["calm", "reflective", "social", "expressive", "grounded", "exploratory"] as MoodLens[]
-                ).map((mood) => (
-                  <Pill
-                    key={mood}
-                    active={activeMood === mood}
-                    onClick={() => setActiveMood(activeMood === mood ? null : mood)}
-                  >
-                    {mood}
-                  </Pill>
-                ))}
-              </div>
-
-              {activeMood && (
-                <div className="mt-4 text-xs text-white/50">
-                  Viewing through: <span className="text-white capitalize">{activeMood}</span>
-                </div>
-              )}
-            </section>
-          )}
-
-          {mode === "location" && (
-            <section className="rounded-2xl border border-white/10 bg-white/[0.04] p-5">
-              <div className="mb-3 text-sm text-white/80">Place lens</div>
-              <div className="text-xs text-white/45 mb-4 max-w-3xl">
-                A calm way to browse without categories-first pressure. Nothing disappears.
-              </div>
-
-              <div className="flex flex-wrap gap-3">
-                {availableCities.map((city) => (
-                  <Pill
-                    key={city}
-                    active={activeCity === city}
-                    onClick={() => setActiveCity(activeCity === city ? null : city)}
-                  >
-                    {city}
-                  </Pill>
-                ))}
-              </div>
-
-              {activeCity && (
-                <div className="mt-4 text-xs text-white/50">
-                  Viewing through: <span className="text-white">{activeCity}</span>
-                </div>
-              )}
-            </section>
-          )}
-
-          {mode === "saved" && (
-            <section className="rounded-2xl border border-white/10 bg-white/[0.04] p-5">
-              <div className="mb-2 text-sm text-white/80">Saved</div>
-              <div className="text-xs text-white/45">
-                Saving is private. It doesn’t mean commitment. No pressure.
-              </div>
-            </section>
-          )}
-        </div>
-
-        {/* RESULTS HEADER */}
-        <div className="mb-6 flex items-end justify-between gap-6">
-          <div>
-            <div className="text-sm text-white/70">{experiences.length} experiences visible</div>
-            <div className="text-xs text-white/40 mt-1">
-              No rankings. No “best”. You’re just changing emphasis.
-            </div>
-          </div>
-
-          <div className="text-xs text-white/45">
-            Showing {Math.min(visibleCount, experiences.length)} / {experiences.length}
-          </div>
-        </div>
-
-        {/* GRID (not infinite; pagination-style) */}
-        {experiences.length === 0 ? (
-          <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-10 text-center">
-            <div className="text-4xl mb-4">🔍</div>
-            <div className="text-white/80">Nothing matched that search.</div>
-            <div className="text-white/45 text-sm mt-2">
-              Try fewer words — or clear the search to return to browsing.
-            </div>
-            <button
-              onClick={() => setQuery("")}
-              className="mt-6 rounded-full bg-white px-5 py-2 text-sm text-black hover:opacity-90 transition"
-            >
-              Clear search
-            </button>
-          </div>
-        ) : (
-          <>
-            {/* NOTE: slightly tighter gap than before, but cards are now taller only when expanded */}
-            <section className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {visibleExperiences.map((exp) => (
-                <ExperienceCard
-                  key={exp.id}
-                  experience={exp}
-                  lensMode={mode}
-                  activeCode={activeCode}
-                  activeMood={activeMood}
-                  activeCity={activeCity}
-                  query={query}
-                  activeCollection={activeCollection}
-                  isSaved={savedRef.current.has(exp.id)}
-                  onToggleSaved={() => toggleSaved(exp.id)}
-                  expanded={expandedId === exp.id}
-                  onToggleExpanded={() =>
-                    setExpandedId((curr) => (curr === exp.id ? null : exp.id))
-                  }
-                />
-              ))}
-            </section>
-
-            {/* Load more (anti-infinite-grid) */}
-            {visibleCount < experiences.length && (
-              <div className="mt-12 flex justify-center">
-                <button
-                  onClick={() => setVisibleCount((c) => Math.min(experiences.length, c + 6))}
-                  className="rounded-full border border-white/15 bg-white/[0.03] px-6 py-3 text-sm text-white/80 hover:text-white hover:border-white/25 transition"
-                >
-                  Show more
-                </button>
-              </div>
-            )}
-          </>
-        )}
-
-        {/* ETHICS FOOTER */}
-        <div className="mt-20 border-t border-white/10 pt-8 text-xs text-white/40 max-w-3xl">
-          Ethos does not rank or recommend experiences. Lenses are user-selected and only change emphasis.
-          Resonance indicators are descriptive and optional.
-        </div>
-      </main>
+    <div className="min-h-screen bg-black text-white p-10">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {experiences.map((exp) => (
+          <ExperienceCard
+            key={exp.id}
+            experience={exp}
+            lensMode={mode}
+            activeCode={activeCode}
+            activeMood={activeMood}
+            activeCity={null}
+            query={query}
+            activeCollection={null}
+            isSaved={false}
+            onToggleSaved={() => {}}
+            expanded={expandedId === exp.id}
+            onToggleExpanded={() =>
+              setExpandedId(expandedId === exp.id ? null : exp.id)
+            }
+          />
+        ))}
+      </div>
     </div>
   );
 }
