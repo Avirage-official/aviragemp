@@ -1,3 +1,7 @@
+"use client";
+
+import { Heart } from "lucide-react";
+
 const COMPATIBILITY: Record<string, {
   high: string[];
   medium: string[];
@@ -128,69 +132,92 @@ const CODE_NAMES: Record<string, string> = {
   "alethir": "Seeker"
 };
 
+function CodeBadge({ 
+  code, 
+  type 
+}: { 
+  code: string; 
+  type: "high" | "medium" | "low";
+}) {
+  const styles = {
+    high: "bg-[#7CF5C8]/10 border-[#7CF5C8]/30 text-[#7CF5C8] hover:bg-[#7CF5C8]/20",
+    medium: "bg-[#4F8CFF]/10 border-[#4F8CFF]/30 text-[#4F8CFF] hover:bg-[#4F8CFF]/20",
+    low: "bg-[#FAFAFA]/5 border-[#FAFAFA]/20 text-[#FAFAFA]/60 hover:bg-[#FAFAFA]/10"
+  };
+
+  return (
+    <span className={`px-3 py-2 rounded-xl border text-xs font-medium transition-all duration-300 ${styles[type]}`}>
+      {CODE_NAMES[code]}
+    </span>
+  );
+}
+
 export function CompatibilityChart({ userCode }: { userCode: string }) {
   const compat = COMPATIBILITY[userCode] || { high: [], medium: [], low: [] };
   
   return (
-    <div className="bg-white rounded-lg p-8 shadow">
-      <h2 className="text-2xl font-bold mb-6">Code Compatibility</h2>
-      <p className="text-gray-600 mb-6">
-        Natural affinities with other codes based on complementary traits and values
-      </p>
+    <div className="relative group">
+      {/* Glow */}
+      <div className="absolute -inset-[1px] rounded-[28px] bg-gradient-to-br from-[#7CF5C8]/10 via-[#4F8CFF]/10 to-[#C7B9FF]/10 opacity-0 group-hover:opacity-100 blur-xl transition-opacity duration-700" />
       
-      <div className="space-y-6">
-        <div>
-          <h3 className="font-semibold text-green-700 mb-3 flex items-center gap-2">
-            <span className="text-xl">✓</span>
-            High Compatibility
-          </h3>
-          <div className="flex gap-2 flex-wrap">
-            {compat.high.map(code => (
-              <span 
-                key={code} 
-                className="px-4 py-2 bg-green-100 text-green-800 rounded-lg font-medium"
-              >
-                {CODE_NAMES[code]}
-              </span>
-            ))}
+      {/* Card */}
+      <div className="relative rounded-[28px] bg-white/[0.03] backdrop-blur-2xl border border-[#FAFAFA]/10 p-8">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#7CF5C8]/20 to-[#4F8CFF]/20 border border-[#7CF5C8]/30 flex items-center justify-center">
+            <Heart className="h-6 w-6 text-[#7CF5C8]" />
+          </div>
+          <div>
+            <h3 className="text-xl font-bold text-[#FAFAFA]">Code Compatibility</h3>
+            <p className="text-xs text-[#FAFAFA]/50">Natural affinities with other codes</p>
           </div>
         </div>
         
-        <div>
-          <h3 className="font-semibold text-yellow-700 mb-3 flex items-center gap-2">
-            <span className="text-xl">~</span>
-            Medium Compatibility
-          </h3>
-          <div className="flex gap-2 flex-wrap">
-            {compat.medium.map(code => (
-              <span 
-                key={code} 
-                className="px-4 py-2 bg-yellow-100 text-yellow-800 rounded-lg"
-              >
-                {CODE_NAMES[code]}
-              </span>
-            ))}
-          </div>
-        </div>
+        <p className="text-sm text-[#FAFAFA]/60 mb-6 leading-relaxed">
+          Based on complementary traits and values
+        </p>
         
-        <div>
-          <h3 className="font-semibold text-gray-700 mb-3 flex items-center gap-2">
-            <span className="text-xl">◇</span>
-            Growth Relationships
-          </h3>
-          <div className="flex gap-2 flex-wrap">
-            {compat.low.map(code => (
-              <span 
-                key={code} 
-                className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg"
-              >
-                {CODE_NAMES[code]}
-              </span>
-            ))}
+        <div className="space-y-6">
+          {/* High Compatibility */}
+          <div>
+            <div className="flex items-center gap-2 mb-3">
+              <span className="text-xl">✓</span>
+              <h4 className="text-sm font-semibold text-[#7CF5C8]">High Compatibility</h4>
+            </div>
+            <div className="flex gap-2 flex-wrap">
+              {compat.high.map(code => (
+                <CodeBadge key={code} code={code} type="high" />
+              ))}
+            </div>
           </div>
-          <p className="text-sm text-gray-500 mt-2">
-            Different approaches that can challenge and expand your perspective
-          </p>
+          
+          {/* Medium Compatibility */}
+          <div>
+            <div className="flex items-center gap-2 mb-3">
+              <span className="text-xl">~</span>
+              <h4 className="text-sm font-semibold text-[#4F8CFF]">Medium Compatibility</h4>
+            </div>
+            <div className="flex gap-2 flex-wrap">
+              {compat.medium.map(code => (
+                <CodeBadge key={code} code={code} type="medium" />
+              ))}
+            </div>
+          </div>
+          
+          {/* Growth Relationships */}
+          <div>
+            <div className="flex items-center gap-2 mb-3">
+              <span className="text-xl">◇</span>
+              <h4 className="text-sm font-semibold text-[#FAFAFA]/60">Growth Relationships</h4>
+            </div>
+            <div className="flex gap-2 flex-wrap">
+              {compat.low.map(code => (
+                <CodeBadge key={code} code={code} type="low" />
+              ))}
+            </div>
+            <p className="text-xs text-[#FAFAFA]/40 mt-3">
+              Different approaches that challenge and expand your perspective
+            </p>
+          </div>
         </div>
       </div>
     </div>
