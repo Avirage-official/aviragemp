@@ -2,10 +2,11 @@
 
 import Link from "next/link";
 import clsx from "clsx";
-import { useMemo, useState, useEffect, useRef, useId } from "react";
+import { useMemo, useState, useId } from "react";
+import { Sparkles, MapPin, Users, Clock } from "lucide-react";
 
 /* -------------------------------------------------------------------------- */
-/* ETHOS MARKETPLACE (UI-FIRST, FORWARD-ONLY)                                 */
+/* ETHOS MARKETPLACE - NEON PASTEL TECH VIBE                                  */
 /* -------------------------------------------------------------------------- */
 
 const MYTHICAL_CODES = [
@@ -64,7 +65,7 @@ export type Experience = {
 /* MOOD SCORING                                                               */
 /* -------------------------------------------------------------------------- */
 
-const MOOD_LENS_TRAITS: Record<
+const MOOD_LENS_TRAITS: Record
   MoodLens,
   Partial<Record<keyof ExperienceTraits, [number, number]>>
 > = {
@@ -96,73 +97,69 @@ function scoreMoodMatch(traits: ExperienceTraits, mood: MoodLens): number {
 /* UI PRIMITIVES                                                              */
 /* -------------------------------------------------------------------------- */
 
-function Pill({
-  children,
-  active,
-  onClick,
-}: {
-  children: React.ReactNode;
-  active?: boolean;
-  onClick?: () => void;
+function TraitBar({ 
+  label, 
+  value, 
+  color 
+}: { 
+  label: string; 
+  value: number;
+  color: "blue" | "mint" | "lavender";
 }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={clsx(
-        "rounded-full border px-4 py-2 text-sm transition capitalize",
-        active
-          ? "bg-white text-black border-white"
-          : "border-white/20 text-white/70 hover:text-white hover:border-white/30"
-      )}
-    >
-      {children}
-    </button>
-  );
-}
+  const colorClasses = {
+    blue: "bg-[#4F8CFF]/20 [&>div]:bg-[#4F8CFF]",
+    mint: "bg-[#7CF5C8]/20 [&>div]:bg-[#7CF5C8]",
+    lavender: "bg-[#C7B9FF]/20 [&>div]:bg-[#C7B9FF]"
+  };
 
-function MiniMeta({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex items-center gap-2 text-xs text-white/45">
-      <span className="text-white/35">{label}</span>
-      <span className="text-white/70">{value}</span>
+    <div className="space-y-1">
+      <div className="flex justify-between items-center">
+        <span className="text-[10px] uppercase tracking-wider text-[#FAFAFA]/50 font-medium">
+          {label}
+        </span>
+        <span className="text-[10px] text-[#FAFAFA]/70 font-mono">
+          {value}
+        </span>
+      </div>
+      <div className={clsx("h-1.5 w-full rounded-full overflow-hidden", colorClasses[color])}>
+        <div 
+          className="h-full rounded-full transition-all duration-500"
+          style={{ width: `${Math.max(0, Math.min(100, value))}%` }}
+        />
+      </div>
     </div>
   );
 }
 
-function TraitBar({ value }: { value: number }) {
+function CodeBadge({ code }: { code: MythicalCode }) {
   return (
-    <div className="h-1 w-full rounded bg-white/10">
-      <div
-        className="h-1 rounded bg-white/70"
-        style={{ width: `${Math.max(0, Math.min(100, value))}%` }}
-      />
+    <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#C7B9FF]/10 border border-[#C7B9FF]/20">
+      <Sparkles className="h-3 w-3 text-[#C7B9FF]" />
+      <span className="text-xs font-medium text-[#C7B9FF] capitalize">
+        {code}
+      </span>
     </div>
   );
 }
 
-function PersonalityStrip({
-  traits,
-}: {
-  traits: ExperienceTraits;
-}) {
-  const rows: Array<{ k: keyof ExperienceTraits; label: string }> = [
-    { k: "energy", label: "Energy" },
-    { k: "social", label: "Social" },
-    { k: "structure", label: "Structure" },
-    { k: "expression", label: "Expression" },
+function PersonalityStrip({ traits }: { traits: ExperienceTraits }) {
+  const traitRows = [
+    { key: "energy" as const, label: "Energy", color: "blue" as const },
+    { key: "social" as const, label: "Social", color: "mint" as const },
+    { key: "structure" as const, label: "Structure", color: "lavender" as const },
+    { key: "expression" as const, label: "Expression", color: "blue" as const },
   ];
 
   return (
-    <div className="space-y-3 mt-4">
-      {rows.map((row) => (
-        <div key={row.k}>
-          <div className="mb-1 flex justify-between text-[11px] text-white/45">
-            <span>{row.label}</span>
-            <span>{traits[row.k]}</span>
-          </div>
-          <TraitBar value={traits[row.k]} />
-        </div>
+    <div className="space-y-3 pt-4 border-t border-[#FAFAFA]/5">
+      {traitRows.map((row) => (
+        <TraitBar 
+          key={row.key}
+          label={row.label}
+          value={traits[row.key]}
+          color={row.color}
+        />
       ))}
     </div>
   );
@@ -177,11 +174,7 @@ function ExperienceCard({
   lensMode,
   activeCode,
   activeMood,
-  activeCity,
   query,
-  activeCollection,
-  isSaved,
-  onToggleSaved,
   expanded,
   onToggleExpanded,
 }: {
@@ -189,16 +182,10 @@ function ExperienceCard({
   lensMode: LensMode;
   activeCode: MythicalCode | null;
   activeMood: MoodLens | null;
-  activeCity: string | null;
   query: string;
-  activeCollection: string | null;
-  isSaved: boolean;
-  onToggleSaved: () => void;
   expanded: boolean;
   onToggleExpanded: () => void;
 }) {
-  const panelId = useId();
-
   const resonates =
     activeCode !== null && experience.resonatesWith.includes(activeCode);
 
@@ -206,59 +193,117 @@ function ExperienceCard({
     ? scoreMoodMatch(experience.traits, activeMood)
     : 0;
 
-  const searchHit =
-    query.length > 0 &&
-    [
-      experience.title,
-      experience.description,
-      experience.city,
-      experience.location,
-      experience.tags.join(" "),
-    ]
-      .join(" ")
-      .toLowerCase()
-      .includes(query.toLowerCase());
-
-  const emphasized = resonates || moodScore >= 0.6 || searchHit;
-
-  const href = `/marketplace/${experience.id}`;
+  const emphasized = resonates || moodScore >= 0.6;
 
   return (
     <article
       className={clsx(
-        "rounded-2xl border bg-white/5 transition",
-        emphasized && "ring-1 ring-white/15",
-        expanded && "bg-white/[0.07] border-white/25"
+        "group relative rounded-2xl border transition-all duration-300",
+        "bg-gradient-to-br from-[#111827] to-[#111827]/80",
+        emphasized 
+          ? "border-[#7CF5C8]/30 shadow-lg shadow-[#7CF5C8]/5" 
+          : "border-[#FAFAFA]/10 hover:border-[#4F8CFF]/30",
+        expanded && "ring-1 ring-[#4F8CFF]/20"
       )}
     >
-      <div className="p-6">
-        <h3 className="text-lg font-medium">{experience.title}</h3>
-        <p className="mt-2 text-sm text-white/60 line-clamp-2">
-          {experience.description}
-        </p>
+      {/* Resonance Indicator */}
+      {resonates && (
+        <div className="absolute -top-2 -right-2 z-10">
+          <div className="relative">
+            <div className="h-4 w-4 rounded-full bg-[#7CF5C8] shadow-lg shadow-[#7CF5C8]/50" />
+            <div className="absolute inset-0 h-4 w-4 rounded-full bg-[#7CF5C8] animate-ping" />
+          </div>
+        </div>
+      )}
 
-        <div className="mt-4 flex flex-wrap gap-3">
-          <MiniMeta label="City" value={experience.city} />
-          <MiniMeta label="Duration" value={experience.duration} />
-          <MiniMeta label="Group" value={experience.groupSize} />
+      <div className="p-6 space-y-4">
+        {/* Header */}
+        <div className="space-y-2">
+          <div className="flex items-start justify-between gap-3">
+            <h3 className="text-lg font-semibold text-[#FAFAFA] leading-tight group-hover:text-[#4F8CFF] transition-colors">
+              {experience.title}
+            </h3>
+            <span className={clsx(
+              "text-xs px-2 py-1 rounded-full capitalize whitespace-nowrap",
+              "bg-[#4F8CFF]/10 text-[#4F8CFF] border border-[#4F8CFF]/20"
+            )}>
+              {experience.category}
+            </span>
+          </div>
+          
+          <p className="text-sm text-[#FAFAFA]/60 leading-relaxed line-clamp-2">
+            {experience.description}
+          </p>
         </div>
 
-        <div className="mt-4 flex justify-between items-center">
-          <span className="text-xs text-white/50">{experience.priceLabel}</span>
-          <Link href={href} className="text-xs underline">
-            Open →
-          </Link>
+        {/* Meta Info */}
+        <div className="flex flex-wrap gap-3">
+          <div className="flex items-center gap-1.5 text-xs text-[#FAFAFA]/50">
+            <MapPin className="h-3.5 w-3.5 text-[#4F8CFF]" />
+            <span>{experience.city}</span>
+          </div>
+          <div className="flex items-center gap-1.5 text-xs text-[#FAFAFA]/50">
+            <Clock className="h-3.5 w-3.5 text-[#7CF5C8]" />
+            <span>{experience.duration}</span>
+          </div>
+          <div className="flex items-center gap-1.5 text-xs text-[#FAFAFA]/50">
+            <Users className="h-3.5 w-3.5 text-[#C7B9FF]" />
+            <span>{experience.groupSize}</span>
+          </div>
         </div>
 
+        {/* Tags */}
+        {experience.tags.length > 0 && (
+          <div className="flex flex-wrap gap-2">
+            {experience.tags.slice(0, 3).map((tag, i) => (
+              <span 
+                key={i}
+                className="text-[10px] px-2 py-1 rounded-full bg-[#FAFAFA]/5 text-[#FAFAFA]/50 border border-[#FAFAFA]/10"
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+        )}
+
+        {/* Mythical Codes */}
+        {experience.resonatesWith.length > 0 && (
+          <div className="flex flex-wrap gap-2">
+            {experience.resonatesWith.slice(0, 2).map((code) => (
+              <CodeBadge key={code} code={code} />
+            ))}
+            {experience.resonatesWith.length > 2 && (
+              <span className="text-xs text-[#FAFAFA]/40 self-center">
+                +{experience.resonatesWith.length - 2} more
+              </span>
+            )}
+          </div>
+        )}
+
+        {/* Personality Traits (Expanded) */}
         {expanded && <PersonalityStrip traits={experience.traits} />}
-      </div>
 
-      <button
-        onClick={onToggleExpanded}
-        className="w-full border-t border-white/10 text-xs py-3 text-white/50 hover:text-white"
-      >
-        {expanded ? "Collapse" : "View details"}
-      </button>
+        {/* Footer */}
+        <div className="flex items-center justify-between pt-3 border-t border-[#FAFAFA]/5">
+          <span className="text-sm font-medium text-[#4F8CFF]">
+            {experience.priceLabel}
+          </span>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={onToggleExpanded}
+              className="text-xs text-[#FAFAFA]/50 hover:text-[#FAFAFA] transition-colors"
+            >
+              {expanded ? "Hide traits" : "View traits"}
+            </button>
+            <Link 
+              href={`/marketplace/${experience.id}`}
+              className="text-xs text-[#4F8CFF] hover:text-[#7CF5C8] transition-colors font-medium"
+            >
+              View details →
+            </Link>
+          </div>
+        </div>
+      </div>
     </article>
   );
 }
@@ -310,26 +355,56 @@ export default function MarketplaceClient({
   }, [initialExperiences, activeCode, activeMood, query]);
 
   return (
-    <div className="min-h-screen bg-black text-white p-10">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {experiences.map((exp) => (
-          <ExperienceCard
-            key={exp.id}
-            experience={exp}
-            lensMode={mode}
-            activeCode={activeCode}
-            activeMood={activeMood}
-            activeCity={null}
-            query={query}
-            activeCollection={null}
-            isSaved={false}
-            onToggleSaved={() => {}}
-            expanded={expandedId === exp.id}
-            onToggleExpanded={() =>
-              setExpandedId(expandedId === exp.id ? null : exp.id)
-            }
-          />
-        ))}
+    <div className="min-h-screen bg-[#111827] text-[#FAFAFA]">
+      {/* Header */}
+      <div className="border-b border-[#FAFAFA]/10 bg-[#111827]/80 backdrop-blur-xl sticky top-0 z-10">
+        <div className="max-w-7xl mx-auto px-6 py-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold bg-gradient-to-r from-[#4F8CFF] via-[#C7B9FF] to-[#7CF5C8] bg-clip-text text-transparent">
+                Marketplace
+              </h1>
+              <p className="text-sm text-[#FAFAFA]/50 mt-1">
+                {experiences.length} experiences found
+              </p>
+            </div>
+            
+            {/* Search */}
+            <input
+              type="text"
+              placeholder="Search experiences..."
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              className="px-4 py-2 rounded-xl bg-[#FAFAFA]/5 border border-[#FAFAFA]/10 text-sm text-[#FAFAFA] placeholder:text-[#FAFAFA]/30 focus:outline-none focus:border-[#4F8CFF]/50 focus:ring-2 focus:ring-[#4F8CFF]/20 transition-all"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Grid */}
+      <div className="max-w-7xl mx-auto px-6 py-10">
+        {experiences.length === 0 ? (
+          <div className="text-center py-20">
+            <p className="text-[#FAFAFA]/40">No experiences found</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {experiences.map((exp) => (
+              <ExperienceCard
+                key={exp.id}
+                experience={exp}
+                lensMode={mode}
+                activeCode={activeCode}
+                activeMood={activeMood}
+                query={query}
+                expanded={expandedId === exp.id}
+                onToggleExpanded={() =>
+                  setExpandedId(expandedId === exp.id ? null : exp.id)
+                }
+              />
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
