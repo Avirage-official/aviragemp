@@ -3,70 +3,75 @@ const COMPATIBILITY: Record<string, {
   medium: string[];
   low: string[];
 }> = {
-  "lhumir": {
-    high: ["tjukari", "ashkara", "yatevar"],
-    medium: ["sahen", "khoisan", "alethir", "kinmora"],
-    low: ["kayori", "khoruun"]
+  "khoisan": {
+    high: ["yatevar", "karayni", "jaejin"],
+    medium: ["lhumir", "sahen", "namsea"],
+    low: ["kayori", "skenari"]
   },
   "kayori": {
-    high: ["wohaka", "sahen", "tahiri"],
-    medium: ["khoruun", "siyuane", "enzuka"],
-    low: ["lhumir", "siljoa"]
+    high: ["tahiri", "wohaka", "siyuane"],
+    medium: ["tjukari", "sahen", "enzuka"],
+    low: ["lhumir", "khoisan"]
   },
   "sahen": {
-    high: ["khoruun", "alethir", "kayori"],
-    medium: ["siyuane", "lhumir", "tjukari"],
-    low: ["kinmora", "enzuka"]
+    high: ["khoruun", "alethir", "skenari"],
+    medium: ["kayori", "tjukari", "khoisan"],
+    low: ["tahiri", "jaejin"]
   },
   "enzuka": {
-    high: ["tahiri", "karayni", "yatevar"],
-    medium: ["wohaka", "shokunin", "namsea"],
-    low: ["sahen", "khoruun"]
+    high: ["tahiri", "karayni", "jaejin"],
+    medium: ["kayori", "shokunin", "wohaka"],
+    low: ["khoruun", "siyuane"]
   },
   "siyuane": {
-    high: ["namsea", "jaejin", "wohaka"],
-    medium: ["kayori", "sahen", "tjukari"],
-    low: ["shokunin", "ashkara"]
+    high: ["kayori", "namsea", "tjukari"],
+    medium: ["alethir", "wohaka", "sahen"],
+    low: ["shokunin", "enzuka"]
   },
   "jaejin": {
-    high: ["namsea", "tahiri", "yatevar"],
-    medium: ["siyuane", "khoisan", "alethir"],
-    low: ["ashkara", "khoruun"]
+    high: ["khoisan", "tahiri", "namsea"],
+    medium: ["enzuka", "karayni", "lhumir"],
+    low: ["ashkara", "kayori"]
   },
   "namsea": {
-    high: ["siyuane", "jaejin", "wohaka"],
-    medium: ["kayori", "tjukari", "tahiri"],
-    low: ["shokunin", "siljoa"]
+    high: ["jaejin", "siyuane", "tjukari"],
+    medium: ["khoisan", "wohaka", "tahiri"],
+    low: ["shokunin", "kinmora"]
   },
   "shokunin": {
     high: ["kinmora", "ashkara", "siljoa"],
-    medium: ["enzuka", "yatevar", "alethir"],
-    low: ["siyuane", "namsea"]
+    medium: ["lhumir", "alethir", "skenari"],
+    low: ["namsea", "siyuane"]
   },
   "khoruun": {
-    high: ["sahen", "kayori", "skenari"],
-    medium: ["khoisan", "tjukari", "wohaka"],
-    low: ["enzuka", "jaejin"]
+    high: ["sahen", "skenari", "alethir"],
+    medium: ["tjukari", "khoisan", "kinmora"],
+    low: ["enzuka", "tahiri"]
+  },
+  "lhumir": {
+    high: ["tjukari", "ashkara", "yatevar"],
+    medium: ["khoisan", "alethir", "shokunin"],
+    low: ["kayori", "siyuane"]
   },
   "yatevar": {
-    high: ["lhumir", "karayni", "jaejin"],
-    medium: ["enzuka", "shokunin", "tjukari"],
-    low: ["khoruun", "kayori"]
+    high: ["khoisan", "lhumir", "karayni"],
+    medium: ["wohaka", "tjukari", "ashkara"],
+    low: ["skenari", "kayori"]
   },
   "tahiri": {
-    high: ["enzuka", "wohaka", "jaejin"],
-    medium: ["kayori", "namsea", "karayni"],
-    low: ["ashkara", "siljoa"]
+    high: ["kayori", "enzuka", "jaejin"],
+    medium: ["wohaka", "namsea", "karayni"],
+    low: ["ashkara", "khoruun"]
   },
   "karayni": {
-    high: ["yatevar", "wohaka", "enzuka"],
-    medium: ["khoisan", "tahiri", "kinmora"],
-    low: ["khoruun", "skenari"]
+    high: ["khoisan", "yatevar", "wohaka"],
+    medium: ["enzuka", "tahiri", "jaejin"],
+    low: ["skenari", "siyuane"]
   },
   "wohaka": {
-    high: ["kayori", "tahiri", "karayni"],
-    medium: ["siyuane", "namsea", "tjukari"],
-    low: ["siljoa", "ashkara"]
+    high: ["kayori", "karayni", "yatevar"],
+    medium: ["tahiri", "tjukari", "siyuane"],
+    low: ["ashkara", "shokunin"]
   },
   "tjukari": {
     high: ["lhumir", "alethir", "yatevar"],
@@ -75,7 +80,7 @@ const COMPATIBILITY: Record<string, {
   },
   "kinmora": {
     high: ["shokunin", "skenari", "alethir"],
-    medium: ["lhumir", "ashkara", "karayni"],
+    medium: ["lhumir", "ashkara", "siljoa"],
     low: ["sahen", "kayori"]
   },
   "siljoa": {
@@ -95,13 +100,8 @@ const COMPATIBILITY: Record<string, {
   },
   "alethir": {
     high: ["tjukari", "sahen", "kinmora"],
-    medium: ["lhumir", "ashkara", "siljoa"],
+    medium: ["lhumir", "ashkara", "khoruun"],
     low: ["enzuka", "tahiri"]
-  },
-  "khoisan": {
-    high: ["yatevar", "karayni", "jaejin"],
-    medium: ["lhumir", "sahen", "khoruun"],
-    low: ["shokunin", "skenari"]
   }
 };
 
