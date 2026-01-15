@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useUser, UserButton } from "@clerk/nextjs";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, ShoppingBag, Calendar, Users as UsersIcon, CalendarDays } from "lucide-react";
+import { Home, ShoppingBag, Calendar, Users as UsersIcon, CalendarDays, Menu, X, Sparkles } from "lucide-react";
 
 export function MainNav() {
   const { user } = useUser();
@@ -53,50 +53,66 @@ export function MainNav() {
   const links = isBusiness ? businessLinks : userLinks;
 
   return (
-    <nav className="bg-black border-b border-white/10 sticky top-0 z-50 backdrop-blur-xl">
-      <div className="container mx-auto px-6">
+    <nav className="bg-[#111827]/95 border-b border-[#FAFAFA]/10 sticky top-0 z-50 backdrop-blur-xl">
+      <div className="max-w-7xl mx-auto px-6">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <Link href={isBusiness ? "/business/dashboard" : "/dashboard"} className="flex items-center gap-2">
-            <span className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">ETHOS</span>
+          <Link 
+            href={isBusiness ? "/business/dashboard" : "/dashboard"} 
+            className="flex items-center gap-3 group"
+          >
+            <div className="flex items-center gap-2">
+              <Sparkles className="h-5 w-5 text-[#4F8CFF] group-hover:text-[#7CF5C8] transition-colors duration-300" />
+              <span className="text-xl font-bold bg-gradient-to-r from-[#4F8CFF] via-[#C7B9FF] to-[#7CF5C8] bg-clip-text text-transparent">
+                ETHOS
+              </span>
+            </div>
             {isBusiness && (
-              <span className="text-xs px-2 py-1 bg-purple-500/10 border border-purple-500/20 text-purple-400 rounded-full font-semibold">
-                BUSINESS
+              <span className="text-[10px] px-2 py-1 bg-[#C7B9FF]/10 border border-[#C7B9FF]/30 text-[#C7B9FF] rounded-full font-semibold uppercase tracking-wider">
+                Business
               </span>
             )}
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-2">
+          <div className="hidden md:flex items-center gap-1">
             {links.map((link) => {
               const Icon = link.icon;
+              const isActive = pathname === link.href;
+              
               return (
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 ${
-                    pathname === link.href
-                      ? "bg-blue-600 text-white"
-                      : "text-gray-400 hover:text-white hover:bg-white/5"
-                  }`}
+                  className={`
+                    flex items-center gap-2 px-4 py-2 rounded-xl transition-all duration-300
+                    ${isActive
+                      ? "bg-gradient-to-r from-[#4F8CFF]/20 to-[#7CF5C8]/20 border border-[#4F8CFF]/30 text-[#FAFAFA]"
+                      : "text-[#FAFAFA]/60 hover:text-[#FAFAFA] hover:bg-[#FAFAFA]/5"
+                    }
+                  `}
                 >
-                  <Icon className="w-4 h-4" />
+                  <Icon className={`w-4 h-4 ${isActive ? "text-[#4F8CFF]" : ""}`} />
                   <span className="text-sm font-medium">{link.label}</span>
                 </Link>
               );
             })}
           </div>
 
-          {/* User Menu */}
+          {/* User Menu & Mobile Toggle */}
           <div className="flex items-center gap-4">
+            {/* Desktop User Button */}
             <div className="hidden md:block">
               <UserButton 
                 afterSignOutUrl="/"
                 appearance={{
                   elements: {
-                    avatarBox: "w-10 h-10",
-                    userButtonPopoverCard: "bg-zinc-900 border border-white/10",
-                    userButtonPopoverActionButton: "text-white hover:bg-white/10"
+                    avatarBox: "w-9 h-9 ring-2 ring-[#4F8CFF]/20 hover:ring-[#4F8CFF]/40 transition-all",
+                    userButtonPopoverCard: "bg-[#111827] border border-[#FAFAFA]/10 shadow-2xl",
+                    userButtonPopoverActionButton: "text-[#FAFAFA] hover:bg-[#FAFAFA]/10 transition-colors",
+                    userButtonPopoverActionButtonText: "text-[#FAFAFA]/80",
+                    userButtonPopoverActionButtonIcon: "text-[#4F8CFF]",
+                    userButtonPopoverFooter: "hidden"
                   }
                 }}
               />
@@ -105,68 +121,59 @@ export function MainNav() {
             {/* Mobile Menu Button */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden p-2 rounded-lg hover:bg-white/5 text-gray-400"
+              className="md:hidden p-2 rounded-xl hover:bg-[#FAFAFA]/5 text-[#FAFAFA]/60 hover:text-[#FAFAFA] transition-all"
             >
-              <svg
-                className="w-6 h-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                {mobileMenuOpen ? (
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                ) : (
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M4 6h16M4 12h16M4 18h16"
-                  />
-                )}
-              </svg>
+              {mobileMenuOpen ? (
+                <X className="w-6 h-6" />
+              ) : (
+                <Menu className="w-6 h-6" />
+              )}
             </button>
           </div>
         </div>
 
         {/* Mobile Menu */}
         {mobileMenuOpen && (
-          <div className="md:hidden py-4 border-t border-white/10">
+          <div className="md:hidden py-4 border-t border-[#FAFAFA]/10 animate-in slide-in-from-top duration-200">
             <div className="flex flex-col gap-2">
               {links.map((link) => {
                 const Icon = link.icon;
+                const isActive = pathname === link.href;
+                
                 return (
                   <Link
                     key={link.href}
                     href={link.href}
                     onClick={() => setMobileMenuOpen(false)}
-                    className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${
-                      pathname === link.href
-                        ? "bg-blue-600 text-white"
-                        : "text-gray-400 hover:text-white hover:bg-white/5"
-                    }`}
+                    className={`
+                      flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200
+                      ${isActive
+                        ? "bg-gradient-to-r from-[#4F8CFF]/20 to-[#7CF5C8]/20 border border-[#4F8CFF]/30 text-[#FAFAFA]"
+                        : "text-[#FAFAFA]/60 hover:text-[#FAFAFA] hover:bg-[#FAFAFA]/5"
+                      }
+                    `}
                   >
-                    <Icon className="w-5 h-5" />
+                    <Icon className={`w-5 h-5 ${isActive ? "text-[#4F8CFF]" : ""}`} />
                     <span className="font-medium">{link.label}</span>
                   </Link>
                 );
               })}
               
-              {/* Mobile User Button */}
-              <div className="mt-4 pt-4 border-t border-white/10 flex items-center justify-between px-4">
-                <span className="text-sm text-gray-400">Account</span>
-                <UserButton 
-                  afterSignOutUrl="/"
-                  appearance={{
-                    elements: {
-                      avatarBox: "w-10 h-10"
-                    }
-                  }}
-                />
+              {/* Mobile User Section */}
+              <div className="mt-4 pt-4 border-t border-[#FAFAFA]/10">
+                <div className="flex items-center justify-between px-4 py-2">
+                  <span className="text-sm text-[#FAFAFA]/50 font-medium">Account</span>
+                  <UserButton 
+                    afterSignOutUrl="/"
+                    appearance={{
+                      elements: {
+                        avatarBox: "w-9 h-9 ring-2 ring-[#4F8CFF]/20",
+                        userButtonPopoverCard: "bg-[#111827] border border-[#FAFAFA]/10",
+                        userButtonPopoverActionButton: "text-[#FAFAFA] hover:bg-[#FAFAFA]/10"
+                      }
+                    }}
+                  />
+                </div>
               </div>
             </div>
           </div>
