@@ -2,28 +2,62 @@
 
 import Link from "next/link";
 import clsx from "clsx";
-import { useMemo, useState, useId } from "react";
+import { useMemo, useState } from "react";
 import { Sparkles, MapPin, Users, Clock } from "lucide-react";
 
 /* -------------------------------------------------------------------------- */
 /* ETHOS MARKETPLACE - NEON PASTEL TECH VIBE                                  */
 /* -------------------------------------------------------------------------- */
 
+// All 20 Mythical Codes
 const MYTHICAL_CODES = [
   "khoisan",
   "kayori",
-  "alethir",
-  "lhumir",
-  "tjukari",
-  "shokunin",
-  "siyuane",
-  "khoruun",
   "sahen",
-  "tahiri",
+  "enzuka",
+  "siyuane",
+  "jaejin",
+  "namsea",
+  "shokunin",
+  "khoruun",
+  "lhumir",
   "yatevar",
+  "tahiri",
+  "karayni",
+  "wohaka",
+  "tjukari",
+  "kinmora",
+  "siljoa",
+  "skenari",
+  "ashkara",
+  "alethir",
 ] as const;
 
 type MythicalCode = (typeof MYTHICAL_CODES)[number];
+
+// Mapping internal codes to display names
+const CODE_LABELS: Record<MythicalCode, string> = {
+  khoisan: "Earthlistener",
+  kayori: "Fireweaver",
+  sahen: "HorizonWalker",
+  enzuka: "Shieldbearer",
+  siyuane: "Kitsune",
+  jaejin: "Harmonist",
+  namsea: "Flowbinder",
+  shokunin: "BladeSmith",
+  khoruun: "SkyRider",
+  lhumir: "StillMind",
+  yatevar: "CycleKeeper",
+  tahiri: "HeartBearer",
+  karayni: "AncestorRoot",
+  wohaka: "SonglineKeeper",
+  tjukari: "Dreampath Navigator",
+  kinmora: "TimeArchitect",
+  siljoa: "FrostSentinel",
+  skenari: "FutureGuardian",
+  ashkara: "TruthForger",
+  alethir: "Seeker",
+};
 
 type LensMode = "browse" | "codes" | "mood" | "location" | "saved";
 
@@ -65,7 +99,7 @@ export type Experience = {
 /* MOOD SCORING                                                               */
 /* -------------------------------------------------------------------------- */
 
-const MOOD_LENS_TRAITS: Record
+const MOOD_LENS_TRAITS: Record<
   MoodLens,
   Partial<Record<keyof ExperienceTraits, [number, number]>>
 > = {
@@ -124,7 +158,7 @@ function TraitBar({
       </div>
       <div className={clsx("h-1.5 w-full rounded-full overflow-hidden", colorClasses[color])}>
         <div 
-          className="h-full rounded-full transition-all duration-500"
+          className="h-full rounded-full transition-all duration-500 ease-out"
           style={{ width: `${Math.max(0, Math.min(100, value))}%` }}
         />
       </div>
@@ -133,11 +167,13 @@ function TraitBar({
 }
 
 function CodeBadge({ code }: { code: MythicalCode }) {
+  const displayName = CODE_LABELS[code];
+  
   return (
-    <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#C7B9FF]/10 border border-[#C7B9FF]/20">
+    <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#C7B9FF]/10 border border-[#C7B9FF]/20 hover:bg-[#C7B9FF]/15 transition-colors">
       <Sparkles className="h-3 w-3 text-[#C7B9FF]" />
-      <span className="text-xs font-medium text-[#C7B9FF] capitalize">
-        {code}
+      <span className="text-xs font-medium text-[#C7B9FF]">
+        {displayName}
       </span>
     </div>
   );
@@ -153,6 +189,9 @@ function PersonalityStrip({ traits }: { traits: ExperienceTraits }) {
 
   return (
     <div className="space-y-3 pt-4 border-t border-[#FAFAFA]/5">
+      <p className="text-[10px] uppercase tracking-wider text-[#FAFAFA]/40 font-medium mb-2">
+        Experience Personality
+      </p>
       {traitRows.map((row) => (
         <TraitBar 
           key={row.key}
@@ -199,14 +238,14 @@ function ExperienceCard({
     <article
       className={clsx(
         "group relative rounded-2xl border transition-all duration-300",
-        "bg-gradient-to-br from-[#111827] to-[#111827]/80",
+        "bg-gradient-to-br from-[#111827] to-[#111827]/80 backdrop-blur-sm",
         emphasized 
           ? "border-[#7CF5C8]/30 shadow-lg shadow-[#7CF5C8]/5" 
           : "border-[#FAFAFA]/10 hover:border-[#4F8CFF]/30",
         expanded && "ring-1 ring-[#4F8CFF]/20"
       )}
     >
-      {/* Resonance Indicator */}
+      {/* Resonance Pulse Indicator */}
       {resonates && (
         <div className="absolute -top-2 -right-2 z-10">
           <div className="relative">
@@ -224,7 +263,7 @@ function ExperienceCard({
               {experience.title}
             </h3>
             <span className={clsx(
-              "text-xs px-2 py-1 rounded-full capitalize whitespace-nowrap",
+              "text-xs px-2 py-1 rounded-full capitalize whitespace-nowrap flex-shrink-0",
               "bg-[#4F8CFF]/10 text-[#4F8CFF] border border-[#4F8CFF]/20"
             )}>
               {experience.category}
@@ -236,7 +275,7 @@ function ExperienceCard({
           </p>
         </div>
 
-        {/* Meta Info */}
+        {/* Meta Info with Icons */}
         <div className="flex flex-wrap gap-3">
           <div className="flex items-center gap-1.5 text-xs text-[#FAFAFA]/50">
             <MapPin className="h-3.5 w-3.5 text-[#4F8CFF]" />
@@ -263,24 +302,30 @@ function ExperienceCard({
                 {tag}
               </span>
             ))}
+            {experience.tags.length > 3 && (
+              <span className="text-[10px] px-2 py-1 text-[#FAFAFA]/40">
+                +{experience.tags.length - 3}
+              </span>
+            )}
           </div>
         )}
 
-        {/* Mythical Codes */}
+        {/* Mythical Code Badges */}
         {experience.resonatesWith.length > 0 && (
           <div className="flex flex-wrap gap-2">
             {experience.resonatesWith.slice(0, 2).map((code) => (
               <CodeBadge key={code} code={code} />
             ))}
             {experience.resonatesWith.length > 2 && (
-              <span className="text-xs text-[#FAFAFA]/40 self-center">
+              <span className="text-xs text-[#FAFAFA]/40 self-center flex items-center gap-1">
+                <Sparkles className="h-3 w-3" />
                 +{experience.resonatesWith.length - 2} more
               </span>
             )}
           </div>
         )}
 
-        {/* Personality Traits (Expanded) */}
+        {/* Personality Traits (Expanded State) */}
         {expanded && <PersonalityStrip traits={experience.traits} />}
 
         {/* Footer */}
@@ -326,6 +371,7 @@ export default function MarketplaceClient({
   const experiences = useMemo(() => {
     let list = [...initialExperiences];
 
+    // Sort by code resonance
     if (activeCode) {
       list.sort(
         (a, b) =>
@@ -334,6 +380,7 @@ export default function MarketplaceClient({
       );
     }
 
+    // Sort by mood match
     if (activeMood) {
       list.sort(
         (a, b) =>
@@ -342,6 +389,7 @@ export default function MarketplaceClient({
       );
     }
 
+    // Filter by search query
     if (query.trim()) {
       list = list.filter((e) =>
         [e.title, e.description, e.city, e.tags.join(" ")]
@@ -359,13 +407,13 @@ export default function MarketplaceClient({
       {/* Header */}
       <div className="border-b border-[#FAFAFA]/10 bg-[#111827]/80 backdrop-blur-xl sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-6 py-6">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between flex-wrap gap-4">
             <div>
               <h1 className="text-2xl font-bold bg-gradient-to-r from-[#4F8CFF] via-[#C7B9FF] to-[#7CF5C8] bg-clip-text text-transparent">
                 Marketplace
               </h1>
               <p className="text-sm text-[#FAFAFA]/50 mt-1">
-                {experiences.length} experiences found
+                {experiences.length} {experiences.length === 1 ? 'experience' : 'experiences'} found
               </p>
             </div>
             
@@ -375,7 +423,7 @@ export default function MarketplaceClient({
               placeholder="Search experiences..."
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              className="px-4 py-2 rounded-xl bg-[#FAFAFA]/5 border border-[#FAFAFA]/10 text-sm text-[#FAFAFA] placeholder:text-[#FAFAFA]/30 focus:outline-none focus:border-[#4F8CFF]/50 focus:ring-2 focus:ring-[#4F8CFF]/20 transition-all"
+              className="px-4 py-2 rounded-xl bg-[#FAFAFA]/5 border border-[#FAFAFA]/10 text-sm text-[#FAFAFA] placeholder:text-[#FAFAFA]/30 focus:outline-none focus:border-[#4F8CFF]/50 focus:ring-2 focus:ring-[#4F8CFF]/20 transition-all min-w-[250px]"
             />
           </div>
         </div>
@@ -385,7 +433,11 @@ export default function MarketplaceClient({
       <div className="max-w-7xl mx-auto px-6 py-10">
         {experiences.length === 0 ? (
           <div className="text-center py-20">
+            <div className="inline-flex h-16 w-16 rounded-full bg-[#FAFAFA]/5 items-center justify-center mb-4">
+              <Sparkles className="h-8 w-8 text-[#FAFAFA]/20" />
+            </div>
             <p className="text-[#FAFAFA]/40">No experiences found</p>
+            <p className="text-sm text-[#FAFAFA]/30 mt-2">Try adjusting your search</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
