@@ -7,122 +7,122 @@ const CODE_DATA: Record<string, {
 }> = {
   "khoisan": {
     name: "Earthlistener",
-    tagline: "Grounded Awareness",
-    description: "Deep connection to environment, present-moment awareness, attuned to natural rhythms and cycles. You sense what others miss.",
-    emblem: "🦁",
-    traits: ["Environmental awareness", "Present-focused", "Observant"]
+    tagline: "Grounded Observer",
+    description: "Deeply connected to nature and present-moment awareness. You notice subtle shifts in energy and environment that others miss.",
+    emblem: "🌿",
+    traits: ["Observant", "Grounded", "Present"]
   },
   "kayori": {
     name: "Fireweaver",
-    tagline: "Dynamic Catalyst",
-    description: "High energy, creative spark, natural connector. You ignite passion and bring people together through warmth and enthusiasm.",
+    tagline: "Energetic Catalyst",
+    description: "High energy and passionate about transformation. You energize communities through emotion, rhythm, and shared meaning.",
     emblem: "🔥",
-    traits: ["Energetic", "Social catalyst", "Passionate"]
+    traits: ["Passionate", "Energetic", "Transformative"]
   },
   "sahen": {
     name: "HorizonWalker",
-    tagline: "Boundless Explorer",
-    description: "Always seeking what's beyond, driven by curiosity and possibility. You thrive on new experiences and broadening perspectives.",
+    tagline: "Enduring Explorer",
+    description: "Built on endurance and self-reliance. You thrive on long journeys and are steady when others rush.",
     emblem: "🌅",
-    traits: ["Adventurous", "Curious", "Open-minded"]
+    traits: ["Enduring", "Self-reliant", "Steady"]
   },
   "enzuka": {
     name: "Shieldbearer",
-    tagline: "Protective Strength",
-    description: "Natural guardian and protector. You create safety for others through reliability, loyalty, and steadfast presence.",
+    tagline: "Protective Guardian",
+    description: "Natural protector who creates safety for others. You defend what matters and build secure foundations.",
     emblem: "🛡️",
-    traits: ["Protective", "Loyal", "Reliable"]
+    traits: ["Protective", "Loyal", "Defensive"]
   },
   "siyuane": {
     name: "Kitsune",
-    tagline: "Playful Wisdom",
-    description: "Clever adaptability with a touch of mischief. You navigate complexity with intelligence and keep things light.",
+    tagline: "Clever Adapter",
+    description: "Quick-witted and adaptable. You navigate complexity with playful intelligence and strategic thinking.",
     emblem: "🦊",
-    traits: ["Adaptable", "Clever", "Playful"]
+    traits: ["Clever", "Playful", "Adaptable"]
   },
   "jaejin": {
     name: "Harmonist",
-    tagline: "Balance Keeper",
-    description: "Natural mediator who seeks equilibrium. You bring calm to chaos and help others find middle ground.",
+    tagline: "Peaceful Mediator",
+    description: "Seek balance and harmony in all things. You mediate conflicts and find middle ground between opposing forces.",
     emblem: "⚖️",
-    traits: ["Balanced", "Diplomatic", "Calm"]
+    traits: ["Balanced", "Peaceful", "Mediating"]
   },
   "namsea": {
     name: "Flowbinder",
-    tagline: "Fluid Grace",
-    description: "Move through life with natural ease. You adapt seamlessly to change and help others navigate transitions.",
+    tagline: "Fluid Navigator",
+    description: "Adapt fluidly to change and prioritize relational balance. You move with circumstances rather than against them.",
     emblem: "🌊",
-    traits: ["Flexible", "Graceful", "Adaptive"]
+    traits: ["Fluid", "Flexible", "Relational"]
   },
   "shokunin": {
     name: "BladeSmith",
-    tagline: "Precision Mastery",
-    description: "Dedicated craftsperson who pursues excellence through discipline. You refine your skills with focused determination.",
-    emblem: "🐉",
-    traits: ["Disciplined", "Perfectionist", "Skilled"]
+    tagline: "Master Craftsperson",
+    description: "Devoted to precision, discipline, and mastery of craft. Quality is a moral standard, not just a feature.",
+    emblem: "⚔️",
+    traits: ["Precise", "Disciplined", "Masterful"]
   },
   "khoruun": {
     name: "SkyRider",
-    tagline: "Soaring Vision",
-    description: "See possibilities from above, thinking big and moving fast. You inspire others to reach higher.",
+    tagline: "Free Spirit",
+    description: "Value freedom, independence, and wide-horizon thinking. You need space, autonomy, and room to soar.",
     emblem: "🦅",
-    traits: ["Visionary", "Ambitious", "Free-spirited"]
+    traits: ["Free", "Independent", "Visionary"]
   },
   "lhumir": {
     name: "StillMind",
     tagline: "Inner Clarity",
-    description: "Deep contemplation and inner clarity. You find meaning in stillness and help others discover their own depth.",
+    description: "Deep contemplation and inner clarity. You seek meaning through reflection and philosophical inquiry.",
     emblem: "🏔️",
     traits: ["Contemplative", "Introspective", "Meaning-seeking"]
   },
   "yatevar": {
     name: "CycleKeeper",
-    tagline: "Rhythmic Wisdom",
-    description: "Understand natural patterns and rhythms. You honor cycles of growth, rest, and renewal.",
+    tagline: "Ritual Guardian",
+    description: "Grounded in cyclical thinking and ritual precision. You operate across long arcs of time with symbolic depth.",
     emblem: "🌙",
-    traits: ["Patient", "Rhythmic", "Wise"]
+    traits: ["Cyclical", "Ritualistic", "Timeless"]
   },
   "tahiri": {
     name: "HeartBearer",
-    tagline: "Emotional Depth",
-    description: "Lead with heart and emotional intelligence. You create space for authentic connection and vulnerability.",
+    tagline: "Emotional Anchor",
+    description: "Defined by warmth, hospitality, and emotional generosity. You lead with care, honor, and deep connection.",
     emblem: "❤️",
-    traits: ["Empathetic", "Authentic", "Nurturing"]
+    traits: ["Warm", "Caring", "Generous"]
   },
   "karayni": {
     name: "AncestorRoot",
-    tagline: "Heritage Guardian",
-    description: "Connected to lineage and tradition. You honor the past while building bridges to the future.",
+    tagline: "Heritage Keeper",
+    description: "Connected to tradition and ancestral wisdom. You honor the past while building bridges to the future.",
     emblem: "🌳",
-    traits: ["Traditional", "Connected", "Respectful"]
+    traits: ["Traditional", "Rooted", "Wise"]
   },
   "wohaka": {
     name: "SonglineKeeper",
     tagline: "Story Weaver",
-    description: "Keeper of stories and collective memory. You connect people through shared narrative and meaning.",
-    emblem: "🎵",
-    traits: ["Storyteller", "Connector", "Creative"]
+    description: "Preserve and share cultural stories. You maintain collective memory through narrative and oral tradition.",
+    emblem: "📖",
+    traits: ["Storytelling", "Preserving", "Cultural"]
   },
   "tjukari": {
     name: "Dreampath Navigator",
-    tagline: "Visionary Guide",
-    description: "Navigate between inner and outer worlds. You help others understand their dreams and intuitions.",
+    tagline: "Intuitive Voyager",
+    description: "Navigate through intuition and vision. You walk the dream paths and trust spiritual guidance.",
     emblem: "✨",
-    traits: ["Intuitive", "Imaginative", "Insightful"]
+    traits: ["Intuitive", "Visionary", "Spiritual"]
   },
   "kinmora": {
     name: "TimeArchitect",
-    tagline: "Strategic Builder",
-    description: "Think long-term and build systematically. You create structures that stand the test of time.",
+    tagline: "Strategic Planner",
+    description: "Master of long-term vision and strategic planning. You build frameworks that stand the test of time.",
     emblem: "⏳",
-    traits: ["Strategic", "Patient", "Systematic"]
+    traits: ["Strategic", "Planning", "Structured"]
   },
   "siljoa": {
     name: "FrostSentinel",
-    tagline: "Clear Boundaries",
-    description: "Clarity through distance. You maintain perspective and help others see situations objectively.",
+    tagline: "Resilient Watcher",
+    description: "Embody resilience, endurance, and clarity. You maintain perspective and see through illusions.",
     emblem: "❄️",
-    traits: ["Objective", "Discerning", "Clear"]
+    traits: ["Resilient", "Clear", "Enduring"]
   },
   "skenari": {
     name: "FutureGuardian",
@@ -133,10 +133,10 @@ const CODE_DATA: Record<string, {
   },
   "ashkara": {
     name: "TruthForger",
-    tagline: "Authentic Integrity",
+    tagline: "Authentic Seeker",
     description: "Committed to truth and authenticity. You cut through illusion to reveal what's real.",
-    emblem: "⚔️",
-    traits: ["Honest", "Direct", "Principled"]
+    emblem: "⚡",
+    traits: ["Honest", "Direct", "Authentic"]
   },
   "alethir": {
     name: "Seeker",
@@ -153,7 +153,7 @@ export function CodeOverview({ code }: { code: string }) {
   if (!data) {
     return (
       <div className="bg-white rounded-lg p-8 shadow">
-        <p className="text-gray-500">Code data not found</p>
+        <p className="text-gray-500">Code data not found for: {code}</p>
       </div>
     );
   }
