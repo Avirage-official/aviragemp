@@ -6,10 +6,6 @@ import MarketplaceDetailClient, {
 
 export const dynamic = "force-dynamic";
 
-/**
- * Next.js 15 typegen expects params/searchParams to be Promises in async pages.
- * If we type them as plain objects, Vercel build fails with the Promise<any> mismatch.
- */
 type SearchParams = {
   lens?: string;
   code?: string;
@@ -38,7 +34,6 @@ function clampTrait(n: unknown, fallback = 50): number {
 }
 
 function normaliseTraits(v: unknown): ListingDetailView["editorial"]["traits"] {
-  // Prisma Json can be object/array/string/number/bool/null — we only accept object
   if (!v || typeof v !== "object" || Array.isArray(v)) {
     return {
       energy: 55,
@@ -100,7 +95,7 @@ export default async function MarketplaceDetailPage({
     );
   }
 
-  // Pull editorial from Listing model (now that you added these fields)
+  // Pull editorial from Listing model
   const traits = normaliseTraits((listing as any).traits);
   const tags = safeStringArray((listing as any).tags ?? []);
   const duration =
@@ -123,6 +118,7 @@ export default async function MarketplaceDetailPage({
     pricingType: listing.pricingType,
     bookingType: listing.bookingType as "INQUIRY" | "INSTANT",
     targetCodes: listing.targetCodes ?? [],
+    images: listing.images ?? [],
     business: {
       businessName: listing.business.businessName,
       description: listing.business.description ?? "",
@@ -137,7 +133,6 @@ export default async function MarketplaceDetailPage({
       duration,
       groupSize,
 
-      // Keep continuity even if you haven't stored these yet
       whatToExpect: [
         "A gentle pace — you can opt in or out of intensity",
         "Clarity over pressure (no forced sharing)",
@@ -166,7 +161,7 @@ export default async function MarketplaceDetailPage({
         },
         {
           phase: "Confirm fit",
-          description: "If it feels aligned, you confirm timing and next steps—no pressure if it doesn’t.",
+          description: "If it feels aligned, you confirm timing and next steps—no pressure if it doesn't.",
         },
       ],
     },

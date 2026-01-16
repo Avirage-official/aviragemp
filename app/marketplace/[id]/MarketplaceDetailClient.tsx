@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import clsx from "clsx";
+import { ImageCarousel } from "@/components/marketplace/ImageCarousel";
 
 export type ListingDetailView = {
   id: string;
@@ -15,6 +16,7 @@ export type ListingDetailView = {
   pricingType: string;
   bookingType: "INQUIRY" | "INSTANT";
   targetCodes: string[];
+  images: string[];
   business: {
     businessName: string;
     description: string;
@@ -34,8 +36,8 @@ export type ListingDetailView = {
       introspection: number;
     };
     tags: string[];
-    duration: string | null; // ✅ ADD
-    groupSize: string | null; // ✅ ADD
+    duration: string | null;
+    groupSize: string | null;
     whatToExpect: string[];
     whatHappensNext: string;
     host: {
@@ -110,7 +112,6 @@ function InquiryModal({
 
       setSent(true);
       setSending(false);
-      // Optional: auto-close after short beat; leaving manual keeps it calm.
     } catch {
       setError("An error occurred. Please try again.");
       setSending(false);
@@ -125,7 +126,7 @@ function InquiryModal({
         {!sent ? (
           <>
             <p className="text-sm text-white/60 mb-6">
-              This is not a booking. It’s a quiet first step to ask questions,
+              This is not a booking. It's a quiet first step to ask questions,
               clarify fit, or express interest in <b>{experienceTitle}</b>.
             </p>
 
@@ -192,7 +193,6 @@ export default function MarketplaceDetailClient({
 
   const resonates = useMemo(() => {
     if (!codeLens) return false;
-    // In this detail view we treat "targetCodes" as resonance (descriptive, optional).
     return view.targetCodes.includes(codeLens);
   }, [codeLens, view.targetCodes]);
 
@@ -217,6 +217,9 @@ export default function MarketplaceDetailClient({
             </span>
           </div>
         )}
+
+        {/* IMAGE CAROUSEL */}
+        <ImageCarousel images={view.images} title={view.title} />
 
         {/* Header */}
         <div className="max-w-3xl mb-14">
