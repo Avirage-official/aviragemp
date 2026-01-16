@@ -1,3 +1,7 @@
+"use client";
+
+import { Calendar, Sparkles, Hash } from "lucide-react";
+
 const INSIGHTS: Record<string, {
   month: string;
   theme: string;
@@ -151,44 +155,76 @@ export function MonthlyInsights({ code }: { code: string }) {
   const insight = INSIGHTS[code] || INSIGHTS["lhumir"];
   
   return (
-    <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-lg p-8 shadow">
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold text-gray-900">Monthly Insights</h2>
-        <span className="text-sm font-medium text-indigo-600 bg-indigo-100 px-3 py-1 rounded-full">
-          {insight.month}
-        </span>
-      </div>
+    <div className="relative group">
+      {/* Glow */}
+      <div className="absolute -inset-[1px] rounded-[28px] bg-gradient-to-br from-[#C7B9FF]/10 via-[#4F8CFF]/10 to-[#7CF5C8]/10 opacity-0 group-hover:opacity-100 blur-xl transition-opacity duration-700" />
       
-      <div className="space-y-6">
-        <div>
-          <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2">
-            This Month's Theme
-          </h3>
-          <p className="text-2xl font-bold text-gray-900">{insight.theme}</p>
-        </div>
-        
-        <div>
-          <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2">
-            Insight for Your Code
-          </h3>
-          <p className="text-gray-700 leading-relaxed">{insight.tip}</p>
-        </div>
-        
-        <div className="grid md:grid-cols-2 gap-6 pt-6 border-t border-indigo-200">
-          <div>
-            <h3 className="text-sm font-semibold text-indigo-700 mb-2 flex items-center gap-2">
-              <span>✨</span>
-              Astrological Alignment
-            </h3>
-            <p className="text-sm text-gray-600">{insight.astrologyNote}</p>
+      {/* Card */}
+      <div className="relative rounded-[28px] bg-white/[0.03] backdrop-blur-2xl border border-[#FAFAFA]/10 p-8">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#C7B9FF]/20 to-[#4F8CFF]/20 border border-[#C7B9FF]/30 flex items-center justify-center">
+              <Calendar className="h-6 w-6 text-[#C7B9FF]" />
+            </div>
+            <div>
+              <h3 className="text-xl font-bold text-[#FAFAFA]">Monthly Insights</h3>
+              <p className="text-xs text-[#FAFAFA]/50">Guidance for your journey</p>
+            </div>
           </div>
           
-          <div>
-            <h3 className="text-sm font-semibold text-purple-700 mb-2 flex items-center gap-2">
-              <span>🔢</span>
-              Numerology
-            </h3>
-            <p className="text-sm text-gray-600">{insight.numerology}</p>
+          {/* Month badge */}
+          <span className="px-3 py-1 rounded-full bg-[#4F8CFF]/10 border border-[#4F8CFF]/30 text-[#4F8CFF] text-xs font-semibold">
+            {insight.month}
+          </span>
+        </div>
+        
+        {/* Theme */}
+        <div className="mb-6 pb-6 border-b border-[#FAFAFA]/10">
+          <h4 className="text-xs uppercase tracking-wider text-[#FAFAFA]/40 mb-2">
+            This Month's Theme
+          </h4>
+          <p className="text-2xl font-bold bg-gradient-to-r from-[#4F8CFF] to-[#7CF5C8] bg-clip-text text-transparent">
+            {insight.theme}
+          </p>
+        </div>
+        
+        {/* Main insight */}
+        <div className="mb-6">
+          <h4 className="text-xs uppercase tracking-wider text-[#FAFAFA]/40 mb-3">
+            Insight for Your Code
+          </h4>
+          <p className="text-[#FAFAFA]/80 leading-relaxed">
+            {insight.tip}
+          </p>
+        </div>
+        
+        {/* Astrology & Numerology Grid */}
+        <div className="grid md:grid-cols-2 gap-6">
+          {/* Astrology */}
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-[#C7B9FF]" />
+              <h4 className="text-xs uppercase tracking-wider text-[#C7B9FF] font-semibold">
+                Astrological Alignment
+              </h4>
+            </div>
+            <p className="text-sm text-[#FAFAFA]/60 leading-relaxed">
+              {insight.astrologyNote}
+            </p>
+          </div>
+          
+          {/* Numerology */}
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <Hash className="h-4 w-4 text-[#7CF5C8]" />
+              <h4 className="text-xs uppercase tracking-wider text-[#7CF5C8] font-semibold">
+                Numerology
+              </h4>
+            </div>
+            <p className="text-sm text-[#FAFAFA]/60 leading-relaxed">
+              {insight.numerology}
+            </p>
           </div>
         </div>
       </div>
