@@ -82,6 +82,7 @@ export async function POST(request: Request) {
 
     const traits = normaliseTraits(data.traits) ?? undefined;
     const tags = safeStringArray(data.tags);
+    const images = safeStringArray(data.images);
 
     const duration =
       typeof data.duration === "string" && data.duration.trim()
@@ -106,7 +107,7 @@ export async function POST(request: Request) {
         category: data.category,
         subcategory: data.subcategory ?? null,
 
-        images: [],
+        images: images,
 
         price: data.price ?? null,
         currency: "USD",

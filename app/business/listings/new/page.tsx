@@ -14,9 +14,11 @@ import {
   Zap,
   Target,
   CheckCircle2,
-  Info
+  Info,
+  Image as ImageIcon
 } from "lucide-react";
 import { CodeTargetingSelector } from "@/components/business/CodeTargetingSelector";
+import { ImageUpload } from "@/components/business/ImageUpload";
 
 /* -------------------------------------------------------------------------- */
 /* TYPES                                                                      */
@@ -136,6 +138,7 @@ export default function NewListingPage() {
     duration: "",
     groupSize: "",
     tags: "",
+    images: [] as string[],
     traits: {
       energy: 50,
       social: 50,
@@ -302,6 +305,22 @@ export default function NewListingPage() {
                   </FieldHint>
                 </Field>
               </div>
+            </Section>
+
+            {/* IMAGES */}
+            <Section 
+              title="Images" 
+              icon={<ImageIcon className="h-5 w-5" />}
+              description="Show what the experience looks like"
+            >
+              <ImageUpload
+                images={formData.images}
+                onChange={(urls) => setFormData({ ...formData, images: urls })}
+                maxImages={6}
+              />
+              <FieldHint>
+                Upload up to 6 high-quality images that capture the essence of your experience
+              </FieldHint>
             </Section>
 
             {/* CATEGORY */}
