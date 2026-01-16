@@ -48,6 +48,7 @@ export default async function EditListingPage({
         groupSize: listing.groupSize,
         tags: listing.tags || [],
         traits: listing.traits,
+        images: listing.images || [],
         isActive: listing.isActive,
       }}
     />

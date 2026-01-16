@@ -3,6 +3,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
 
+function safeStringArray(v: unknown): string[] {
+  if (!Array.isArray(v)) return [];
+  return v
+    .filter((x) => typeof x === "string")
+    .map((x) => x.trim())
+    .filter(Boolean);
+}
+
 export async function POST(req: NextRequest) {
   const { userId } = await auth();
   if (!userId) {
@@ -27,6 +35,7 @@ export async function POST(req: NextRequest) {
     groupSize,
     tags,
     traits,
+    images,
   } = body as any;
 
   if (!listingId || !title || !description || !category) {
@@ -67,6 +76,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
+  const cleanImages = safeStringArray(images);
+
   await prisma.listing.update({
     where: { id: listingId },
     data: {
@@ -84,6 +95,7 @@ export async function POST(req: NextRequest) {
       groupSize: groupSize ?? null,
       tags,
       traits: traits ?? null,
+      images: cleanImages,
     },
   });
 

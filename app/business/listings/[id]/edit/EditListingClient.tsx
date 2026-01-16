@@ -4,7 +4,8 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { CodeTargetingSelector } from "@/components/business/CodeTargetingSelector";
-import { ArrowLeft, Save } from "lucide-react";
+import { ImageUpload } from "@/components/business/ImageUpload";
+import { ArrowLeft, Save, Image as ImageIcon } from "lucide-react";
 
 type Traits = {
   energy: number;
@@ -33,6 +34,7 @@ type ListingInput = {
   groupSize?: string | null;
   tags: string[];
   traits: any;
+  images: string[];
   isActive: boolean;
 };
 
@@ -78,6 +80,7 @@ export default function EditListingClient({ listing }: { listing: ListingInput }
     duration: listing.duration || "",
     groupSize: listing.groupSize || "",
     tags: initialTags,
+    images: listing.images || [],
     traits: normalizeTraits(listing.traits),
   });
 
@@ -114,6 +117,7 @@ export default function EditListingClient({ listing }: { listing: ListingInput }
             .map((t) => t.trim())
             .filter(Boolean),
           traits: form.traits,
+          images: form.images,
         }),
       });
 
@@ -187,18 +191,38 @@ export default function EditListingClient({ listing }: { listing: ListingInput }
           </Field>
         </Section>
 
+        {/* Images */}
+        <Section title="Images" icon={<ImageIcon className="h-5 w-5" />}>
+          <ImageUpload
+            images={form.images}
+            onChange={(urls) => setForm({ ...form, images: urls })}
+            maxImages={6}
+          />
+          <p className="text-xs text-white/40 mt-2">
+            Upload up to 6 high-quality images that capture the essence of your experience
+          </p>
+        </Section>
+
         {/* Category */}
         <Section title="Category">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Field label="Category">
-              <Input
+              <Select
                 required
                 value={form.category}
                 onChange={(v) => setForm({ ...form, category: v })}
+                options={[
+                  ["", "Select category"],
+                  ["experience", "Experience"],
+                  ["workshop", "Workshop"],
+                  ["retreat", "Retreat"],
+                  ["event", "Event"],
+                  ["service", "Service"],
+                ]}
               />
             </Field>
 
-            <Field label="Subcategory (optional)">
+            <Field label="Subcategory">
               <Input
                 value={form.subcategory}
                 onChange={(v) => setForm({ ...form, subcategory: v })}
@@ -208,142 +232,72 @@ export default function EditListingClient({ listing }: { listing: ListingInput }
           </div>
         </Section>
 
-        {/* Pricing + location */}
-        <Section title="Pricing & location">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Field label="Price (optional)">
+        {/* Practical */}
+        <Section title="Practical details">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Field label="Duration">
               <Input
-                value={form.price}
-                onChange={(v) => setForm({ ...form, price: v })}
-                placeholder="99.00"
+                value={form.duration}
+                onChange={(v) => setForm({ ...form, duration: v })}
+                placeholder="e.g., 2–3 hours"
               />
             </Field>
 
-            <Field label="Pricing type">
-              <Select
-                value={form.pricingType}
-                onChange={(v) => setForm({ ...form, pricingType: v })}
-                options={[
-                  { value: "FIXED", label: "Fixed" },
-                  { value: "FROM", label: "From" },
-                  { value: "QUOTE", label: "Quote" },
-                ]}
-              />
-            </Field>
-
-            <Field label="City (optional)">
+            <Field label="Group size">
               <Input
-                value={form.city}
-                onChange={(v) => setForm({ ...form, city: v })}
-                placeholder="City"
-              />
-            </Field>
-          </div>
-
-          <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Field label="Location (optional)">
-              <Input
-                value={form.location}
-                onChange={(v) => setForm({ ...form, location: v })}
-                placeholder="Area / venue hint"
-              />
-            </Field>
-
-            <Field label="Booking type">
-              <Select
-                value={form.bookingType}
-                onChange={(v) => setForm({ ...form, bookingType: v })}
-                options={[
-                  { value: "INQUIRY", label: "Inquiry" },
-                  { value: "PENDING", label: "Pending" },
-                ]}
+                value={form.groupSize}
+                onChange={(v) => setForm({ ...form, groupSize: v })}
+                placeholder="e.g., 2–6 people"
               />
             </Field>
           </div>
         </Section>
 
-        {/* Editorial */}
-        <Section title="Editorial">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Field label="Duration (optional)">
-              <Input
-                value={form.duration}
-                onChange={(v) => setForm({ ...form, duration: v })}
-                placeholder="2–3h"
-              />
-            </Field>
-
-            <Field label="Group size (optional)">
-              <Input
-                value={form.groupSize}
-                onChange={(v) => setForm({ ...form, groupSize: v })}
-                placeholder="2–6"
-              />
-            </Field>
-          </div>
-
-          <Field label="Editorial tags (comma separated)">
+        {/* Tags */}
+        <Section title="Editorial tags">
+          <Field label="Tags (comma separated)">
             <Input
               value={form.tags}
               onChange={(v) => setForm({ ...form, tags: v })}
-              placeholder="quiet, reflective, nature-led"
+              placeholder="quiet, reflective, nature-led, transformative"
             />
           </Field>
         </Section>
 
         {/* Target codes */}
-        <Section title="Target codes">
+        <Section title="Target mythical codes">
           <CodeTargetingSelector
             selectedCodes={form.targetCodes}
             onChange={(codes) => setForm({ ...form, targetCodes: codes })}
           />
-          <p className="text-xs text-white/40 mt-2">
-            Aim for precision. Fewer codes with real fit beats broad targeting.
-          </p>
-        </Section>
-
-        {/* Traits */}
-        <Section title="Experience personality (traits)">
-          <p className="text-sm text-white/60 mb-5">
-            These describe feel and rhythm — they don’t rank or “game” the system.
-          </p>
-
-          {(Object.keys(form.traits) as (keyof Traits)[]).map((key) => (
-            <div key={key} className="mb-5">
-              <label className="block text-xs text-white/50 mb-2 capitalize">
-                {key}
-              </label>
-              <input
-                type="range"
-                min={0}
-                max={100}
-                value={form.traits[key]}
-                onChange={(e) => updateTrait(key, Number(e.target.value))}
-                className="w-full accent-white"
-              />
-              <div className="text-xs text-white/50 mt-2">
-                {form.traits[key]}
-              </div>
-            </div>
-          ))}
         </Section>
 
         {/* Footer */}
-        <div className="pt-6 border-t border-white/10 flex flex-col sm:flex-row gap-3">
-          <Link
-            href={`/business/listings/${listing.id}`}
-            className="inline-flex items-center justify-center px-6 py-3 rounded-xl border border-white/15 hover:bg-white/5 transition text-sm"
+        <div className="flex justify-end gap-3 pt-6 border-t border-white/10">
+          <button
+            type="button"
+            onClick={() => router.push(`/business/listings/${listing.id}`)}
+            className="px-5 py-2 rounded-xl border border-white/15 hover:bg-white/5 transition text-sm"
           >
             Cancel
-          </Link>
+          </button>
 
           <button
             type="submit"
-            disabled={saving || form.targetCodes.length === 0}
-            className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-white text-black font-medium hover:bg-white/90 disabled:opacity-60 transition text-sm flex-1"
+            disabled={saving}
+            className="inline-flex items-center gap-2 px-5 py-2 rounded-xl bg-white text-black font-medium hover:bg-white/90 transition text-sm disabled:opacity-50"
           >
-            <Save size={16} />
-            {saving ? "Saving…" : "Save changes"}
+            {saving ? (
+              <>
+                <div className="h-4 w-4 rounded-full border-2 border-black/20 border-t-black animate-spin" />
+                Saving...
+              </>
+            ) : (
+              <>
+                <Save size={16} />
+                Save changes
+              </>
+            )}
           </button>
         </div>
       </form>
@@ -351,35 +305,24 @@ export default function EditListingClient({ listing }: { listing: ListingInput }
   );
 }
 
-/* ---------- UI helpers ---------- */
+/* UI Components */
 
-function Section({
-  title,
-  children,
-}: {
-  title: string;
-  children: React.ReactNode;
-}) {
+function Section({ title, icon, children }: { title: string; icon?: React.ReactNode; children: React.ReactNode }) {
   return (
-    <section className="space-y-4">
-      <h2 className="text-sm font-semibold text-white/80">{title}</h2>
-      <div className="rounded-2xl border border-white/10 bg-black p-5">
-        {children}
+    <div className="space-y-4">
+      <div className="flex items-center gap-2">
+        {icon}
+        <h2 className="text-lg font-medium">{title}</h2>
       </div>
-    </section>
+      <div className="space-y-4">{children}</div>
+    </div>
   );
 }
 
-function Field({
-  label,
-  children,
-}: {
-  label: string;
-  children: React.ReactNode;
-}) {
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div>
-      <label className="block text-xs text-white/50 mb-1">{label}</label>
+    <div className="space-y-2">
+      <label className="text-sm font-medium text-white/70">{label}</label>
       {children}
     </div>
   );
@@ -392,7 +335,7 @@ function Input({
   required,
 }: {
   value: string;
-  onChange: (v: string) => void;
+  onChange: (value: string) => void;
   placeholder?: string;
   required?: boolean;
 }) {
@@ -402,7 +345,7 @@ function Input({
       value={value}
       onChange={(e) => onChange(e.target.value)}
       placeholder={placeholder}
-      className="w-full rounded-xl bg-black border border-white/15 px-4 py-3 text-white focus:outline-none focus:border-white/30"
+      className="w-full rounded-xl bg-white/5 border border-white/15 px-4 py-2 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-white/30 transition"
     />
   );
 }
@@ -415,7 +358,7 @@ function Textarea({
   required,
 }: {
   value: string;
-  onChange: (v: string) => void;
+  onChange: (value: string) => void;
   rows: number;
   placeholder?: string;
   required?: boolean;
@@ -427,7 +370,7 @@ function Textarea({
       value={value}
       onChange={(e) => onChange(e.target.value)}
       placeholder={placeholder}
-      className="w-full rounded-xl bg-black border border-white/15 px-4 py-3 text-white focus:outline-none focus:border-white/30"
+      className="w-full rounded-xl bg-white/5 border border-white/15 px-4 py-2 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-white/30 transition resize-none"
     />
   );
 }
@@ -436,20 +379,23 @@ function Select({
   value,
   onChange,
   options,
+  required,
 }: {
   value: string;
-  onChange: (v: string) => void;
-  options: Array<{ value: string; label: string }>;
+  onChange: (value: string) => void;
+  options: Array<[string, string]>;
+  required?: boolean;
 }) {
   return (
     <select
+      required={required}
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className="w-full rounded-xl bg-black border border-white/15 px-4 py-3 text-white focus:outline-none focus:border-white/30"
+      className="w-full rounded-xl bg-white/5 border border-white/15 px-4 py-2 text-sm text-white focus:outline-none focus:border-white/30 transition"
     >
-      {options.map((o) => (
-        <option key={o.value} value={o.value}>
-          {o.label}
+      {options.map(([val, label]) => (
+        <option key={val} value={val}>
+          {label}
         </option>
       ))}
     </select>
