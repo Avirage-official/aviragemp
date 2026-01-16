@@ -3,36 +3,37 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { Calendar, Users, DollarSign, Clock, ExternalLink, X, CheckCircle, AlertCircle, Loader, Ban } from "lucide-react";
 
 const STATUS_INFO = {
   INQUIRY: {
     label: "Inquiry Sent",
-    color: "bg-blue-100 text-blue-800",
-    icon: "📨",
+    color: "bg-[#4F8CFF]/10 border-[#4F8CFF]/30 text-[#4F8CFF]",
+    icon: <AlertCircle className="w-4 h-4" />,
     description: "Your inquiry has been sent to the business"
   },
   PENDING: {
     label: "Pending Response",
-    color: "bg-yellow-100 text-yellow-800",
-    icon: "⏳",
+    color: "bg-[#C7B9FF]/10 border-[#C7B9FF]/30 text-[#C7B9FF]",
+    icon: <Loader className="w-4 h-4" />,
     description: "Waiting for final confirmation"
   },
   CONFIRMED: {
     label: "Confirmed",
-    color: "bg-green-100 text-green-800",
-    icon: "✅",
+    color: "bg-[#7CF5C8]/10 border-[#7CF5C8]/30 text-[#7CF5C8]",
+    icon: <CheckCircle className="w-4 h-4" />,
     description: "Your booking is confirmed!"
   },
   COMPLETED: {
     label: "Completed",
-    color: "bg-gray-100 text-gray-800",
-    icon: "🎉",
+    color: "bg-[#FAFAFA]/10 border-[#FAFAFA]/30 text-[#FAFAFA]",
+    icon: <CheckCircle className="w-4 h-4" />,
     description: "Experience completed"
   },
   CANCELLED: {
     label: "Cancelled",
-    color: "bg-red-100 text-red-800",
-    icon: "❌",
+    color: "bg-red-500/10 border-red-500/30 text-red-400",
+    icon: <Ban className="w-4 h-4" />,
     description: "Booking was cancelled"
   }
 };
@@ -68,140 +69,173 @@ export default function UserBookingsPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-[#111827] flex items-center justify-center">
         <div className="text-center">
-          <div className="text-6xl mb-4">⏳</div>
-          <p className="text-gray-600">Loading your bookings...</p>
+          <div className="w-16 h-16 border-4 border-[#4F8CFF]/30 border-t-[#4F8CFF] rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-[#FAFAFA]/60">Loading your bookings...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="container mx-auto p-8">
+    <div className="min-h-screen bg-[#111827] text-[#FAFAFA]">
+      <div className="max-w-7xl mx-auto px-6 py-10">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold">My Bookings & Inquiries</h1>
-          <p className="text-gray-600 mt-2">
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-[#4F8CFF] via-[#C7B9FF] to-[#7CF5C8] bg-clip-text text-transparent">
+            My Bookings & Inquiries
+          </h1>
+          <p className="text-[#FAFAFA]/60 mt-2">
             Track your requests and booking status
           </p>
         </div>
 
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-          <div className="bg-white rounded-lg shadow p-6">
-            <p className="text-gray-600 text-sm">Total Inquiries</p>
-            <p className="text-3xl font-bold mt-2">{bookings.length}</p>
+          <div className="relative group">
+            <div className="absolute -inset-[1px] rounded-2xl bg-gradient-to-br from-[#4F8CFF]/20 to-[#7CF5C8]/20 opacity-0 group-hover:opacity-100 blur-xl transition-opacity duration-700" />
+            <div className="relative rounded-2xl bg-white/[0.03] backdrop-blur-2xl border border-[#FAFAFA]/10 p-6">
+              <p className="text-[#FAFAFA]/50 text-sm">Total Inquiries</p>
+              <p className="text-3xl font-bold mt-2 text-[#FAFAFA]">{bookings.length}</p>
+            </div>
           </div>
-          <div className="bg-white rounded-lg shadow p-6">
-            <p className="text-gray-600 text-sm">Pending</p>
-            <p className="text-3xl font-bold mt-2 text-yellow-600">
-              {bookings.filter(b => b.status === "INQUIRY" || b.status === "PENDING").length}
-            </p>
+
+          <div className="relative group">
+            <div className="absolute -inset-[1px] rounded-2xl bg-gradient-to-br from-[#C7B9FF]/20 to-[#4F8CFF]/20 opacity-0 group-hover:opacity-100 blur-xl transition-opacity duration-700" />
+            <div className="relative rounded-2xl bg-white/[0.03] backdrop-blur-2xl border border-[#FAFAFA]/10 p-6">
+              <p className="text-[#FAFAFA]/50 text-sm">Pending</p>
+              <p className="text-3xl font-bold mt-2 text-[#C7B9FF]">
+                {bookings.filter(b => b.status === "INQUIRY" || b.status === "PENDING").length}
+              </p>
+            </div>
           </div>
-          <div className="bg-white rounded-lg shadow p-6">
-            <p className="text-gray-600 text-sm">Confirmed</p>
-            <p className="text-3xl font-bold mt-2 text-green-600">
-              {bookings.filter(b => b.status === "CONFIRMED").length}
-            </p>
+
+          <div className="relative group">
+            <div className="absolute -inset-[1px] rounded-2xl bg-gradient-to-br from-[#7CF5C8]/20 to-[#4F8CFF]/20 opacity-0 group-hover:opacity-100 blur-xl transition-opacity duration-700" />
+            <div className="relative rounded-2xl bg-white/[0.03] backdrop-blur-2xl border border-[#FAFAFA]/10 p-6">
+              <p className="text-[#FAFAFA]/50 text-sm">Confirmed</p>
+              <p className="text-3xl font-bold mt-2 text-[#7CF5C8]">
+                {bookings.filter(b => b.status === "CONFIRMED").length}
+              </p>
+            </div>
           </div>
-          <div className="bg-white rounded-lg shadow p-6">
-            <p className="text-gray-600 text-sm">Completed</p>
-            <p className="text-3xl font-bold mt-2 text-gray-600">
-              {bookings.filter(b => b.status === "COMPLETED").length}
-            </p>
+
+          <div className="relative group">
+            <div className="absolute -inset-[1px] rounded-2xl bg-gradient-to-br from-[#FAFAFA]/10 to-[#4F8CFF]/10 opacity-0 group-hover:opacity-100 blur-xl transition-opacity duration-700" />
+            <div className="relative rounded-2xl bg-white/[0.03] backdrop-blur-2xl border border-[#FAFAFA]/10 p-6">
+              <p className="text-[#FAFAFA]/50 text-sm">Completed</p>
+              <p className="text-3xl font-bold mt-2 text-[#FAFAFA]/80">
+                {bookings.filter(b => b.status === "COMPLETED").length}
+              </p>
+            </div>
           </div>
         </div>
 
         {/* Bookings List */}
         {bookings.length > 0 ? (
-          <div className="space-y-4">
+          <div className="space-y-6">
             {bookings.map((booking) => {
               const statusInfo = STATUS_INFO[booking.status as keyof typeof STATUS_INFO];
               
               return (
-                <div
-                  key={booking.id}
-                  className="bg-white rounded-lg shadow hover:shadow-lg transition overflow-hidden"
-                >
-                  <div className="p-6">
+                <div key={booking.id} className="relative group">
+                  {/* Glow */}
+                  <div className="absolute -inset-[1px] rounded-[28px] bg-gradient-to-br from-[#4F8CFF]/10 via-[#C7B9FF]/10 to-[#7CF5C8]/10 opacity-0 group-hover:opacity-100 blur-xl transition-opacity duration-700" />
+                  
+                  {/* Card */}
+                  <div className="relative rounded-[28px] bg-white/[0.03] backdrop-blur-2xl border border-[#FAFAFA]/10 p-6 transition-all duration-300 group-hover:bg-white/[0.05]">
                     {/* Header */}
-                    <div className="flex justify-between items-start mb-4">
+                    <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-4 mb-6">
                       <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2">
-                          <h3 className="text-xl font-bold">{booking.listing.title}</h3>
-                          <span className={`text-xs font-semibold px-3 py-1 rounded-full ${statusInfo.color}`}>
-                            {statusInfo.icon} {statusInfo.label}
+                        <div className="flex items-start gap-3 mb-2">
+                          <h3 className="text-xl font-bold text-[#FAFAFA]">{booking.listing.title}</h3>
+                          <span className={`flex items-center gap-1 text-xs font-semibold px-3 py-1 rounded-full border ${statusInfo.color}`}>
+                            {statusInfo.icon}
+                            {statusInfo.label}
                           </span>
                         </div>
-                        <p className="text-gray-600 text-sm">
+                        <p className="text-[#FAFAFA]/60 text-sm">
                           {booking.listing.business.businessName}
                         </p>
                       </div>
                       <Link
                         href={`/marketplace/${booking.listing.id}`}
-                        className="px-4 py-2 bg-gray-100 text-gray-700 text-sm rounded-lg hover:bg-gray-200 transition"
+                        className="inline-flex items-center gap-2 px-4 py-2 bg-[#FAFAFA]/5 border border-[#FAFAFA]/10 text-[#FAFAFA]/80 text-sm rounded-xl hover:bg-[#FAFAFA]/10 transition-all"
                       >
                         View Listing
+                        <ExternalLink className="w-4 h-4" />
                       </Link>
                     </div>
 
                     {/* Details Grid */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                      <div>
-                        <p className="text-xs text-gray-500">Requested Date</p>
-                        <p className="font-semibold">
-                          {booking.bookingDate 
-                            ? new Date(booking.bookingDate).toLocaleDateString()
-                            : "Flexible"}
-                        </p>
-                      </div>
-                      {booking.numberOfPeople && (
-                        <div>
-                          <p className="text-xs text-gray-500">Number of People</p>
-                          <p className="font-semibold">{booking.numberOfPeople}</p>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                      <div className="flex items-start gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-[#4F8CFF]/10 border border-[#4F8CFF]/30 flex items-center justify-center flex-shrink-0">
+                          <Calendar className="w-5 h-5 text-[#4F8CFF]" />
                         </div>
-                      )}
-                      {booking.amount && (
                         <div>
-                          <p className="text-xs text-gray-500">Price</p>
-                          <p className="font-semibold text-green-600">
-                            ${booking.amount} {booking.currency}
+                          <p className="text-xs text-[#FAFAFA]/40 uppercase tracking-wider">Requested Date</p>
+                          <p className="font-semibold text-[#FAFAFA]">
+                            {booking.bookingDate 
+                              ? new Date(booking.bookingDate).toLocaleDateString()
+                              : "Flexible"}
                           </p>
                         </div>
-                      )}
-                      <div>
-                        <p className="text-xs text-gray-500">Inquiry Sent</p>
-                        <p className="font-semibold">
-                          {new Date(booking.createdAt).toLocaleDateString()}
-                        </p>
                       </div>
+
+                      {booking.numberOfPeople && (
+                        <div className="flex items-start gap-3">
+                          <div className="w-10 h-10 rounded-xl bg-[#C7B9FF]/10 border border-[#C7B9FF]/30 flex items-center justify-center flex-shrink-0">
+                            <Users className="w-5 h-5 text-[#C7B9FF]" />
+                          </div>
+                          <div>
+                            <p className="text-xs text-[#FAFAFA]/40 uppercase tracking-wider">People</p>
+                            <p className="font-semibold text-[#FAFAFA]">{booking.numberOfPeople}</p>
+                          </div>
+                        </div>
+                      )}
+
+                      {booking.amount && (
+                        <div className="flex items-start gap-3">
+                          <div className="w-10 h-10 rounded-xl bg-[#7CF5C8]/10 border border-[#7CF5C8]/30 flex items-center justify-center flex-shrink-0">
+                            <DollarSign className="w-5 h-5 text-[#7CF5C8]" />
+                          </div>
+                          <div>
+                            <p className="text-xs text-[#FAFAFA]/40 uppercase tracking-wider">Price</p>
+                            <p className="font-semibold text-[#7CF5C8]">
+                              ${booking.amount} {booking.currency}
+                            </p>
+                          </div>
+                        </div>
+                      )}
                     </div>
 
                     {/* Status Message */}
-                    <div className={`p-3 rounded-lg ${statusInfo.color.replace('text-', 'border-').replace('bg-', 'bg-opacity-20 border-l-4 border-')}`}>
+                    <div className={`p-4 rounded-xl border ${statusInfo.color} mb-4`}>
                       <p className="text-sm">{statusInfo.description}</p>
                     </div>
 
                     {/* Business Response */}
                     {booking.businessResponse && (
-                      <div className="mt-4 bg-green-50 border-l-4 border-green-400 p-4 rounded">
-                        <p className="text-sm font-semibold text-green-800 mb-2">
+                      <div className="bg-[#7CF5C8]/10 border-l-4 border-[#7CF5C8] p-4 rounded-xl mb-4">
+                        <p className="text-sm font-semibold text-[#7CF5C8] mb-2 flex items-center gap-2">
+                          <CheckCircle className="w-4 h-4" />
                           Business Response:
                         </p>
-                        <p className="text-gray-700">{booking.businessResponse}</p>
-                        <p className="text-xs text-gray-500 mt-2">
+                        <p className="text-[#FAFAFA]/80">{booking.businessResponse}</p>
+                        <p className="text-xs text-[#FAFAFA]/40 mt-2 flex items-center gap-1">
+                          <Clock className="w-3 h-3" />
                           Updated {new Date(booking.updatedAt).toLocaleDateString()}
                         </p>
                       </div>
                     )}
 
                     {/* Actions */}
-                    <div className="mt-4 pt-4 border-t flex gap-3">
+                    <div className="flex flex-wrap gap-3 pt-4 border-t border-[#FAFAFA]/10">
                       <button
                         onClick={() => openDetailModal(booking)}
-                        className="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition"
+                        className="px-4 py-2 bg-[#4F8CFF] text-white text-sm rounded-xl hover:bg-[#4F8CFF]/90 transition-all font-medium"
                       >
                         View Details
                       </button>
@@ -210,9 +244,10 @@ export default function UserBookingsPage() {
                           href={booking.listing.business.website}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="px-4 py-2 bg-gray-100 text-gray-700 text-sm rounded-lg hover:bg-gray-200 transition"
+                          className="inline-flex items-center gap-2 px-4 py-2 bg-[#FAFAFA]/5 border border-[#FAFAFA]/10 text-[#FAFAFA]/80 text-sm rounded-xl hover:bg-[#FAFAFA]/10 transition-all"
                         >
-                          Visit Business Website →
+                          Visit Website
+                          <ExternalLink className="w-4 h-4" />
                         </a>
                       )}
                     </div>
@@ -222,127 +257,131 @@ export default function UserBookingsPage() {
             })}
           </div>
         ) : (
-          <div className="bg-white rounded-lg shadow text-center py-12">
-            <div className="text-6xl mb-4">📋</div>
-            <h3 className="text-xl font-bold mb-2">No bookings yet</h3>
-            <p className="text-gray-600 mb-6">
-              Start exploring the marketplace to find experiences
-            </p>
-            <Link
-              href="/marketplace"
-              className="inline-block px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition"
-            >
-              Browse Marketplace
-            </Link>
+          <div className="relative group">
+            <div className="absolute -inset-[1px] rounded-[28px] bg-gradient-to-br from-[#4F8CFF]/10 to-[#7CF5C8]/10 opacity-0 group-hover:opacity-100 blur-xl transition-opacity duration-700" />
+            <div className="relative rounded-[28px] bg-white/[0.03] backdrop-blur-2xl border border-[#FAFAFA]/10 text-center py-16 px-6">
+              <div className="text-6xl mb-4">📋</div>
+              <h3 className="text-2xl font-bold mb-2 text-[#FAFAFA]">No bookings yet</h3>
+              <p className="text-[#FAFAFA]/60 mb-6 max-w-md mx-auto">
+                Start exploring the marketplace to find experiences that resonate with your code
+              </p>
+              <Link
+                href="/marketplace"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[#4F8CFF] to-[#7CF5C8] text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-[#4F8CFF]/30 transition-all"
+              >
+                Browse Marketplace
+              </Link>
+            </div>
           </div>
         )}
 
         {/* Detail Modal */}
         {showDetailModal && selectedBooking && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-            <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-              <div className="p-6">
+          <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
+            <div className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+              {/* Glow */}
+              <div className="absolute -inset-[1px] rounded-[28px] bg-gradient-to-br from-[#4F8CFF]/20 via-[#C7B9FF]/20 to-[#7CF5C8]/20 blur-xl" />
+              
+              {/* Modal */}
+              <div className="relative rounded-[28px] bg-[#111827] border border-[#FAFAFA]/10 p-8">
                 <div className="flex justify-between items-start mb-6">
                   <div>
-                    <h2 className="text-2xl font-bold">Booking Details</h2>
-                    <p className="text-gray-600 mt-1">{selectedBooking.listing.title}</p>
+                    <h2 className="text-2xl font-bold text-[#FAFAFA]">Booking Details</h2>
+                    <p className="text-[#FAFAFA]/60 mt-1">{selectedBooking.listing.title}</p>
                   </div>
                   <button
                     onClick={() => setShowDetailModal(false)}
-                    className="text-gray-400 hover:text-gray-600 text-2xl"
+                    className="p-2 hover:bg-[#FAFAFA]/10 rounded-xl transition-colors"
                   >
-                    ×
+                    <X className="w-6 h-6 text-[#FAFAFA]/60" />
                   </button>
                 </div>
 
                 {/* Status */}
                 <div className="mb-6">
-                  <p className="text-sm font-semibold text-gray-600 mb-2">Status</p>
-                  <span className={`inline-block text-sm font-semibold px-4 py-2 rounded-full ${STATUS_INFO[selectedBooking.status as keyof typeof STATUS_INFO].color}`}>
-                    {STATUS_INFO[selectedBooking.status as keyof typeof STATUS_INFO].icon} {STATUS_INFO[selectedBooking.status as keyof typeof STATUS_INFO].label}
+                  <p className="text-xs uppercase tracking-wider text-[#FAFAFA]/40 mb-2">Status</p>
+                  <span className={`inline-flex items-center gap-2 text-sm font-semibold px-4 py-2 rounded-xl border ${STATUS_INFO[selectedBooking.status as keyof typeof STATUS_INFO].color}`}>
+                    {STATUS_INFO[selectedBooking.status as keyof typeof STATUS_INFO].icon}
+                    {STATUS_INFO[selectedBooking.status as keyof typeof STATUS_INFO].label}
                   </span>
                 </div>
 
                 {/* Your Message */}
-                <div className="bg-blue-50 border-l-4 border-blue-400 p-4 mb-6 rounded">
-                  <p className="text-sm font-semibold text-blue-800 mb-2">Your Message:</p>
-                  <p className="text-gray-700">{selectedBooking.inquiryMessage}</p>
+                <div className="bg-[#4F8CFF]/10 border-l-4 border-[#4F8CFF] p-4 mb-6 rounded-xl">
+                  <p className="text-sm font-semibold text-[#4F8CFF] mb-2">Your Message:</p>
+                  <p className="text-[#FAFAFA]/80">{selectedBooking.inquiryMessage}</p>
                   {selectedBooking.specialRequests && (
                     <>
-                      <p className="text-sm font-semibold text-blue-800 mt-3 mb-1">Special Requests:</p>
-                      <p className="text-gray-700">{selectedBooking.specialRequests}</p>
+                      <p className="text-sm font-semibold text-[#4F8CFF] mt-3 mb-1">Special Requests:</p>
+                      <p className="text-[#FAFAFA]/80">{selectedBooking.specialRequests}</p>
                     </>
                   )}
                 </div>
 
                 {/* Business Response */}
                 {selectedBooking.businessResponse ? (
-                  <div className="bg-green-50 border-l-4 border-green-400 p-4 mb-6 rounded">
-                    <p className="text-sm font-semibold text-green-800 mb-2">Business Response:</p>
-                    <p className="text-gray-700">{selectedBooking.businessResponse}</p>
+                  <div className="bg-[#7CF5C8]/10 border-l-4 border-[#7CF5C8] p-4 mb-6 rounded-xl">
+                    <p className="text-sm font-semibold text-[#7CF5C8] mb-2">Business Response:</p>
+                    <p className="text-[#FAFAFA]/80">{selectedBooking.businessResponse}</p>
                   </div>
                 ) : (
-                  <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6 rounded">
-                    <p className="text-sm text-yellow-800">
+                  <div className="bg-[#C7B9FF]/10 border-l-4 border-[#C7B9FF] p-4 mb-6 rounded-xl">
+                    <p className="text-sm text-[#C7B9FF]">
                       Waiting for business to respond...
                     </p>
                   </div>
                 )}
 
-                {/* Details */}
-                <div className="space-y-4">
+                {/* Details Grid */}
+                <div className="space-y-4 mb-6">
                   <div>
-                    <p className="text-sm font-semibold text-gray-600">Business</p>
-                    <p className="text-lg">{selectedBooking.listing.business.businessName}</p>
-                    <p className="text-sm text-gray-600">{selectedBooking.listing.business.contactEmail}</p>
+                    <p className="text-xs uppercase tracking-wider text-[#FAFAFA]/40 mb-1">Business</p>
+                    <p className="text-lg font-semibold text-[#FAFAFA]">{selectedBooking.listing.business.businessName}</p>
+                    <p className="text-sm text-[#FAFAFA]/60">{selectedBooking.listing.business.contactEmail}</p>
                   </div>
 
-                  {selectedBooking.bookingDate && (
-                    <div>
-                      <p className="text-sm font-semibold text-gray-600">Requested Date</p>
-                      <p>{new Date(selectedBooking.bookingDate).toLocaleDateString()}</p>
-                    </div>
-                  )}
+                  <div className="grid grid-cols-2 gap-4">
+                    {selectedBooking.bookingDate && (
+                      <div>
+                        <p className="text-xs uppercase tracking-wider text-[#FAFAFA]/40 mb-1">Requested Date</p>
+                        <p className="text-[#FAFAFA]">{new Date(selectedBooking.bookingDate).toLocaleDateString()}</p>
+                      </div>
+                    )}
 
-                  {selectedBooking.numberOfPeople && (
-                    <div>
-                      <p className="text-sm font-semibold text-gray-600">Number of People</p>
-                      <p>{selectedBooking.numberOfPeople}</p>
-                    </div>
-                  )}
+                    {selectedBooking.numberOfPeople && (
+                      <div>
+                        <p className="text-xs uppercase tracking-wider text-[#FAFAFA]/40 mb-1">Number of People</p>
+                        <p className="text-[#FAFAFA]">{selectedBooking.numberOfPeople}</p>
+                      </div>
+                    )}
 
-                  {selectedBooking.amount && (
-                    <div>
-                      <p className="text-sm font-semibold text-gray-600">Price</p>
-                      <p className="text-lg font-bold text-green-600">
-                        ${selectedBooking.amount} {selectedBooking.currency}
-                      </p>
-                    </div>
-                  )}
+                    {selectedBooking.amount && (
+                      <div>
+                        <p className="text-xs uppercase tracking-wider text-[#FAFAFA]/40 mb-1">Price</p>
+                        <p className="text-lg font-bold text-[#7CF5C8]">
+                          ${selectedBooking.amount} {selectedBooking.currency}
+                        </p>
+                      </div>
+                    )}
 
-                  <div>
-                    <p className="text-sm font-semibold text-gray-600">Inquiry Sent</p>
-                    <p>{new Date(selectedBooking.createdAt).toLocaleString()}</p>
+                    <div>
+                      <p className="text-xs uppercase tracking-wider text-[#FAFAFA]/40 mb-1">Inquiry Sent</p>
+                      <p className="text-[#FAFAFA]/80 text-sm">{new Date(selectedBooking.createdAt).toLocaleDateString()}</p>
+                    </div>
                   </div>
-
-                  {selectedBooking.updatedAt !== selectedBooking.createdAt && (
-                    <div>
-                      <p className="text-sm font-semibold text-gray-600">Last Updated</p>
-                      <p>{new Date(selectedBooking.updatedAt).toLocaleString()}</p>
-                    </div>
-                  )}
                 </div>
 
-                <div className="mt-6 pt-6 border-t flex gap-3">
+                {/* Actions */}
+                <div className="flex gap-3 pt-6 border-t border-[#FAFAFA]/10">
                   <button
                     onClick={() => setShowDetailModal(false)}
-                    className="flex-1 px-6 py-3 bg-gray-300 rounded-lg hover:bg-gray-400 transition"
+                    className="flex-1 px-6 py-3 bg-[#FAFAFA]/5 border border-[#FAFAFA]/10 text-[#FAFAFA]/80 rounded-xl hover:bg-[#FAFAFA]/10 transition-all font-medium"
                   >
                     Close
                   </button>
                   <Link
                     href={`/marketplace/${selectedBooking.listing.id}`}
-                    className="flex-1 px-6 py-3 bg-blue-600 text-white text-center rounded-lg hover:bg-blue-700 transition"
+                    className="flex-1 px-6 py-3 bg-[#4F8CFF] text-white text-center rounded-xl hover:bg-[#4F8CFF]/90 transition-all font-medium"
                   >
                     View Listing
                   </Link>
