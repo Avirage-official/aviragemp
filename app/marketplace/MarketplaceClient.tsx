@@ -99,10 +99,7 @@ export type Experience = {
 /* MOOD SCORING                                                               */
 /* -------------------------------------------------------------------------- */
 
-const MOOD_LENS_TRAITS: Record<
-  MoodLens,
-  Partial<Record<keyof ExperienceTraits, [number, number]>>
-> = {
+const MOOD_LENS_TRAITS: Record<MoodLens, Partial<Record<keyof ExperienceTraits, [number, number]>>> = {
   calm: { energy: [0, 35], pace: [0, 40], social: [0, 40] },
   reflective: { introspection: [65, 100], expression: [0, 45] },
   social: { social: [60, 100], energy: [50, 100] },
@@ -403,32 +400,32 @@ export default function MarketplaceClient({
   }, [initialExperiences, activeCode, activeMood, query]);
 
   return (
-    <div className="min-h-screen bg-[#111827] text-[#FAFAFA]">
-      {/* Header */}
-      <div className="border-b border-[#FAFAFA]/10 bg-[#111827]/80 backdrop-blur-xl sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-6 py-6">
-          <div className="flex items-center justify-between flex-wrap gap-4">
-            <div>
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-[#4F8CFF] via-[#C7B9FF] to-[#7CF5C8] bg-clip-text text-transparent">
-                Marketplace
-              </h1>
-              <p className="text-sm text-[#FAFAFA]/50 mt-1">
-                {experiences.length} {experiences.length === 1 ? 'experience' : 'experiences'} found
-              </p>
-            </div>
-            
-            {/* Search */}
-            <input
-              type="text"
-              placeholder="Search experiences..."
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              className="px-4 py-2 rounded-xl bg-[#FAFAFA]/5 border border-[#FAFAFA]/10 text-sm text-[#FAFAFA] placeholder:text-[#FAFAFA]/30 focus:outline-none focus:border-[#4F8CFF]/50 focus:ring-2 focus:ring-[#4F8CFF]/20 transition-all min-w-[250px]"
-            />
+  <div className="min-h-screen bg-[#111827] text-[#FAFAFA]">
+    <div className="max-w-7xl mx-auto px-6 py-10">
+      {/* Page Header with Search */}
+      <div className="mb-8">
+        <div className="flex items-center justify-between flex-wrap gap-4 mb-6">
+          <div>
+            <h1 className="text-3xl font-bold text-[#FAFAFA]">
+              Marketplace
+            </h1>
+            <p className="text-sm text-[#FAFAFA]/50 mt-1">
+              {experiences.length} {experiences.length === 1 ? 'experience' : 'experiences'} found
+            </p>
           </div>
+          
+          {/* Search */}
+          <input
+            type="text"
+            placeholder="Search experiences..."
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            className="px-4 py-2 rounded-xl bg-[#FAFAFA]/5 border border-[#FAFAFA]/10 text-sm text-[#FAFAFA] placeholder:text-[#FAFAFA]/30 focus:outline-none focus:border-[#4F8CFF]/50 focus:ring-2 focus:ring-[#4F8CFF]/20 transition-all min-w-[250px]"
+          />
         </div>
       </div>
-
+      </div>
+      
       {/* Grid */}
       <div className="max-w-7xl mx-auto px-6 py-10">
         {experiences.length === 0 ? (
