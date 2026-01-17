@@ -80,44 +80,47 @@ export default function PersonalOnboardingPage() {
   });
 
   async function next() {
-    if (step < 5) {
-      setStep((s) => (s + 1) as StepId);
+  if (step < 5) {
+    setStep((s) => (s + 1) as StepId);
+    return;
+  }
+
+  // Final submit
+  setLoading(true);
+  try {
+    const res = await fetch("/api/users/onboard", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        clerkId: user!.id,
+        email: user!.emailAddresses[0]?.emailAddress,
+        username: form.username,
+        city: form.city,
+        country: form.country,
+        birthDate: form.birthDate ? new Date(form.birthDate).toISOString() : null,
+        birthTime: form.birthTime || null,
+        primaryCode: form.primaryCode,
+        secondaryCode: form.secondaryCode || null,
+        tertiaryCode: form.tertiaryCode || null,
+        type: "CONSUMER",
+      }),
+    });
+
+    if (!res.ok) {
+      alert("Failed to create profile. Please try again.");
       return;
     }
 
-    // Final submit
-    setLoading(true);
-    try {
-      const res = await fetch("/api/users/onboard", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          clerkId: user!.id,
-          email: user!.emailAddresses[0]?.emailAddress,
-          username: form.username,
-          city: form.city,
-          country: form.country,
-          birthDate: form.birthDate ? new Date(form.birthDate).toISOString() : null,
-          birthTime: form.birthTime || null,
-          primaryCode: form.primaryCode,
-          secondaryCode: form.secondaryCode || null,
-          tertiaryCode: form.tertiaryCode || null,
-          type: "CONSUMER",
-        }),
-      });
+    // ✅ Trigger astrology & numerology calculation
+    await fetch("/api/astrology/calculate", { method: "POST" });
 
-      if (!res.ok) {
-        alert("Failed to create profile. Please try again.");
-        return;
-      }
-
-      router.push("/dashboard");
-    } catch {
-      alert("An error occurred. Please try again.");
-    } finally {
-      setLoading(false);
-    }
+    router.push("/dashboard");
+  } catch {
+    alert("An error occurred. Please try again.");
+  } finally {
+    setLoading(false);
   }
+}
 
   function back() {
     if (step > 1) {
