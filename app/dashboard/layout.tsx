@@ -12,10 +12,6 @@ import {
   ArrowRight,
 } from "lucide-react";
 
-/* -------------------------------------------------------------------------- */
-/* TEMP UI STATE (wire later)                                                  */
-/* -------------------------------------------------------------------------- */
-
 const presence = {
   friendsOnline: true,
   unreadMessages: 0,
@@ -50,29 +46,25 @@ export default function DashboardLayout({
       : pathname?.startsWith(href);
 
   return (
-    <div className="relative min-h-screen text-white flex overflow-hidden">
-      {/* ======================================================================
-          AMBIENT LIFESTYLE BACKGROUND (GLOBAL FOR DASHBOARD)
-          ====================================================================== */}
+    <div className="relative min-h-screen flex overflow-hidden text-black">
+      {/* ===============================================================
+          GLOBAL LIFESTYLE BACKGROUND (BRIGHT, MODERN)
+         =============================================================== */}
       <div className="pointer-events-none fixed inset-0 -z-10">
-        {/* Base light system gradient */}
-        <div className="absolute inset-0 bg-gradient-to-br from-[#F7F8FF] via-[#FDFDFF] to-[#F4FFF9]" />
+        <div className="absolute inset-0 bg-gradient-to-br from-[#F7F8FF] via-[#FFFFFF] to-[#F4FFF9]" />
 
-        {/* Color orbs — lifestyle energy */}
-        <div className="absolute -top-[25%] left-[10%] h-[700px] w-[700px] rounded-full bg-[#4F8CFF] opacity-[0.08] blur-[180px] animate-float" />
-        <div className="absolute top-[35%] right-[5%] h-[600px] w-[600px] rounded-full bg-[#C7B9FF] opacity-[0.09] blur-[160px] animate-float" />
-        <div className="absolute bottom-[-25%] left-[35%] h-[650px] w-[650px] rounded-full bg-[#7CF5C8] opacity-[0.08] blur-[170px] animate-float" />
+        <div className="absolute -top-[25%] left-[10%] h-[700px] w-[700px] rounded-full bg-[#4F8CFF] opacity-[0.08] blur-[160px]" />
+        <div className="absolute top-[35%] right-[5%] h-[600px] w-[600px] rounded-full bg-[#C7B9FF] opacity-[0.08] blur-[150px]" />
+        <div className="absolute bottom-[-25%] left-[35%] h-[650px] w-[650px] rounded-full bg-[#7CF5C8] opacity-[0.07] blur-[160px]" />
 
-        {/* Soft noise for texture */}
-        <div className="absolute inset-0 bg-[url('/images/noise.png')] opacity-[0.03]" />
+        <div className="absolute inset-0 bg-[url('/images/noise.png')] opacity-[0.025]" />
       </div>
 
-      {/* ======================================================================
-          SIDE NAV
-          ====================================================================== */}
-      <aside className="hidden md:flex w-[260px] shrink-0 border-r border-black/5 bg-white/60 backdrop-blur-xl">
+      {/* ===============================================================
+          SIDE NAV (CLEAN / PRODUCT-GRADE)
+         =============================================================== */}
+      <aside className="hidden md:flex w-[260px] shrink-0 border-r border-black/5 bg-white/70 backdrop-blur-xl">
         <div className="flex h-full w-full flex-col px-5 py-6">
-          {/* LOGO */}
           <Link href="/dashboard" className="mb-10 block">
             <div className="text-lg font-semibold tracking-wide text-black">
               ETHOS
@@ -80,7 +72,6 @@ export default function DashboardLayout({
             <div className="text-xs text-black/50">your universe</div>
           </Link>
 
-          {/* NAV */}
           <nav className="flex flex-col gap-2">
             {items.map((it) => {
               const active = isActive(it.href);
@@ -91,7 +82,7 @@ export default function DashboardLayout({
                   key={it.href}
                   href={it.href}
                   className={[
-                    "group relative flex items-center gap-3 rounded-2xl px-4 py-3 text-sm transition",
+                    "relative flex items-center gap-3 rounded-2xl px-4 py-3 text-sm transition",
                     active
                       ? "bg-black/5 text-black"
                       : "text-black/60 hover:text-black hover:bg-black/5",
@@ -124,16 +115,14 @@ export default function DashboardLayout({
 
           <div className="flex-1" />
 
-          {/* MARKETPLACE */}
           <Link
             href="/marketplace"
-            className="mb-6 flex items-center justify-between rounded-2xl border border-black/10 bg-white/70 px-4 py-3 text-sm text-black/80 hover:bg-white transition"
+            className="mb-6 flex items-center justify-between rounded-2xl border border-black/10 bg-white px-4 py-3 text-sm text-black/80 hover:bg-white transition"
           >
             Marketplace
             <ArrowRight className="h-4 w-4" />
           </Link>
 
-          {/* USER */}
           <div className="flex items-center gap-3">
             <UserButton
               appearance={{ elements: { avatarBox: "w-9 h-9" } }}
@@ -144,11 +133,15 @@ export default function DashboardLayout({
         </div>
       </aside>
 
-      {/* ======================================================================
-          CONTENT
-          ====================================================================== */}
-      <main className="flex-1 px-6 py-10 text-black">
-        {children}
+      {/* ===============================================================
+          CONTENT WRAPPER (THIS FIXES ALL PAGES)
+         =============================================================== */}
+      <main className="flex-1 px-6 py-10">
+        <div className="mx-auto max-w-7xl">
+          <div className="rounded-[32px] bg-white/85 backdrop-blur-xl border border-black/5 shadow-[0_30px_80px_rgba(0,0,0,0.08)] px-6 py-8">
+            {children}
+          </div>
+        </div>
       </main>
     </div>
   );
