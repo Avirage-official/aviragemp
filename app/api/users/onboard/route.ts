@@ -1,3 +1,4 @@
+// app/api/users/onboard/route.ts
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
@@ -18,6 +19,9 @@ export async function POST(request: Request) {
       );
     }
 
+    // Parse birthDate if provided (comes as ISO string from frontend)
+    const birthDate = data.birthDate ? new Date(data.birthDate) : null;
+
     const user = await prisma.user.upsert({
       where: {
         clerkId: data.clerkId,
@@ -33,18 +37,26 @@ export async function POST(request: Request) {
         secondaryCode: data.secondaryCode ?? null,
         tertiaryCode: data.tertiaryCode ?? null,
 
+        // Birth data for astrology
+        birthDate: birthDate,
+        birthTime: data.birthTime ?? null, // Format: "HH:mm"
+
         city: data.city ?? null,
         country: data.country ?? null,
         timezone: data.timezone ?? null,
       },
       update: {
-        // only update fields that may change during onboarding retries
+        // Only update fields that may change during onboarding retries
         name: data.name ?? undefined,
         username: data.username ?? undefined,
 
         primaryCode: data.primaryCode ?? undefined,
         secondaryCode: data.secondaryCode ?? undefined,
         tertiaryCode: data.tertiaryCode ?? undefined,
+
+        // Birth data - allow updates
+        birthDate: birthDate ?? undefined,
+        birthTime: data.birthTime ?? undefined,
 
         city: data.city ?? undefined,
         country: data.country ?? undefined,
