@@ -125,55 +125,67 @@ export function DashboardClient({ user }: DashboardClientProps) {
     >
       {/* HERO */}
       <motion.section variants={item} className="mb-10">
-        <div className="rounded-[28px] bg-white/80 backdrop-blur-xl border border-black/5 p-8 sm:p-10 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6">
-          <div>
-            <p className="text-sm text-black/50 flex items-center gap-2 mb-2">
-              <Lightning className="w-4 h-4 text-[#FFD97D]" />
+        <div className="relative overflow-hidden rounded-[28px] bg-white/85 backdrop-blur-xl border border-black/10 shadow-[0_18px_60px_rgba(0,0,0,0.08)] p-8 sm:p-10 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6">
+          {/* subtle top sheen */}
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/70 via-white/10 to-transparent opacity-80" />
+          {/* crisp color edge (modern, not dreamy) */}
+          <div className="pointer-events-none absolute -inset-[1px] rounded-[28px] opacity-40">
+            <div className="absolute inset-0 rounded-[28px] bg-gradient-to-r from-[#4F8CFF]/20 via-[#C7B9FF]/18 to-[#7CF5C8]/18" />
+          </div>
+
+          <div className="relative">
+            <p className="text-sm text-black/65 flex items-center gap-2 mb-2">
+              <Lightning className="w-4 h-4 text-[#D6A83A]" />
               {encouragement}
             </p>
 
-            <h1 className="text-4xl sm:text-5xl font-semibold text-black mb-4">
+            <h1 className="text-4xl sm:text-5xl font-semibold text-black mb-4 tracking-tight">
               {greet()},{" "}
-              <span className="text-gradient-blue">{user.name}</span>
+              <span className="bg-gradient-to-r from-[#1D4ED8] via-[#6D28D9] to-[#0F766E] bg-clip-text text-transparent">
+                {user.name}
+              </span>
             </h1>
 
             <div className="flex flex-wrap items-center gap-3">
-              <span className="badge-lavender">
-                <Sparkle weight="fill" />
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-[#C7B9FF]/25 border border-[#C7B9FF]/40 text-[#5B4DD6]">
+                <Sparkle weight="fill" className="w-3.5 h-3.5" />
                 {formatCode(user.primaryCode)}
               </span>
 
               {user.astrology?.sunSign && (
-                <span className="badge-blue">
-                  {zodiac} {user.astrology.sunSign}
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-[#4F8CFF]/18 border border-[#4F8CFF]/35 text-[#1D4ED8]">
+                  <span className="text-sm leading-none">{zodiac}</span>
+                  {user.astrology.sunSign}
                 </span>
               )}
 
               {lifePath && (
-                <span className="badge-mint">
-                  <Hash weight="bold" /> Life Path {lifePath}
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-[#7CF5C8]/22 border border-[#7CF5C8]/40 text-[#0F766E]">
+                  <Hash weight="bold" className="w-3.5 h-3.5" />
+                  Life Path {lifePath}
                 </span>
               )}
 
               {user.city && (
-                <span className="badge">
-                  <MapPin weight="fill" /> {user.city}
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-black/[0.04] border border-black/10 text-black/70">
+                  <MapPin weight="fill" className="w-3.5 h-3.5 text-black/45" />
+                  {user.city}
                 </span>
               )}
             </div>
           </div>
 
-          <button className="flex items-center gap-3 px-5 py-3 rounded-2xl bg-black/5 hover:bg-black/10 transition">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#FFD97D] to-[#FF8F8F] flex items-center justify-center">
+          <button className="relative flex items-center gap-3 px-5 py-3 rounded-2xl bg-black/[0.035] border border-black/10 hover:bg-black/[0.06] hover:border-black/15 transition">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#FFD97D] to-[#FF8F8F] flex items-center justify-center shadow-[0_10px_30px_rgba(0,0,0,0.10)]">
               <Smiley weight="fill" className="text-black" />
             </div>
             <div className="text-left">
-              <p className="text-xs text-black/50">Current mood</p>
+              <p className="text-xs text-black/55">Current mood</p>
               <p className="text-sm font-medium text-black">
                 {user.currentMood || "Set your vibe"}
               </p>
             </div>
-            <ArrowRight className="text-black/40" />
+            <ArrowRight className="text-black/35" />
           </button>
         </div>
       </motion.section>
@@ -183,12 +195,14 @@ export function DashboardClient({ user }: DashboardClientProps) {
         {/* CODES */}
         <motion.div variants={item} className="col-span-2 row-span-2">
           <Link href="/dashboard/codes">
-            <div className="h-full rounded-[24px] bg-white border border-black/5 p-6 hover:shadow-lg transition">
+            <div className="h-full rounded-[24px] bg-white border border-black/10 shadow-[0_10px_30px_rgba(0,0,0,0.06)] p-6 hover:shadow-[0_18px_55px_rgba(0,0,0,0.10)] transition">
               <div className="flex justify-between mb-6">
                 <div className="w-12 h-12 rounded-xl bg-[#C7B9FF] flex items-center justify-center">
                   <Sparkle weight="fill" className="text-black" />
                 </div>
-                <span className="badge-lavender">3 codes</span>
+                <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-[#C7B9FF]/22 border border-[#C7B9FF]/35 text-[#5B4DD6]">
+                  3 codes
+                </span>
               </div>
 
               <h3 className="text-xl font-semibold text-black mb-1">
@@ -199,7 +213,7 @@ export function DashboardClient({ user }: DashboardClientProps) {
               </p>
 
               <div className="space-y-3">
-                <div className="rounded-xl bg-black/5 p-3">
+                <div className="rounded-xl bg-black/[0.035] border border-black/10 p-3">
                   <p className="font-medium text-black">
                     {formatCode(user.primaryCode)}
                   </p>
@@ -207,7 +221,7 @@ export function DashboardClient({ user }: DashboardClientProps) {
                 </div>
 
                 {user.secondaryCode && (
-                  <div className="rounded-xl bg-black/5 p-3">
+                  <div className="rounded-xl bg-black/[0.035] border border-black/10 p-3">
                     <p className="font-medium text-black">
                       {formatCode(user.secondaryCode)}
                     </p>
@@ -216,7 +230,7 @@ export function DashboardClient({ user }: DashboardClientProps) {
                 )}
 
                 {user.tertiaryCode && (
-                  <div className="rounded-xl bg-black/5 p-3">
+                  <div className="rounded-xl bg-black/[0.035] border border-black/10 p-3">
                     <p className="font-medium text-black">
                       {formatCode(user.tertiaryCode)}
                     </p>
@@ -231,8 +245,8 @@ export function DashboardClient({ user }: DashboardClientProps) {
         {/* ASTROLOGY */}
         <motion.div variants={item}>
           <Link href="/dashboard/astrology">
-            <div className="rounded-[22px] bg-white border border-black/5 p-5 h-full">
-              <Sun className="text-[#4F8CFF] mb-4" />
+            <div className="rounded-[22px] bg-white border border-black/10 shadow-[0_10px_30px_rgba(0,0,0,0.06)] p-5 h-full hover:shadow-[0_18px_55px_rgba(0,0,0,0.10)] transition">
+              <Sun className="text-[#1D4ED8] mb-4" />
               <h3 className="font-semibold text-black mb-1">Astrology</h3>
               <p className="text-sm text-black/60">
                 {user.astrology?.sunSign || "Explore your chart"}
@@ -244,8 +258,8 @@ export function DashboardClient({ user }: DashboardClientProps) {
         {/* NUMEROLOGY */}
         <motion.div variants={item}>
           <Link href="/dashboard/numerology">
-            <div className="rounded-[22px] bg-white border border-black/5 p-5 h-full">
-              <Hash className="text-[#7CF5C8] mb-4" />
+            <div className="rounded-[22px] bg-white border border-black/10 shadow-[0_10px_30px_rgba(0,0,0,0.06)] p-5 h-full hover:shadow-[0_18px_55px_rgba(0,0,0,0.10)] transition">
+              <Hash className="text-[#0F766E] mb-4" />
               <h3 className="font-semibold text-black mb-1">Numerology</h3>
               <p className="text-sm text-black/60">
                 {lifePath ? `Life Path ${lifePath}` : "Discover your numbers"}
@@ -257,8 +271,8 @@ export function DashboardClient({ user }: DashboardClientProps) {
         {/* FRIENDS */}
         <motion.div variants={item}>
           <Link href="/dashboard/friends">
-            <div className="rounded-[22px] bg-white border border-black/5 p-5 h-full">
-              <Users className="text-[#FFB5E8] mb-4" />
+            <div className="rounded-[22px] bg-white border border-black/10 shadow-[0_10px_30px_rgba(0,0,0,0.06)] p-5 h-full hover:shadow-[0_18px_55px_rgba(0,0,0,0.10)] transition">
+              <Users className="text-[#B83280] mb-4" />
               <h3 className="font-semibold text-black mb-1">Friends</h3>
               <p className="text-sm text-black/60">
                 {user.friendCount
@@ -272,8 +286,8 @@ export function DashboardClient({ user }: DashboardClientProps) {
         {/* COMPATIBILITY */}
         <motion.div variants={item}>
           <Link href="/dashboard/compatibility">
-            <div className="rounded-[22px] bg-white border border-black/5 p-5 h-full">
-              <Heart className="text-[#FF8F8F] mb-4" />
+            <div className="rounded-[22px] bg-white border border-black/10 shadow-[0_10px_30px_rgba(0,0,0,0.06)] p-5 h-full hover:shadow-[0_18px_55px_rgba(0,0,0,0.10)] transition">
+              <Heart className="text-[#DC2626] mb-4" />
               <h3 className="font-semibold text-black mb-1">Compatibility</h3>
               <p className="text-sm text-black/60">Check your matches</p>
             </div>
@@ -283,9 +297,9 @@ export function DashboardClient({ user }: DashboardClientProps) {
         {/* MEETUPS */}
         <motion.div variants={item} className="col-span-2">
           <Link href="/dashboard/meetups">
-            <div className="rounded-[22px] bg-white border border-black/5 p-6 flex justify-between items-center">
+            <div className="rounded-[22px] bg-white border border-black/10 shadow-[0_10px_30px_rgba(0,0,0,0.06)] p-6 flex justify-between items-center hover:shadow-[0_18px_55px_rgba(0,0,0,0.10)] transition">
               <div className="flex items-center gap-4">
-                <Calendar className="text-[#FFD97D]" />
+                <Calendar className="text-[#B45309]" />
                 <div>
                   <h3 className="font-semibold text-black">Meetups</h3>
                   <p className="text-sm text-black/60">
@@ -295,7 +309,7 @@ export function DashboardClient({ user }: DashboardClientProps) {
                   </p>
                 </div>
               </div>
-              <ArrowRight className="text-black/40" />
+              <ArrowRight className="text-black/35" />
             </div>
           </Link>
         </motion.div>
@@ -303,29 +317,27 @@ export function DashboardClient({ user }: DashboardClientProps) {
         {/* MARKETPLACE */}
         <motion.div variants={item} className="col-span-2">
           <Link href="/marketplace">
-            <div className="rounded-[22px] bg-gradient-to-r from-[#4F8CFF]/10 via-[#C7B9FF]/10 to-[#7CF5C8]/10 border border-black/5 p-6 flex justify-between items-center">
+            <div className="rounded-[22px] bg-white border border-black/10 shadow-[0_10px_30px_rgba(0,0,0,0.06)] p-6 flex justify-between items-center hover:shadow-[0_18px_55px_rgba(0,0,0,0.10)] transition">
               <div className="flex items-center gap-4">
-                <Compass className="text-black" />
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#4F8CFF]/18 via-[#C7B9FF]/18 to-[#7CF5C8]/18 border border-black/10 flex items-center justify-center">
+                  <Compass className="text-black" />
+                </div>
                 <div>
-                  <h3 className="font-semibold text-black">
-                    Explore Marketplace
-                  </h3>
-                  <p className="text-sm text-black/60">
-                    Curated for your energy
-                  </p>
+                  <h3 className="font-semibold text-black">Explore Marketplace</h3>
+                  <p className="text-sm text-black/60">Curated for your energy</p>
                 </div>
               </div>
-              <ArrowRight className="text-black" />
+              <ArrowRight className="text-black/35" />
             </div>
           </Link>
         </motion.div>
       </section>
 
       <motion.footer variants={item} className="mt-12 text-center">
-        <p className="text-sm text-black/50 flex items-center justify-center gap-2">
-          <Star className="text-[#FFD97D]" />
+        <p className="text-sm text-black/55 flex items-center justify-center gap-2">
+          <Star className="text-[#B45309]" />
           Keep exploring.
-          <Star className="text-[#FFD97D]" />
+          <Star className="text-[#B45309]" />
         </p>
       </motion.footer>
     </motion.div>
