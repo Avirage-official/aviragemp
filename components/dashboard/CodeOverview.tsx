@@ -2,14 +2,17 @@
 
 import { Sparkles } from "lucide-react";
 
-const CODE_DATA: Record<string, {
-  name: string;
-  tagline: string;
-  description: string;
-  emblem: string;
-  traits: string[];
-}> = {
-  "khoisan": {
+const CODE_DATA: Record<
+  string,
+  {
+    name: string;
+    tagline: string;
+    description: string;
+    emblem: string;
+    traits: string[];
+  }
+> = {
+   "khoisan": {
     name: "Earthlistener",
     tagline: "Grounded Observer",
     description: "Deeply connected to nature and present-moment awareness. You notice subtle shifts in energy and environment that others miss.",
@@ -151,72 +154,66 @@ const CODE_DATA: Record<string, {
   }
 };
 
-function CodeCard({ 
-  code, 
-  label, 
-  color 
-}: { 
-  code: string; 
-  label: string;
-  color: "primary" | "secondary" | "tertiary";
+function CodeCard({
+  code,
+  label,
+  accent,
+}: {
+  code: string;
+  label: "Primary" | "Secondary" | "Tertiary";
+  accent: "blue" | "lavender" | "mint";
 }) {
   const data = CODE_DATA[code];
-  
   if (!data) return null;
 
-  const colorClasses = {
-    primary: {
-      border: "border-[#4F8CFF]/30",
-      glow: "from-[#4F8CFF]/10 via-[#C7B9FF]/10 to-[#7CF5C8]/10",
-      badge: "bg-[#4F8CFF]/10 border-[#4F8CFF]/30 text-[#4F8CFF]",
-      emblem: "from-[#4F8CFF]/20 to-[#7CF5C8]/20 border-[#4F8CFF]/30"
+  const ACCENT = {
+    blue: {
+      ring: "ring-[#4F8CFF]/30",
+      bg: "from-[#4F8CFF]/10 to-[#4F8CFF]/5",
+      badge: "bg-[#4F8CFF]/10 text-[#4F8CFF]",
     },
-    secondary: {
-      border: "border-[#C7B9FF]/30",
-      glow: "from-[#C7B9FF]/10 to-[#7CF5C8]/10",
-      badge: "bg-[#C7B9FF]/10 border-[#C7B9FF]/30 text-[#C7B9FF]",
-      emblem: "from-[#C7B9FF]/20 to-[#4F8CFF]/20 border-[#C7B9FF]/30"
+    lavender: {
+      ring: "ring-[#C7B9FF]/30",
+      bg: "from-[#C7B9FF]/10 to-[#C7B9FF]/5",
+      badge: "bg-[#C7B9FF]/10 text-[#6B5FD2]",
     },
-    tertiary: {
-      border: "border-[#7CF5C8]/30",
-      glow: "from-[#7CF5C8]/10 to-[#4F8CFF]/10",
-      badge: "bg-[#7CF5C8]/10 border-[#7CF5C8]/30 text-[#7CF5C8]",
-      emblem: "from-[#7CF5C8]/20 to-[#C7B9FF]/20 border-[#7CF5C8]/30"
-    }
-  };
-
-  const classes = colorClasses[color];
+    mint: {
+      ring: "ring-[#7CF5C8]/30",
+      bg: "from-[#7CF5C8]/10 to-[#7CF5C8]/5",
+      badge: "bg-[#7CF5C8]/10 text-[#0E7C63]",
+    },
+  }[accent];
 
   return (
-    <div className="relative group">
-      {/* Glow effect */}
-      <div className={`absolute -inset-[1px] rounded-[28px] bg-gradient-to-br ${classes.glow} opacity-0 group-hover:opacity-100 blur-xl transition-opacity duration-700`} />
-      
-      {/* Card */}
-      <div className={`relative rounded-[28px] bg-white/[0.03] backdrop-blur-2xl border ${classes.border} p-6 transition-all duration-300 group-hover:bg-white/[0.05]`}>
-        <div className="flex items-start justify-between mb-4">
-          {/* Emblem */}
-          <div className={`flex-shrink-0 w-16 h-16 rounded-2xl bg-gradient-to-br ${classes.emblem} border flex items-center justify-center text-3xl`}>
+    <div className="relative rounded-[28px] bg-white ring-1 ring-black/5 shadow-sm transition hover:shadow-md">
+      <div
+        className={`absolute inset-0 rounded-[28px] bg-gradient-to-br ${ACCENT.bg}`}
+      />
+      <div className="relative p-7">
+        <div className="flex items-start justify-between mb-5">
+          <div className="w-14 h-14 rounded-2xl bg-white ring-1 ring-black/10 flex items-center justify-center text-3xl">
             {data.emblem}
           </div>
-          
-          {/* Label badge */}
-          <span className={`text-[10px] uppercase tracking-wider px-2 py-1 rounded-full border ${classes.badge} font-semibold`}>
+          <span
+            className={`text-[11px] font-semibold uppercase tracking-wide px-3 py-1 rounded-full ${ACCENT.badge}`}
+          >
             {label}
           </span>
         </div>
 
-        {/* Content */}
-        <h3 className="text-xl font-bold text-[#FAFAFA] mb-1">{data.name}</h3>
-        <p className="text-sm text-[#FAFAFA]/50 mb-3">{data.tagline}</p>
-        <p className="text-sm text-[#FAFAFA]/70 leading-relaxed mb-4">{data.description}</p>
-        
-        {/* Traits */}
+        <h3 className="text-2xl font-semibold text-black mb-1">
+          {data.name}
+        </h3>
+        <p className="text-sm text-black/50 mb-3">{data.tagline}</p>
+        <p className="text-sm text-black/70 leading-relaxed mb-4">
+          {data.description}
+        </p>
+
         <div className="flex flex-wrap gap-2">
-          {data.traits.map(trait => (
-            <span 
-              key={trait} 
-              className="text-[10px] px-2 py-1 rounded-full bg-[#FAFAFA]/5 text-[#FAFAFA]/60 border border-[#FAFAFA]/10"
+          {data.traits.map((trait) => (
+            <span
+              key={trait}
+              className="text-[11px] px-3 py-1 rounded-full bg-black/5 text-black/70"
             >
               {trait}
             </span>
@@ -227,42 +224,48 @@ function CodeCard({
   );
 }
 
-export function CodeOverview({ 
-  primaryCode, 
-  secondaryCode, 
-  tertiaryCode 
-}: { 
+export function CodeOverview({
+  primaryCode,
+  secondaryCode,
+  tertiaryCode,
+}: {
   primaryCode: string;
   secondaryCode?: string | null;
   tertiaryCode?: string | null;
 }) {
   return (
-    <div className="space-y-6">
+    <div className="space-y-10">
       {/* Header */}
-      <div className="text-center space-y-2">
-        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-[#4F8CFF]/10 via-[#C7B9FF]/10 to-[#7CF5C8]/10 border border-[#FAFAFA]/10 mb-4">
-          <Sparkles className="h-4 w-4 text-[#4F8CFF]" />
-          <span className="text-sm font-medium text-[#FAFAFA]/80">Your Mythical Identity</span>
+      <div className="text-center space-y-3">
+        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-black/5 text-black">
+          <Sparkles className="w-4 h-4" />
+          <span className="text-sm font-medium">Your Mythical Identity</span>
         </div>
-        <h2 className="text-3xl font-bold bg-gradient-to-r from-[#4F8CFF] via-[#C7B9FF] to-[#7CF5C8] bg-clip-text text-transparent">
-          Your Code
-        </h2>
-        <p className="text-[#FAFAFA]/50 text-sm max-w-2xl mx-auto">
-          Your personality expressed through mythical archetypes
+        <h2 className="text-4xl font-semibold text-black">Your Code</h2>
+        <p className="text-black/50 max-w-xl mx-auto">
+          Your personality expressed through symbolic archetypes
         </p>
       </div>
 
-      {/* Primary Code - Full width */}
-      <CodeCard code={primaryCode} label="Primary" color="primary" />
+      {/* Primary */}
+      <CodeCard code={primaryCode} label="Primary" accent="blue" />
 
-      {/* Secondary & Tertiary - Side by side */}
+      {/* Secondary / Tertiary */}
       {(secondaryCode || tertiaryCode) && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid md:grid-cols-2 gap-8">
           {secondaryCode && (
-            <CodeCard code={secondaryCode} label="Secondary" color="secondary" />
+            <CodeCard
+              code={secondaryCode}
+              label="Secondary"
+              accent="lavender"
+            />
           )}
           {tertiaryCode && (
-            <CodeCard code={tertiaryCode} label="Tertiary" color="tertiary" />
+            <CodeCard
+              code={tertiaryCode}
+              label="Tertiary"
+              accent="mint"
+            />
           )}
         </div>
       )}
