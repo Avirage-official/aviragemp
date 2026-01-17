@@ -1,184 +1,184 @@
+// components/navigation/MainNav.tsx
 "use client";
 
 import { useState, useEffect } from "react";
-import { useUser, UserButton } from "@clerk/nextjs";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, ShoppingBag, Calendar, Users as UsersIcon, CalendarDays, Menu, X, Sparkles } from "lucide-react";
+import { UserButton, useUser } from "@clerk/nextjs";
+import { 
+  Home, 
+  Store, 
+  MessageCircle, 
+  Menu, 
+  X,
+  Sparkles
+} from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+
+const NAV_ITEMS = [
+  { label: "Dashboard", href: "/dashboard", icon: Home },
+  { label: "Marketplace", href: "/marketplace", icon: Store },
+  { label: "Messages", href: "/dashboard/messages", icon: MessageCircle },
+];
 
 export function MainNav() {
-  const { user } = useUser();
   const pathname = usePathname();
-  const [userType, setUserType] = useState<string | null>(null);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { isLoaded } = useUser();
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
 
+  // Handle scroll effect
   useEffect(() => {
-    async function fetchUserType() {
-      if (!user) return;
-      
-      try {
-        const response = await fetch(`/api/users/${user.id}/type`);
-        const data = await response.json();
-        setUserType(data.type || "CONSUMER");
-      } catch (error) {
-        console.error("Error fetching user type:", error);
-        setUserType("CONSUMER");
-      }
+    const handleScroll = () => setScrolled(window.scrollY > 10);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  // Close mobile menu on route change
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [pathname]);
+
+  // Don't render until Clerk is loaded
+  if (!isLoaded) return null;
+
+  const isActive = (href: string) => {
+    if (href === "/dashboard") {
+      return pathname === "/dashboard" || pathname.startsWith("/dashboard/");
     }
-    
-    fetchUserType();
-  }, [user]);
-
-  // Hide nav on these pages
-  if (!user || pathname?.startsWith("/onboarding") || pathname === "/sign-in" || pathname === "/sign-up" || pathname === "/") {
-    return null;
-  }
-
-  const isBusiness = userType === "BUSINESS";
-
-  const userLinks = [
-    { href: "/dashboard", label: "Dashboard", icon: Home },
-    { href: "/marketplace", label: "Marketplace", icon: ShoppingBag },
-    { href: "/bookings", label: "My Bookings", icon: Calendar },
-    { href: "/dashboard/friends", label: "Friends", icon: UsersIcon },
-    { href: "/dashboard/meetups", label: "Meetups", icon: CalendarDays },
-  ];
-
-  const businessLinks = [
-    { href: "/business/dashboard", label: "Dashboard", icon: Home },
-    { href: "/business/listings/new", label: "Create Listing", icon: ShoppingBag },
-    { href: "/business/inquiries", label: "Inquiries", icon: Calendar },
-  ];
-
-  const links = isBusiness ? businessLinks : userLinks;
+    return pathname === href || pathname.startsWith(href);
+  };
 
   return (
-    <nav className="bg-[#111827]/95 border-b border-[#FAFAFA]/10 sticky top-0 z-50 backdrop-blur-xl">
-      <div className="max-w-7xl mx-auto px-6">
-        <div className="flex justify-between items-center h-16">
-          {/* Logo */}
-          <Link 
-            href={isBusiness ? "/business/dashboard" : "/dashboard"} 
-            className="flex items-center gap-3 group"
-          >
-            <div className="flex items-center gap-2">
-              <Sparkles className="h-5 w-5 text-[#4F8CFF] group-hover:text-[#7CF5C8] transition-colors duration-300" />
-              <span className="text-xl font-bold bg-gradient-to-r from-[#4F8CFF] via-[#C7B9FF] to-[#7CF5C8] bg-clip-text text-transparent">
+    <>
+      <nav
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+          scrolled
+            ? "bg-[#111827]/90 backdrop-blur-xl border-b border-white/10"
+            : "bg-transparent"
+        }`}
+      >
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <div className="flex items-center justify-between h-16">
+            {/* Logo */}
+            <Link href="/dashboard" className="flex items-center gap-2 group">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#4F8CFF] to-[#C7B9FF] flex items-center justify-center">
+                <Sparkles className="w-4 h-4 text-white" />
+              </div>
+              <span className="text-xl font-bold text-white group-hover:text-[#4F8CFF] transition-colors">
                 ETHOS
               </span>
-            </div>
-            {isBusiness && (
-              <span className="text-[10px] px-2 py-1 bg-[#C7B9FF]/10 border border-[#C7B9FF]/30 text-[#C7B9FF] rounded-full font-semibold uppercase tracking-wider">
-                Business
-              </span>
-            )}
-          </Link>
+            </Link>
 
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-1">
-            {links.map((link) => {
-              const Icon = link.icon;
-              const isActive = pathname === link.href;
-              
-              return (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className={`
-                    flex items-center gap-2 px-4 py-2 rounded-xl transition-all duration-300
-                    ${isActive
-                      ? "bg-gradient-to-r from-[#4F8CFF]/20 to-[#7CF5C8]/20 border border-[#4F8CFF]/30 text-[#FAFAFA]"
-                      : "text-[#FAFAFA]/60 hover:text-[#FAFAFA] hover:bg-[#FAFAFA]/5"
-                    }
-                  `}
-                >
-                  <Icon className={`w-4 h-4 ${isActive ? "text-[#4F8CFF]" : ""}`} />
-                  <span className="text-sm font-medium">{link.label}</span>
-                </Link>
-              );
-            })}
-          </div>
-
-          {/* User Menu & Mobile Toggle */}
-          <div className="flex items-center gap-4">
-            {/* Desktop User Button */}
-            <div className="hidden md:block">
-              <UserButton 
-                afterSignOutUrl="/"
-                appearance={{
-                  elements: {
-                    avatarBox: "w-9 h-9 ring-2 ring-[#4F8CFF]/20 hover:ring-[#4F8CFF]/40 transition-all",
-                    userButtonPopoverCard: "bg-[#111827] border border-[#FAFAFA]/10 shadow-2xl",
-                    userButtonPopoverActionButton: "text-[#FAFAFA] hover:bg-[#FAFAFA]/10 transition-colors",
-                    userButtonPopoverActionButtonText: "text-[#FAFAFA]/80",
-                    userButtonPopoverActionButtonIcon: "text-[#4F8CFF]",
-                    userButtonPopoverFooter: "hidden"
-                  }
-                }}
-              />
-            </div>
-
-            {/* Mobile Menu Button */}
-            <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden p-2 rounded-xl hover:bg-[#FAFAFA]/5 text-[#FAFAFA]/60 hover:text-[#FAFAFA] transition-all"
-            >
-              {mobileMenuOpen ? (
-                <X className="w-6 h-6" />
-              ) : (
-                <Menu className="w-6 h-6" />
-              )}
-            </button>
-          </div>
-        </div>
-
-        {/* Mobile Menu */}
-        {mobileMenuOpen && (
-          <div className="md:hidden py-4 border-t border-[#FAFAFA]/10 animate-in slide-in-from-top duration-200">
-            <div className="flex flex-col gap-2">
-              {links.map((link) => {
-                const Icon = link.icon;
-                const isActive = pathname === link.href;
-                
+            {/* Desktop Nav */}
+            <div className="hidden md:flex items-center gap-1">
+              {NAV_ITEMS.map((item) => {
+                const Icon = item.icon;
+                const active = isActive(item.href);
                 return (
                   <Link
-                    key={link.href}
-                    href={link.href}
-                    onClick={() => setMobileMenuOpen(false)}
-                    className={`
-                      flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200
-                      ${isActive
-                        ? "bg-gradient-to-r from-[#4F8CFF]/20 to-[#7CF5C8]/20 border border-[#4F8CFF]/30 text-[#FAFAFA]"
-                        : "text-[#FAFAFA]/60 hover:text-[#FAFAFA] hover:bg-[#FAFAFA]/5"
-                      }
-                    `}
+                    key={item.href}
+                    href={item.href}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all ${
+                      active
+                        ? "bg-[#4F8CFF]/20 text-[#4F8CFF]"
+                        : "text-white/70 hover:text-white hover:bg-white/5"
+                    }`}
                   >
-                    <Icon className={`w-5 h-5 ${isActive ? "text-[#4F8CFF]" : ""}`} />
-                    <span className="font-medium">{link.label}</span>
+                    <Icon className="w-4 h-4" />
+                    {item.label}
                   </Link>
                 );
               })}
-              
-              {/* Mobile User Section */}
-              <div className="mt-4 pt-4 border-t border-[#FAFAFA]/10">
-                <div className="flex items-center justify-between px-4 py-2">
-                  <span className="text-sm text-[#FAFAFA]/50 font-medium">Account</span>
-                  <UserButton 
-                    afterSignOutUrl="/"
-                    appearance={{
-                      elements: {
-                        avatarBox: "w-9 h-9 ring-2 ring-[#4F8CFF]/20",
-                        userButtonPopoverCard: "bg-[#111827] border border-[#FAFAFA]/10",
-                        userButtonPopoverActionButton: "text-[#FAFAFA] hover:bg-[#FAFAFA]/10"
-                      }
-                    }}
-                  />
-                </div>
+            </div>
+
+            {/* Right side */}
+            <div className="flex items-center gap-3">
+              {/* Profile */}
+              <div className="hidden md:block">
+                <UserButton
+                  afterSignOutUrl="/"
+                  appearance={{
+                    elements: {
+                      avatarBox: "w-9 h-9 ring-2 ring-white/20 hover:ring-[#4F8CFF]/50 transition-all",
+                    },
+                  }}
+                />
               </div>
+
+              {/* Mobile Menu Button */}
+              <button
+                onClick={() => setMobileOpen(!mobileOpen)}
+                className="md:hidden p-2 rounded-xl text-white/70 hover:text-white hover:bg-white/10 transition-all"
+              >
+                {mobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              </button>
             </div>
           </div>
+        </div>
+      </nav>
+
+      {/* Mobile Menu */}
+      <AnimatePresence>
+        {mobileOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="fixed inset-0 z-40 md:hidden"
+          >
+            {/* Backdrop */}
+            <div 
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+              onClick={() => setMobileOpen(false)}
+            />
+            
+            {/* Menu */}
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="absolute top-16 left-4 right-4 bg-[#1a1f2e] border border-white/10 rounded-2xl p-4 shadow-2xl"
+            >
+              <div className="space-y-1">
+                {NAV_ITEMS.map((item) => {
+                  const Icon = item.icon;
+                  const active = isActive(item.href);
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      className={`flex items-center gap-3 px-4 py-3 rounded-xl text-base font-medium transition-all ${
+                        active
+                          ? "bg-[#4F8CFF]/20 text-[#4F8CFF]"
+                          : "text-white/70 hover:text-white hover:bg-white/5"
+                      }`}
+                    >
+                      <Icon className="w-5 h-5" />
+                      {item.label}
+                    </Link>
+                  );
+                })}
+              </div>
+              
+              {/* Profile in mobile */}
+              <div className="mt-4 pt-4 border-t border-white/10 flex items-center gap-3 px-4">
+                <UserButton
+                  afterSignOutUrl="/"
+                  appearance={{
+                    elements: {
+                      avatarBox: "w-10 h-10",
+                    },
+                  }}
+                />
+                <span className="text-white/70 text-sm">Your Profile</span>
+              </div>
+            </motion.div>
+          </motion.div>
         )}
-      </div>
-    </nav>
+      </AnimatePresence>
+
+      {/* Spacer for fixed nav */}
+      <div className="h-16" />
+    </>
   );
 }
