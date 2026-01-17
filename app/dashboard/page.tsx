@@ -1,3 +1,4 @@
+// app/dashboard/page.tsx
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
@@ -5,6 +6,7 @@ import { UserEmblems } from "@/components/dashboard/UserEmblems";
 import { PersonalityBreakdown } from "@/components/dashboard/PersonalityBreakdown";
 import { CompatibilityChart } from "@/components/dashboard/CompatibilityChart";
 import { MonthlyInsights } from "@/components/dashboard/MonthlyInsights";
+import { AstrologyNumerology } from "@/components/dashboard/AstrologyNumerology";
 import Link from "next/link";
 import { ArrowRight, Users, Compass } from "lucide-react";
 
@@ -35,13 +37,16 @@ export default async function DashboardPage() {
         <div className="absolute bottom-[-20%] left-[40%] h-[750px] w-[750px] rounded-full bg-[#4F8CFF] blur-[170px] opacity-[0.06]" />
       </div>
 
-      <div className="relative max-w-7xl mx-auto px-6 py-10 space-y-8">
+      <div className="relative max-w-7xl mx-auto px-6 py-10 space-y-12">
         {/* Hero Section - Military Badge Emblems */}
         <UserEmblems 
           primaryCode={user.primaryCode}
           secondaryCode={user.secondaryCode}
           tertiaryCode={user.tertiaryCode}
         />
+
+        {/* Astrology & Numerology Section - NEW */}
+        <AstrologyNumerology />
 
         {/* Personality Section */}
         <PersonalityBreakdown quizResults={user.quizResults} />
