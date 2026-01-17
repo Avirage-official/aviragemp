@@ -234,13 +234,13 @@ export function DashboardClient({ user }: { user: UserData }) {
               )}
 
               {/* Tags Row */}
-              <div className="flex flex-wrap items-center gap-3">
-                {sunSign && (
-                  <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#4F8CFF]/15 border border-[#4F8CFF]/30 text-[#4F8CFF] text-sm font-semibold">
-                    <span className="text-base">{zodiacSymbol}</span>
-                    {user.astrology.sunSign}
-                  </span>
-                )}
+<div className="flex flex-wrap items-center gap-3">
+  {sunSign && (
+    <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#4F8CFF]/15 border border-[#4F8CFF]/30 text-[#4F8CFF] text-sm font-semibold">
+      <span className="text-base">{zodiacSymbol}</span>
+      {user.astrology?.sunSign}
+    </span>
+  )}
                 
                 {lifePath && (
                   <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#7CF5C8]/15 border border-[#7CF5C8]/30 text-[#7CF5C8] text-sm font-semibold">
