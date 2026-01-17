@@ -1,27 +1,32 @@
+// app/dashboard/layout.tsx
 "use client";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { UserButton } from "@clerk/nextjs";
-import { useMemo } from "react";
 import {
-  Sparkles,
+  Sparkle,
   Users,
-  Compass,
-  MessageCircle,
+  ChatCircle,
+  Calendar,
+  Storefront,
   ArrowRight,
-} from "lucide-react";
+} from "@phosphor-icons/react";
 
-const presence = {
-  friendsOnline: true,
-  unreadMessages: 0,
-};
+/* ============================================================================
+   NAV ITEMS
+   ============================================================================ */
 
-type NavItem = {
-  label: string;
-  href: string;
-  icon: React.ElementType;
-};
+const NAV_ITEMS = [
+  { href: "/dashboard", label: "Your Code", icon: Sparkle, exact: true },
+  { href: "/dashboard/friends", label: "Friends", icon: Users },
+  { href: "/dashboard/messages", label: "Messages", icon: ChatCircle },
+  { href: "/dashboard/meetups", label: "Meetups", icon: Calendar },
+];
+
+/* ============================================================================
+   LAYOUT
+   ============================================================================ */
 
 export default function DashboardLayout({
   children,
@@ -30,84 +35,61 @@ export default function DashboardLayout({
 }) {
   const pathname = usePathname();
 
-  const items: NavItem[] = useMemo(
-    () => [
-      { label: "Your Code", href: "/dashboard", icon: Sparkles },
-      { label: "Friends", href: "/dashboard/friends", icon: Users },
-      { label: "Messages", href: "/dashboard/messages", icon: MessageCircle },
-      { label: "Meetups", href: "/dashboard/meetups", icon: Compass },
-    ],
-    []
-  );
-
-  const isActive = (href: string) =>
-    href === "/dashboard"
-      ? pathname === "/dashboard"
-      : pathname?.startsWith(href);
+  const isActive = (href: string, exact?: boolean) =>
+    exact ? pathname === href : pathname?.startsWith(href);
 
   return (
-    <div className="relative min-h-screen flex overflow-hidden text-black">
-      {/* ===============================================================
-          GLOBAL LIFESTYLE BACKGROUND (BRIGHT, MODERN)
-         =============================================================== */}
+    <div className="relative min-h-screen flex bg-[#050505] text-white">
+      {/* ================================================================
+          AMBIENT BACKGROUND
+          ================================================================ */}
       <div className="pointer-events-none fixed inset-0 -z-10">
-        <div className="absolute inset-0 bg-gradient-to-br from-[#F7F8FF] via-[#FFFFFF] to-[#F4FFF9]" />
-
-        <div className="absolute -top-[25%] left-[10%] h-[700px] w-[700px] rounded-full bg-[#4F8CFF] opacity-[0.08] blur-[160px]" />
-        <div className="absolute top-[35%] right-[5%] h-[600px] w-[600px] rounded-full bg-[#C7B9FF] opacity-[0.08] blur-[150px]" />
-        <div className="absolute bottom-[-25%] left-[35%] h-[650px] w-[650px] rounded-full bg-[#7CF5C8] opacity-[0.07] blur-[160px]" />
-
-        <div className="absolute inset-0 bg-[url('/images/noise.png')] opacity-[0.025]" />
+        <div className="absolute -top-[30%] left-[5%] h-[600px] w-[600px] rounded-full bg-[#4F8CFF] opacity-[0.04] blur-[150px]" />
+        <div className="absolute top-[40%] right-[0%] h-[500px] w-[500px] rounded-full bg-[#C7B9FF] opacity-[0.04] blur-[140px]" />
+        <div className="absolute bottom-[-20%] left-[30%] h-[550px] w-[550px] rounded-full bg-[#7CF5C8] opacity-[0.03] blur-[160px]" />
       </div>
 
-      {/* ===============================================================
-          SIDE NAV (CLEAN / PRODUCT-GRADE)
-         =============================================================== */}
-      <aside className="hidden md:flex w-[260px] shrink-0 border-r border-black/5 bg-white/70 backdrop-blur-xl">
+      {/* ================================================================
+          SIDEBAR
+          ================================================================ */}
+      <aside className="hidden md:flex w-[260px] shrink-0 border-r border-white/[0.06] bg-[#0A0A0A]/80 backdrop-blur-xl">
         <div className="flex h-full w-full flex-col px-5 py-6">
+          {/* Logo */}
           <Link href="/dashboard" className="mb-10 block">
-            <div className="text-lg font-semibold tracking-wide text-black">
+            <div className="text-xl font-bold tracking-wide text-white">
               ETHOS
             </div>
-            <div className="text-xs text-black/50">your universe</div>
+            <div className="text-xs text-white/40">your universe</div>
           </Link>
 
-          <nav className="flex flex-col gap-2">
-            {items.map((it) => {
-              const active = isActive(it.href);
-              const Icon = it.icon;
+          {/* Nav */}
+          <nav className="flex flex-col gap-1.5">
+            {NAV_ITEMS.map((item) => {
+              const active = isActive(item.href, item.exact);
+              const Icon = item.icon;
 
               return (
                 <Link
-                  key={it.href}
-                  href={it.href}
-                  className={[
-                    "relative flex items-center gap-3 rounded-2xl px-4 py-3 text-sm transition",
-                    active
-                      ? "bg-black/5 text-black"
-                      : "text-black/60 hover:text-black hover:bg-black/5",
-                  ].join(" ")}
+                  key={item.href}
+                  href={item.href}
+                  className={`
+                    relative flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all duration-200
+                    ${active
+                      ? "bg-white/[0.08] text-white"
+                      : "text-white/50 hover:text-white hover:bg-white/[0.04]"
+                    }
+                  `}
                 >
+                  {/* Active indicator */}
                   {active && (
-                    <span className="absolute inset-0 rounded-2xl bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-pink-500/10 blur-[12px]" />
+                    <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 rounded-r-full bg-[#4F8CFF]" />
                   )}
-
-                  <span className="relative z-10 flex items-center gap-3">
-                    <Icon className="h-4 w-4" />
-                    {it.label}
-
-                    {it.label === "Friends" &&
-                      presence.friendsOnline && (
-                        <span className="ml-auto h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-                      )}
-
-                    {it.label === "Messages" &&
-                      presence.unreadMessages > 0 && (
-                        <span className="ml-auto rounded-full bg-black px-2 py-0.5 text-[11px] font-medium text-white">
-                          {presence.unreadMessages}
-                        </span>
-                      )}
-                  </span>
+                  
+                  <Icon
+                    weight={active ? "fill" : "regular"}
+                    className={`w-5 h-5 ${active ? "text-[#4F8CFF]" : ""}`}
+                  />
+                  {item.label}
                 </Link>
               );
             })}
@@ -115,32 +97,39 @@ export default function DashboardLayout({
 
           <div className="flex-1" />
 
+          {/* Marketplace CTA */}
           <Link
             href="/marketplace"
-            className="mb-6 flex items-center justify-between rounded-2xl border border-black/10 bg-white px-4 py-3 text-sm text-black/80 hover:bg-white transition"
+            className="group mb-6 flex items-center justify-between rounded-xl border border-white/[0.08] bg-white/[0.02] px-4 py-3 text-sm text-white/70 hover:bg-white/[0.05] hover:border-white/[0.12] transition-all"
           >
-            Marketplace
-            <ArrowRight className="h-4 w-4" />
+            <div className="flex items-center gap-3">
+              <Storefront weight="duotone" className="w-5 h-5 text-[#C7B9FF]" />
+              <span>Marketplace</span>
+            </div>
+            <ArrowRight className="w-4 h-4 text-white/30 group-hover:text-white/60 group-hover:translate-x-0.5 transition-all" />
           </Link>
 
-          <div className="flex items-center gap-3">
+          {/* User */}
+          <div className="flex items-center gap-3 px-2">
             <UserButton
-              appearance={{ elements: { avatarBox: "w-9 h-9" } }}
+              appearance={{
+                elements: {
+                  avatarBox: "w-9 h-9 ring-2 ring-white/10",
+                },
+              }}
               afterSignOutUrl="/"
             />
-            <span className="text-sm text-black/60">Account</span>
+            <span className="text-sm text-white/50">Account</span>
           </div>
         </div>
       </aside>
 
-      {/* ===============================================================
-          CONTENT WRAPPER (THIS FIXES ALL PAGES)
-         =============================================================== */}
-      <main className="flex-1 px-6 py-10">
-        <div className="mx-auto max-w-7xl">
-          <div className="rounded-[32px] bg-white/85 backdrop-blur-xl border border-black/5 shadow-[0_30px_80px_rgba(0,0,0,0.08)] px-6 py-8">
-            {children}
-          </div>
+      {/* ================================================================
+          MAIN CONTENT
+          ================================================================ */}
+      <main className="flex-1 overflow-y-auto">
+        <div className="mx-auto max-w-6xl px-6 py-8">
+          {children}
         </div>
       </main>
     </div>
