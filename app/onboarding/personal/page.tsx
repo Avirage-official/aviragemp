@@ -34,7 +34,7 @@ export default function PersonalOnboardingPage() {
     // Final submit
     setLoading(true);
     try {
-      const res = await fetch("/api/users/create", {
+      const res = await fetch("/api/users/onboard", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
