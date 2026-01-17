@@ -2,13 +2,43 @@
 "use client";
 
 import Link from "next/link";
-import { LucideIcon, ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
+import { 
+  ArrowRight,
+  Sparkle,
+  Sun,
+  Moon,
+  Hash,
+  Users,
+  Calendar,
+  Target,
+  Compass,
+  MapPin,
+  Heart,
+  Star,
+} from "@phosphor-icons/react";
+
+// Phosphor icon map
+const ICON_MAP = {
+  sparkle: Sparkle,
+  sun: Sun,
+  moon: Moon,
+  hash: Hash,
+  users: Users,
+  calendar: Calendar,
+  target: Target,
+  compass: Compass,
+  mapPin: MapPin,
+  heart: Heart,
+  star: Star,
+} as const;
+
+type IconName = keyof typeof ICON_MAP;
 
 interface BentoCardProps {
   title: string;
   subtitle?: string;
-  icon: LucideIcon;
+  icon: IconName;
   href: string;
   color: "blue" | "mint" | "lavender" | "pink" | "orange";
   size?: "default" | "large" | "wide";
@@ -52,7 +82,7 @@ const COLOR_MAP = {
 export function BentoCard({
   title,
   subtitle,
-  icon: Icon,
+  icon,
   href,
   color,
   size = "default",
@@ -60,9 +90,10 @@ export function BentoCard({
   badge,
 }: BentoCardProps) {
   const colors = COLOR_MAP[color];
+  const Icon = ICON_MAP[icon];
 
   return (
-    <Link href={href} className="block group">
+    <Link href={href} className="block group h-full">
       <motion.div
         whileHover={{ scale: 1.02, y: -2 }}
         whileTap={{ scale: 0.98 }}
@@ -79,11 +110,11 @@ export function BentoCard({
           <div className={`absolute inset-0 bg-gradient-to-br ${colors.bg} blur-xl`} />
         </div>
 
-        <div className="relative z-10">
+        <div className="relative z-10 flex flex-col h-full">
           {/* Header */}
           <div className="flex items-start justify-between mb-3 sm:mb-4">
             <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-gradient-to-br ${colors.icon} flex items-center justify-center`}>
-              <Icon className="w-5 h-5 sm:w-6 sm:h-6" />
+              <Icon className="w-5 h-5 sm:w-6 sm:h-6" weight="duotone" />
             </div>
             
             {badge !== undefined && (
@@ -100,12 +131,12 @@ export function BentoCard({
           )}
 
           {/* Custom content */}
-          {children && <div className="mb-3 sm:mb-4">{children}</div>}
+          {children && <div className="mb-3 sm:mb-4 flex-1">{children}</div>}
 
           {/* Footer */}
-          <div className={`flex items-center gap-1 text-xs sm:text-sm font-medium ${colors.text} group-hover:gap-2 transition-all`}>
+          <div className={`flex items-center gap-1 text-xs sm:text-sm font-medium ${colors.text} group-hover:gap-2 transition-all mt-auto`}>
             <span>Explore</span>
-            <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4" />
+            <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4" weight="bold" />
           </div>
         </div>
       </motion.div>

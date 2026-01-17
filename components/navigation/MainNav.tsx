@@ -6,19 +6,19 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { UserButton, useUser } from "@clerk/nextjs";
 import { 
-  Home, 
-  Store, 
-  MessageCircle, 
-  Menu, 
+  House, 
+  Storefront, 
+  ChatCircle, 
+  List, 
   X,
-  Sparkles
-} from "lucide-react";
+  Sparkle
+} from "@phosphor-icons/react";
 import { motion, AnimatePresence } from "framer-motion";
 
 const NAV_ITEMS = [
-  { label: "Dashboard", href: "/dashboard", icon: Home },
-  { label: "Marketplace", href: "/marketplace", icon: Store },
-  { label: "Messages", href: "/dashboard/messages", icon: MessageCircle },
+  { label: "Dashboard", href: "/dashboard", icon: House },
+  { label: "Marketplace", href: "/marketplace", icon: Storefront },
+  { label: "Messages", href: "/dashboard/messages", icon: ChatCircle },
 ];
 
 export function MainNav() {
@@ -27,24 +27,21 @@ export function MainNav() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
-  // Handle scroll effect
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 10);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Close mobile menu on route change
   useEffect(() => {
     setMobileOpen(false);
   }, [pathname]);
 
-  // Don't render until Clerk is loaded
   if (!isLoaded) return null;
 
   const isActive = (href: string) => {
     if (href === "/dashboard") {
-      return pathname === "/dashboard" || pathname.startsWith("/dashboard/");
+      return pathname === "/dashboard";
     }
     return pathname === href || pathname.startsWith(href);
   };
@@ -63,7 +60,7 @@ export function MainNav() {
             {/* Logo */}
             <Link href="/dashboard" className="flex items-center gap-2 group">
               <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#4F8CFF] to-[#C7B9FF] flex items-center justify-center">
-                <Sparkles className="w-4 h-4 text-white" />
+                <Sparkle className="w-4 h-4 text-white" weight="fill" />
               </div>
               <span className="text-xl font-bold text-white group-hover:text-[#4F8CFF] transition-colors">
                 ETHOS
@@ -85,7 +82,7 @@ export function MainNav() {
                         : "text-white/70 hover:text-white hover:bg-white/5"
                     }`}
                   >
-                    <Icon className="w-4 h-4" />
+                    <Icon className="w-4 h-4" weight={active ? "fill" : "regular"} />
                     {item.label}
                   </Link>
                 );
@@ -94,7 +91,6 @@ export function MainNav() {
 
             {/* Right side */}
             <div className="flex items-center gap-3">
-              {/* Profile */}
               <div className="hidden md:block">
                 <UserButton
                   afterSignOutUrl="/"
@@ -106,12 +102,11 @@ export function MainNav() {
                 />
               </div>
 
-              {/* Mobile Menu Button */}
               <button
                 onClick={() => setMobileOpen(!mobileOpen)}
                 className="md:hidden p-2 rounded-xl text-white/70 hover:text-white hover:bg-white/10 transition-all"
               >
-                {mobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+                {mobileOpen ? <X className="w-6 h-6" weight="bold" /> : <List className="w-6 h-6" weight="bold" />}
               </button>
             </div>
           </div>
@@ -127,13 +122,11 @@ export function MainNav() {
             exit={{ opacity: 0, y: -20 }}
             className="fixed inset-0 z-40 md:hidden"
           >
-            {/* Backdrop */}
             <div 
               className="absolute inset-0 bg-black/60 backdrop-blur-sm"
               onClick={() => setMobileOpen(false)}
             />
             
-            {/* Menu */}
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -153,14 +146,13 @@ export function MainNav() {
                           : "text-white/70 hover:text-white hover:bg-white/5"
                       }`}
                     >
-                      <Icon className="w-5 h-5" />
+                      <Icon className="w-5 h-5" weight={active ? "fill" : "regular"} />
                       {item.label}
                     </Link>
                   );
                 })}
               </div>
               
-              {/* Profile in mobile */}
               <div className="mt-4 pt-4 border-t border-white/10 flex items-center gap-3 px-4">
                 <UserButton
                   afterSignOutUrl="/"
@@ -177,7 +169,6 @@ export function MainNav() {
         )}
       </AnimatePresence>
 
-      {/* Spacer for fixed nav */}
       <div className="h-16" />
     </>
   );

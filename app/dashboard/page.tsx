@@ -4,15 +4,8 @@ import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { MainNav } from "@/components/navigation/MainNav";
 import { BentoCard } from "@/components/dashboard/BentoCard";
-import { 
-  Sparkles, 
-  Sun, 
-  Hash, 
-  Users, 
-  Calendar, 
-  Target,
-  MapPin
-} from "lucide-react";
+import { ZODIAC_ICONS } from "@/components/icons/ZodiacIcons";
+import { Sparkle, MapPin } from "@phosphor-icons/react/dist/ssr";
 
 // Zodiac symbols for display
 const ZODIAC_SYMBOLS: Record<string, string> = {
@@ -52,6 +45,7 @@ export default async function DashboardPage() {
   const sunSign = user.astrology?.sunSign || null;
   const lifePathNumber = user.astrology?.lifePathNumber || null;
   const zodiacSymbol = sunSign ? ZODIAC_SYMBOLS[sunSign] : "✧";
+  const ZodiacIcon = sunSign ? ZODIAC_ICONS[sunSign as keyof typeof ZODIAC_ICONS] : null;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#111827] via-[#0f172a] to-[#111827] text-white">
@@ -69,7 +63,7 @@ export default async function DashboardPage() {
           <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6">
             {/* Avatar/Emblem placeholder */}
             <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-br from-[#4F8CFF]/30 to-[#C7B9FF]/30 border border-white/20 flex items-center justify-center">
-              <Sparkles className="w-8 h-8 sm:w-10 sm:h-10 text-[#4F8CFF]" />
+              <Sparkle className="w-8 h-8 sm:w-10 sm:h-10 text-[#4F8CFF]" weight="duotone" />
             </div>
             
             <div className="flex-1">
@@ -81,7 +75,10 @@ export default async function DashboardPage() {
                 {sunSign && (
                   <>
                     <span className="text-white/30">•</span>
-                    <span>{zodiacSymbol} {sunSign}</span>
+                    <span className="flex items-center gap-1">
+                      {ZodiacIcon && <ZodiacIcon className="w-4 h-4" />}
+                      {sunSign}
+                    </span>
                   </>
                 )}
                 {lifePathNumber && (
@@ -96,7 +93,7 @@ export default async function DashboardPage() {
             {/* Location */}
             {user.city && (
               <div className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 border border-white/10">
-                <MapPin className="w-4 h-4 text-white/50" />
+                <MapPin className="w-4 h-4 text-white/50" weight="duotone" />
                 <span className="text-sm text-white/70">{user.city}</span>
               </div>
             )}
@@ -110,7 +107,7 @@ export default async function DashboardPage() {
             <BentoCard
               title="Your Codes"
               subtitle="Mythical identity badges"
-              icon={Sparkles}
+              icon="sparkle"
               href="/dashboard/codes"
               color="lavender"
               size="large"
@@ -143,13 +140,15 @@ export default async function DashboardPage() {
           <BentoCard
             title="Astrology"
             subtitle={sunSign ? `${zodiacSymbol} ${sunSign}` : "Discover your sign"}
-            icon={Sun}
+            icon="sun"
             href="/dashboard/astrology"
             color="blue"
           >
-            {sunSign && (
-              <div className="flex items-center gap-2">
-                <span className="text-2xl">{zodiacSymbol}</span>
+            {sunSign && ZodiacIcon && (
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-xl bg-[#4F8CFF]/20 border border-[#4F8CFF]/30 flex items-center justify-center">
+                  <ZodiacIcon className="w-6 h-6 text-[#4F8CFF]" />
+                </div>
                 <div>
                   <p className="text-sm font-medium text-white">{sunSign}</p>
                   <p className="text-xs text-white/40">{user.astrology?.birthElement || "Element"}</p>
@@ -162,7 +161,7 @@ export default async function DashboardPage() {
           <BentoCard
             title="Numerology"
             subtitle={lifePathNumber ? `Life Path ${lifePathNumber}` : "Your numbers"}
-            icon={Hash}
+            icon="hash"
             href="/dashboard/numerology"
             color="mint"
           >
@@ -178,7 +177,7 @@ export default async function DashboardPage() {
           <BentoCard
             title="Friends"
             subtitle="Your circle"
-            icon={Users}
+            icon="users"
             href="/dashboard/friends"
             color="lavender"
             badge={friendCount > 0 ? friendCount : undefined}
@@ -195,7 +194,7 @@ export default async function DashboardPage() {
           <BentoCard
             title="Compatibility"
             subtitle="Who vibes with you"
-            icon={Target}
+            icon="heart"
             href="/dashboard/compatibility"
             color="pink"
           >
@@ -208,7 +207,7 @@ export default async function DashboardPage() {
           <BentoCard
             title="Meetups"
             subtitle="Upcoming events"
-            icon={Calendar}
+            icon="calendar"
             href="/dashboard/meetups"
             color="orange"
             badge={meetupCount > 0 ? meetupCount : undefined}
