@@ -26,6 +26,10 @@ model User {
   tertiaryCode  String?
   quizResults   Json?
 
+  // Birth data for astrology
+  birthDate DateTime?
+  birthTime String? // Format: "HH:mm" (24-hour)
+
   city     String?
   country  String?
   timezone String?
@@ -49,10 +53,241 @@ model User {
   businessProfile BusinessProfile?
   bookings        Booking[]
   notifications   Notification[]
+  
+  astrology AstrologyProfile?
 
   @@index([type])
   @@index([city])
   @@index([primaryCode])
+}
+
+////////////////////////
+// ASTROLOGY & NUMEROLOGY - USER DATA
+////////////////////////
+
+model AstrologyProfile {
+  id     String @id @default(cuid())
+  userId String @unique
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Astrology - Birth Chart
+  sunSign       String?
+  moonSign      String?
+  risingSign    String?
+
+  // Planetary Placements
+  mercury       String?
+  venus         String?
+  mars          String?
+  jupiter       String?
+  saturn        String?
+  uranus        String?
+  neptune       String?
+  pluto         String?
+
+  // Houses (1-12)
+  houses Json?
+
+  // Aspects
+  aspects Json?
+
+  // Numerology
+  lifePathNumber        Int?
+  destinyNumber         Int?
+  soulUrgeNumber        Int?
+  personalityNumber     Int?
+  birthDayNumber        Int?
+  personalYearNumber    Int?
+
+  // Chinese Zodiac
+  chineseZodiac String?
+  chineseElement String?
+
+  // Additional
+  luckyNumbers  Int[] @default([])
+  luckyColors   String[] @default([])
+  birthElement  String?
+  modality      String?
+
+  // Full data backup
+  fullData Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+}
+
+////////////////////////
+// ASTROLOGY REFERENCE DATA
+////////////////////////
+
+model AstrologySignInfo {
+  id String @id @default(cuid())
+  
+  sign String @unique // Aries, Taurus, Gemini, etc.
+  symbol String? // ♈
+  dateRange String? // Mar 21 - Apr 19
+  
+  description String @db.Text
+  traits String[] @default([])
+  strengths String[] @default([])
+  weaknesses String[] @default([])
+  
+  element String // Fire, Earth, Air, Water
+  modality String // Cardinal, Fixed, Mutable
+  rulingPlanet String?
+  
+  compatibleSigns String[] @default([])
+  luckyNumbers Int[] @default([])
+  luckyColors String[] @default([])
+  luckyDays String[] @default([])
+  
+  bodyPart String?
+  anatomy String?
+  
+  fullData Json?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([sign])
+}
+
+model PlanetInfo {
+  id String @id @default(cuid())
+  
+  name String @unique // Mercury, Venus, Mars, etc.
+  symbol String?
+  
+  description String @db.Text
+  meaning String @db.Text
+  
+  rulesOver String[] @default([]) // communication, love, etc.
+  traits String[] @default([])
+  
+  daysOfWeek String[] @default([])
+  colors String[] @default([])
+  metals String[] @default([])
+  
+  fullData Json?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([name])
+}
+
+model HouseInfo {
+  id String @id @default(cuid())
+  
+  houseNumber Int @unique // 1-12
+  
+  description String @db.Text
+  meaning String @db.Text
+  theme String // Identity, Finances, Communication, etc.
+  
+  governs String[] @default([])
+  traits String[] @default([])
+  
+  fullData Json?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([houseNumber])
+}
+
+model AspectInfo {
+  id String @id @default(cuid())
+  
+  name String @unique // Conjunction, Opposition, Trine, Square, Sextile
+  symbol String?
+  angle Int // 0, 180, 120, 90, 60
+  
+  description String @db.Text
+  meaning String @db.Text
+  
+  influence String // Harmonious, Challenging, etc.
+  traits String[] @default([])
+  
+  fullData Json?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([name])
+}
+
+////////////////////////
+// NUMEROLOGY REFERENCE DATA
+////////////////////////
+
+model NumerologyInfo {
+  id String @id @default(cuid())
+  
+  number Int @unique // 1-9, 11, 22, 33
+  name String // Life Path, Destiny, Soul Urge, etc.
+  
+  description String @db.Text
+  meaning String @db.Text
+  
+  traits String[] @default([])
+  strengths String[] @default([])
+  weaknesses String[] @default([])
+  
+  lifeTheme String?
+  lifeLesson String?
+  
+  compatibleNumbers Int[] @default([])
+  luckyColors String[] @default([])
+  luckyDays String[] @default([])
+  
+  personality String @db.Text
+  career String @db.Text
+  relationships String @db.Text
+  
+  fullData Json?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([number])
+}
+
+////////////////////////
+// CHINESE ZODIAC REFERENCE DATA
+////////////////////////
+
+model ChineseZodiacInfo {
+  id String @id @default(cuid())
+  
+  animal String @unique // Rat, Ox, Tiger, etc.
+  years String[] @default([]) // [1900, 1912, 1924, ...]
+  
+  description String @db.Text
+  traits String[] @default([])
+  strengths String[] @default([])
+  weaknesses String[] @default([])
+  
+  element String // Wood, Fire, Earth, Metal, Water
+  luckiness String?
+  
+  compatibleAnimals String[] @default([])
+  luckyNumbers Int[] @default([])
+  luckyColors String[] @default([])
+  
+  personality String @db.Text
+  career String @db.Text
+  relationships String @db.Text
+  
+  fullData Json?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([animal])
 }
 
 ////////////////////////
