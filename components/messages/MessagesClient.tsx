@@ -42,8 +42,8 @@ export function MessagesClient({
       {/* Left Sidebar - Conversations List */}
       <div className="w-[380px] border-r border-white/[0.06] flex flex-col bg-[#0D0D14]">
         {/* Header */}
-        <div className="p-5 border-b border-white/[0.06]">
-          <div className="flex items-center justify-between mb-3">
+        <div className="p-5 border-b border-white/[0.06] space-y-3">
+          <div className="flex items-center justify-between">
             <h1 className="text-lg font-bold text-white">Messages</h1>
             <NewMessageButton />
           </div>
