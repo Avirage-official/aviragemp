@@ -277,7 +277,7 @@ export default function MarketplaceClient({
   const hasMore = displayCount < filteredExperiences.length;
 
   return (
-    <div className="flex min-h-screen bg-[#0A0A0A]">
+    <div className="flex min-h-screen bg-[#0A0A0A] pt-16">
       {/* ================================================================
           LEFT SIDEBAR
           ================================================================ */}
