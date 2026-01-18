@@ -61,28 +61,23 @@ export function MainNav() {
             : "bg-transparent"
         }`}
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="flex items-center justify-between gap-4 h-16">
-            {/* Logo */}
-            <Link href="/dashboard" className="flex items-center gap-2 lg:gap-3 group shrink-0">
+        <div className="mx-auto px-4 sm:px-6">
+          <div className="flex items-center justify-between gap-6 h-16 max-w-[1920px] mx-auto">
+            {/* Logo - Fixed width */}
+            <Link href="/dashboard" className="flex items-center gap-2 group shrink-0 min-w-fit">
               <div className="relative">
                 <div className="absolute -inset-1 rounded-xl bg-gradient-to-br from-[#4F8CFF] to-[#C7B9FF] opacity-70 blur group-hover:opacity-100 transition-opacity" />
-                <div className="relative w-9 h-9 lg:w-10 lg:h-10 rounded-xl bg-gradient-to-br from-[#4F8CFF] to-[#C7B9FF] flex items-center justify-center">
-                  <Sparkle className="w-4 h-4 lg:w-5 lg:h-5 text-black" weight="fill" />
+                <div className="relative w-9 h-9 rounded-xl bg-gradient-to-br from-[#4F8CFF] to-[#C7B9FF] flex items-center justify-center">
+                  <Sparkle className="w-4 h-4 text-black" weight="fill" />
                 </div>
               </div>
-              <div className="flex items-center gap-2">
-                <span className="text-lg lg:text-xl font-bold text-white group-hover:text-[#4F8CFF] transition-colors">
-                  ETHOS
-                </span>
-                <span className="text-xs text-white/30 font-normal tracking-wide hidden lg:block">
-                  your universe
-                </span>
-              </div>
+              <span className="text-lg font-bold text-white group-hover:text-[#4F8CFF] transition-colors whitespace-nowrap">
+                ETHOS
+              </span>
             </Link>
 
-            {/* Desktop Nav */}
-            <div className="hidden md:flex items-center gap-1">
+            {/* Desktop Nav - Centered, flex-grow */}
+            <div className="hidden md:flex items-center gap-2 flex-1 justify-center max-w-md">
               {NAV_ITEMS.map((item) => {
                 const Icon = item.icon;
                 const active = isActive(item.href);
@@ -90,27 +85,27 @@ export function MainNav() {
                   <Link
                     key={item.href}
                     href={item.href}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all ${
+                    className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all whitespace-nowrap ${
                       active
                         ? "bg-[#4F8CFF]/20 text-[#4F8CFF]"
                         : "text-white/70 hover:text-white hover:bg-white/[0.08]"
                     }`}
                   >
-                    <Icon className="w-4 h-4" weight={active ? "fill" : "regular"} />
-                    {item.label}
+                    <Icon className="w-4 h-4 shrink-0" weight={active ? "fill" : "regular"} />
+                    <span className="hidden lg:inline">{item.label}</span>
                   </Link>
                 );
               })}
             </div>
 
-            {/* Right side */}
-            <div className="flex items-center gap-3 shrink-0">
+            {/* Right side - Fixed width */}
+            <div className="flex items-center gap-3 shrink-0 min-w-fit">
               <div className="hidden sm:block">
                 <UserButton
                   afterSignOutUrl="/"
                   appearance={{
                     elements: {
-                      avatarBox: "w-9 h-9 lg:w-10 lg:h-10 ring-2 ring-white/20 hover:ring-[#4F8CFF]/50 transition-all",
+                      avatarBox: "w-9 h-9 ring-2 ring-white/20 hover:ring-[#4F8CFF]/50 transition-all",
                     },
                   }}
                 />
