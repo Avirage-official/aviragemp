@@ -11,12 +11,12 @@ import {
   Clock,
   Eye,
   MapPin,
-  Plus,
   Sparkle,
   TrendUp,
   Users,
   BookOpen,
   Lightning,
+  Image as ImageIcon,
 } from "@phosphor-icons/react";
 
 /* ============================================================================
@@ -37,6 +37,7 @@ type Experience = {
   views?: number;
   likes?: number;
   businessName?: string;
+  imageUrl?: string | null;
 };
 
 type Category = {
@@ -53,19 +54,19 @@ type FilterStatus = "all" | "available" | "instant";
    ============================================================================ */
 
 const CATEGORIES: Category[] = [
-  { id: "all", label: "All", icon: <Sparkle weight="fill" className="w-4 h-4" /> },
-  { id: "experience", label: "Experiences", icon: <Lightning weight="fill" className="w-4 h-4" /> },
-  { id: "retreat", label: "Retreats", icon: <MapPin weight="fill" className="w-4 h-4" /> },
-  { id: "workshop", label: "Workshops", icon: <Users weight="fill" className="w-4 h-4" /> },
-  { id: "event", label: "Events", icon: <Clock weight="fill" className="w-4 h-4" /> },
-  { id: "service", label: "Services", icon: <BookOpen weight="fill" className="w-4 h-4" /> },
+  { id: "all", label: "All", icon: <Sparkle weight="fill" className="w-3.5 h-3.5" /> },
+  { id: "experience", label: "Experiences", icon: <Lightning weight="fill" className="w-3.5 h-3.5" /> },
+  { id: "retreat", label: "Retreats", icon: <MapPin weight="fill" className="w-3.5 h-3.5" /> },
+  { id: "workshop", label: "Workshops", icon: <Users weight="fill" className="w-3.5 h-3.5" /> },
+  { id: "event", label: "Events", icon: <Clock weight="fill" className="w-3.5 h-3.5" /> },
+  { id: "service", label: "Services", icon: <BookOpen weight="fill" className="w-3.5 h-3.5" /> },
 ];
 
 const SIDEBAR_NAV = [
-  { label: "Explore", href: "/marketplace", icon: <Sparkle weight="fill" className="w-5 h-5" /> },
-  { label: "Activity", href: "/marketplace/activity", icon: <TrendUp weight="fill" className="w-5 h-5" /> },
-  { label: "How it works", href: "/marketplace/how-it-works", icon: <BookOpen weight="fill" className="w-5 h-5" /> },
-  { label: "Community", href: "/marketplace/community", icon: <Users weight="fill" className="w-5 h-5" /> },
+  { label: "Explore", href: "/marketplace", icon: <Sparkle weight="fill" className="w-4 h-4" /> },
+  { label: "Activity", href: "/marketplace/activity", icon: <TrendUp weight="fill" className="w-4 h-4" /> },
+  { label: "How it works", href: "/marketplace/how-it-works", icon: <BookOpen weight="fill" className="w-4 h-4" /> },
+  { label: "Community", href: "/marketplace/community", icon: <Users weight="fill" className="w-4 h-4" /> },
 ];
 
 /* ============================================================================
@@ -96,6 +97,7 @@ function getTimeAgo(dateString?: string): string {
 
 function ListingCard({ experience }: { experience: Experience }) {
   const [isLiked, setIsLiked] = useState(false);
+  const [imageError, setImageError] = useState(false);
   
   // Generate gradient based on category
   const categoryGradients: Record<string, string> = {
@@ -107,84 +109,91 @@ function ListingCard({ experience }: { experience: Experience }) {
   };
   
   const gradient = categoryGradients[experience.category] || categoryGradients.experience;
+  const hasImage = experience.imageUrl && !imageError;
 
   return (
     <motion.article
-      whileHover={{ y: -8 }}
+      whileHover={{ y: -6 }}
       transition={{ type: "spring", stiffness: 300, damping: 25 }}
       className="group relative"
     >
       <Link href={`/marketplace/${experience.id}`} className="block">
-        <div className="relative overflow-hidden rounded-2xl bg-[#0D0D14] border border-white/[0.06] hover:border-white/[0.12] transition-all duration-300">
-          {/* Image placeholder with gradient */}
-          <div className={`relative aspect-square bg-gradient-to-br ${gradient} opacity-60`}>
-            <div className="absolute inset-0 bg-[#0A0A0A]/20 backdrop-blur-sm" />
+        <div className="relative overflow-hidden rounded-xl bg-[#0D0D14] border border-white/[0.06] hover:border-white/[0.12] transition-all duration-300">
+          {/* Image */}
+          <div className="relative aspect-square overflow-hidden">
+            {hasImage ? (
+              <>
+                <img
+                  src={experience.imageUrl!}
+                  alt={experience.title}
+                  onError={() => setImageError(true)}
+                  className="w-full h-full object-cover"
+                />
+                {/* Overlay gradient */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+              </>
+            ) : (
+              // Fallback when no image
+              <div className={`w-full h-full bg-gradient-to-br ${gradient} opacity-40 flex items-center justify-center`}>
+                <ImageIcon weight="duotone" className="w-16 h-16 text-white/30" />
+              </div>
+            )}
             
             {/* Category badge */}
-            <div className="absolute top-3 left-3 px-3 py-1.5 rounded-lg bg-black/60 backdrop-blur-md border border-white/10">
-              <span className="text-xs font-semibold text-white uppercase tracking-wider">
+            <div className="absolute top-2 left-2 px-2.5 py-1 rounded-lg bg-black/60 backdrop-blur-md border border-white/10">
+              <span className="text-[10px] font-semibold text-white uppercase tracking-wider">
                 {experience.category}
               </span>
             </div>
 
             {/* Booking type badge */}
             {experience.bookingType === "INSTANT" && (
-              <div className="absolute top-3 right-3 px-3 py-1.5 rounded-lg bg-[#7CF5C8]/20 backdrop-blur-md border border-[#7CF5C8]/30">
-                <span className="text-xs font-bold text-[#7CF5C8] uppercase">
-                  <Lightning weight="fill" className="w-3 h-3 inline mr-1" />
+              <div className="absolute top-2 right-2 px-2.5 py-1 rounded-lg bg-[#7CF5C8]/20 backdrop-blur-md border border-[#7CF5C8]/30">
+                <span className="text-[10px] font-bold text-[#7CF5C8] uppercase flex items-center gap-1">
+                  <Lightning weight="fill" className="w-2.5 h-2.5" />
                   Instant
                 </span>
               </div>
             )}
-
-            {/* Center emoji/icon */}
-            <div className="absolute inset-0 flex items-center justify-center">
-              <span className="text-6xl opacity-80">
-                {experience.category === "retreat" ? "🧘" : 
-                 experience.category === "workshop" ? "🛠️" :
-                 experience.category === "event" ? "🎉" :
-                 experience.category === "service" ? "💼" : "✨"}
-              </span>
-            </div>
           </div>
 
           {/* Content */}
-          <div className="p-5">
+          <div className="p-4">
             {/* Title */}
-            <h3 className="text-lg font-bold text-white mb-2 line-clamp-2 group-hover:text-[#4F8CFF] transition-colors">
+            <h3 className="text-sm font-bold text-white mb-1.5 line-clamp-2 group-hover:text-[#4F8CFF] transition-colors leading-tight">
               {experience.title}
             </h3>
 
             {/* Business name */}
             {experience.businessName && (
-              <p className="text-sm text-white/40 mb-3">
+              <p className="text-xs text-white/40 mb-2.5">
                 by {experience.businessName}
               </p>
             )}
 
             {/* Location */}
-            <div className="flex items-center gap-2 text-sm text-white/60 mb-4">
-              <MapPin weight="fill" className="w-4 h-4" />
+            <div className="flex items-center gap-1.5 text-xs text-white/60 mb-3">
+              <MapPin weight="fill" className="w-3.5 h-3.5" />
               <span>{experience.city}</span>
             </div>
 
             {/* Footer */}
-            <div className="flex items-center justify-between pt-4 border-t border-white/[0.06]">
+            <div className="flex items-center justify-between pt-3 border-t border-white/[0.06]">
               {/* Price */}
               <div>
-                <span className="text-xl font-bold text-white">
+                <span className="text-base font-bold text-white">
                   {experience.priceLabel}
                 </span>
               </div>
 
               {/* Stats */}
-              <div className="flex items-center gap-4 text-sm text-white/40">
+              <div className="flex items-center gap-3 text-xs text-white/40">
                 <div className="flex items-center gap-1">
-                  <Eye weight="fill" className="w-4 h-4" />
+                  <Eye weight="fill" className="w-3.5 h-3.5" />
                   <span>{experience.views || 0}</span>
                 </div>
                 <div className="flex items-center gap-1">
-                  <Clock weight="fill" className="w-4 h-4" />
+                  <Clock weight="fill" className="w-3.5 h-3.5" />
                   <span>{getTimeAgo(experience.createdAt)}</span>
                 </div>
               </div>
@@ -199,11 +208,11 @@ function ListingCard({ experience }: { experience: Experience }) {
           e.preventDefault();
           setIsLiked(!isLiked);
         }}
-        className="absolute bottom-5 right-5 w-10 h-10 rounded-full bg-black/80 backdrop-blur-md border border-white/10 flex items-center justify-center hover:scale-110 transition-transform z-10"
+        className="absolute bottom-4 right-4 w-8 h-8 rounded-full bg-black/80 backdrop-blur-md border border-white/10 flex items-center justify-center hover:scale-110 transition-transform z-10"
       >
         <Heart
           weight={isLiked ? "fill" : "regular"}
-          className={`w-5 h-5 ${isLiked ? "text-red-500" : "text-white/60"}`}
+          className={`w-4 h-4 ${isLiked ? "text-red-500" : "text-white/60"}`}
         />
       </button>
     </motion.article>
@@ -272,26 +281,16 @@ export default function MarketplaceClient({
       {/* ================================================================
           LEFT SIDEBAR
           ================================================================ */}
-      <aside className="hidden lg:flex w-64 shrink-0 border-r border-white/[0.06] bg-[#0D0D14]/50 backdrop-blur-xl">
-        <div className="fixed w-64 h-screen flex flex-col p-6">
-          {/* Logo */}
-          <Link href="/dashboard" className="flex items-center gap-3 mb-12 group">
-            <div className="relative">
-              <div className="absolute -inset-1 rounded-xl bg-gradient-to-br from-[#4F8CFF] to-[#C7B9FF] opacity-70 blur group-hover:opacity-100 transition-opacity" />
-              <div className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-[#4F8CFF] to-[#C7B9FF]">
-                <Sparkle weight="fill" className="h-5 w-5 text-black" />
-              </div>
-            </div>
-            <span className="text-xl font-bold text-white">ETHOS</span>
-          </Link>
-
+      <aside className="hidden lg:flex w-56 shrink-0 border-r border-white/[0.06] bg-[#0D0D14]/50 backdrop-blur-xl">
+        <div className="fixed w-56 h-screen flex flex-col p-5">
+          
           {/* Navigation */}
-          <nav className="flex-1 space-y-2">
+          <nav className="flex-1 space-y-1.5 mt-4">
             {SIDEBAR_NAV.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
-                className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
+                className={`flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
                   item.href === "/marketplace"
                     ? "bg-white/[0.08] text-white"
                     : "text-white/50 hover:text-white hover:bg-white/[0.04]"
@@ -302,15 +301,6 @@ export default function MarketplaceClient({
               </Link>
             ))}
           </nav>
-
-          {/* Create button */}
-          <Link
-            href="/business/listings/new"
-            className="flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-[#4F8CFF] to-[#7CF5C8] text-black font-semibold hover:opacity-90 transition-opacity"
-          >
-            <Plus weight="bold" className="w-5 h-5" />
-            Create
-          </Link>
         </div>
       </aside>
 
@@ -318,41 +308,41 @@ export default function MarketplaceClient({
           MAIN CONTENT
           ================================================================ */}
       <main className="flex-1 overflow-y-auto">
-        <div className="max-w-[1600px] mx-auto px-6 lg:px-8 py-8">
+        <div className="max-w-[1600px] mx-auto px-6 lg:px-8 py-6">
           
           {/* ================================================================
               TOP FILTERS BAR
               ================================================================ */}
-          <div className="mb-8 space-y-6">
+          <div className="mb-6 space-y-5">
             
             {/* Search + Filters Row */}
-            <div className="flex flex-col md:flex-row gap-4">
+            <div className="flex flex-col md:flex-row gap-3">
               {/* Search */}
               <div className="flex-1 relative">
                 <MagnifyingGlass
                   weight="bold"
-                  className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/40"
+                  className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40"
                 />
                 <input
                   type="text"
                   placeholder="Search experiences, retreats, workshops..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full h-12 pl-12 pr-4 rounded-xl bg-white/[0.03] border border-white/[0.08] text-white placeholder:text-white/40 focus:border-[#4F8CFF]/50 focus:bg-white/[0.05] outline-none transition-all"
+                  className="w-full h-10 pl-10 pr-3 rounded-lg bg-white/[0.03] border border-white/[0.08] text-sm text-white placeholder:text-white/40 focus:border-[#4F8CFF]/50 focus:bg-white/[0.05] outline-none transition-all"
                 />
               </div>
 
               {/* Filter dropdown */}
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2.5">
                 <div className="relative">
                   <Funnel
                     weight="bold"
-                    className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40"
+                    className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/40"
                   />
                   <select
                     value={filterStatus}
                     onChange={(e) => setFilterStatus(e.target.value as FilterStatus)}
-                    className="h-12 pl-10 pr-8 rounded-xl bg-white/[0.03] border border-white/[0.08] text-white text-sm font-medium appearance-none cursor-pointer hover:bg-white/[0.05] transition-all outline-none"
+                    className="h-10 pl-8 pr-6 rounded-lg bg-white/[0.03] border border-white/[0.08] text-white text-xs font-medium appearance-none cursor-pointer hover:bg-white/[0.05] transition-all outline-none"
                   >
                     <option value="all">All Status</option>
                     <option value="available">Available</option>
@@ -365,7 +355,7 @@ export default function MarketplaceClient({
                   <select
                     value={sortBy}
                     onChange={(e) => setSortBy(e.target.value as SortOption)}
-                    className="h-12 px-4 pr-8 rounded-xl bg-white/[0.03] border border-white/[0.08] text-white text-sm font-medium appearance-none cursor-pointer hover:bg-white/[0.05] transition-all outline-none"
+                    className="h-10 px-3 pr-6 rounded-lg bg-white/[0.03] border border-white/[0.08] text-white text-xs font-medium appearance-none cursor-pointer hover:bg-white/[0.05] transition-all outline-none"
                   >
                     <option value="newest">Newest</option>
                     <option value="popular">Most Popular</option>
@@ -377,12 +367,12 @@ export default function MarketplaceClient({
             </div>
 
             {/* Category Tabs */}
-            <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide">
+            <div className="flex items-center gap-1.5 overflow-x-auto pb-2 scrollbar-hide">
               {CATEGORIES.map((cat) => (
                 <button
                   key={cat.id}
                   onClick={() => setSelectedCategory(cat.id)}
-                  className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold whitespace-nowrap transition-all ${
+                  className={`flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-semibold whitespace-nowrap transition-all ${
                     selectedCategory === cat.id
                       ? "bg-white/[0.08] text-white border border-white/[0.08]"
                       : "text-white/50 hover:text-white hover:bg-white/[0.04]"
@@ -396,26 +386,26 @@ export default function MarketplaceClient({
 
             {/* Results count + Active filters */}
             <div className="flex items-center justify-between">
-              <p className="text-sm text-white/50">
+              <p className="text-xs text-white/50">
                 <span className="text-white font-semibold">{filteredExperiences.length}</span> experiences found
               </p>
 
               {/* Active filter badges */}
               {(searchQuery || selectedCategory !== "all" || filterStatus !== "all") && (
                 <div className="flex items-center gap-2">
-                  <span className="text-xs text-white/40">Active filters:</span>
+                  <span className="text-[10px] text-white/40">Active filters:</span>
                   {searchQuery && (
-                    <span className="px-3 py-1 rounded-full bg-white/[0.06] border border-white/[0.08] text-xs text-white/70">
+                    <span className="px-2.5 py-1 rounded-full bg-white/[0.06] border border-white/[0.08] text-[10px] text-white/70">
                       Search: {searchQuery}
                     </span>
                   )}
                   {selectedCategory !== "all" && (
-                    <span className="px-3 py-1 rounded-full bg-white/[0.06] border border-white/[0.08] text-xs text-white/70">
+                    <span className="px-2.5 py-1 rounded-full bg-white/[0.06] border border-white/[0.08] text-[10px] text-white/70">
                       {CATEGORIES.find((c) => c.id === selectedCategory)?.label}
                     </span>
                   )}
                   {filterStatus !== "all" && (
-                    <span className="px-3 py-1 rounded-full bg-white/[0.06] border border-white/[0.08] text-xs text-white/70">
+                    <span className="px-2.5 py-1 rounded-full bg-white/[0.06] border border-white/[0.08] text-[10px] text-white/70">
                       {filterStatus === "instant" ? "Instant Book" : "Available"}
                     </span>
                   )}
@@ -429,7 +419,7 @@ export default function MarketplaceClient({
               ================================================================ */}
           {displayedExperiences.length > 0 ? (
             <>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-12">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-10">
                 {displayedExperiences.map((exp) => (
                   <ListingCard key={exp.id} experience={exp} />
                 ))}
@@ -440,7 +430,7 @@ export default function MarketplaceClient({
                 <div className="flex justify-center">
                   <button
                     onClick={() => setDisplayCount((prev) => prev + 12)}
-                    className="px-8 py-3 rounded-xl bg-white/[0.03] border border-white/[0.08] text-white font-medium hover:bg-white/[0.06] hover:border-white/[0.12] transition-all"
+                    className="px-6 py-2.5 rounded-lg bg-white/[0.03] border border-white/[0.08] text-white text-sm font-medium hover:bg-white/[0.06] hover:border-white/[0.12] transition-all"
                   >
                     Load More ({filteredExperiences.length - displayCount} remaining)
                   </button>
@@ -449,19 +439,19 @@ export default function MarketplaceClient({
             </>
           ) : (
             // Empty state
-            <div className="flex flex-col items-center justify-center py-20 text-center">
-              <div className="w-20 h-20 rounded-full bg-white/[0.03] flex items-center justify-center mb-6">
-                <MagnifyingGlass weight="duotone" className="w-10 h-10 text-white/20" />
+            <div className="flex flex-col items-center justify-center py-16 text-center">
+              <div className="w-16 h-16 rounded-full bg-white/[0.03] flex items-center justify-center mb-5">
+                <MagnifyingGlass weight="duotone" className="w-8 h-8 text-white/20" />
               </div>
-              <h3 className="text-2xl font-bold text-white mb-2">No experiences found</h3>
-              <p className="text-white/50 mb-6">Try adjusting your filters or search query</p>
+              <h3 className="text-xl font-bold text-white mb-2">No experiences found</h3>
+              <p className="text-sm text-white/50 mb-5">Try adjusting your filters or search query</p>
               <button
                 onClick={() => {
                   setSearchQuery("");
                   setSelectedCategory("all");
                   setFilterStatus("all");
                 }}
-                className="px-6 py-2.5 rounded-xl bg-white/[0.06] border border-white/[0.08] text-white text-sm font-medium hover:bg-white/[0.08] transition-all"
+                className="px-5 py-2 rounded-lg bg-white/[0.06] border border-white/[0.08] text-white text-xs font-medium hover:bg-white/[0.08] transition-all"
               >
                 Clear all filters
               </button>

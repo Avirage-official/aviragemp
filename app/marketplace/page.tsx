@@ -22,6 +22,7 @@ type Experience = {
   views: number;
   likes: number;
   businessName: string;
+  imageUrl: string | null;
 };
 
 /* ============================================================================
@@ -80,6 +81,9 @@ export default async function MarketplacePage() {
       views: listing.analytics.length,
       likes: 0, // TODO: Implement likes system
       businessName: listing.business?.businessName ?? "Unknown Business",
+      imageUrl: Array.isArray(listing.images) && listing.images.length > 0 
+        ? listing.images[0] 
+        : null, // Use first image from images array
     };
   });
 
