@@ -8,10 +8,11 @@ import {
   House,
   Storefront,
   ChatCircle,
+  Sparkle,
 } from "@phosphor-icons/react";
 
 /* ============================================================================
-   TOP NAV ITEMS
+   NAV ITEMS
    ============================================================================ */
 
 const NAV_ITEMS = [
@@ -46,22 +47,29 @@ export default function DashboardLayout({
       </div>
 
       {/* ================================================================
-          TOP NAV
+          TOP NAV BAR
           ================================================================ */}
-      <nav className="sticky top-0 z-50 border-b border-white/[0.06] bg-[#0F0F14]/80 backdrop-blur-xl">
-        <div className="mx-auto flex h-16 max-w-[1600px] items-center justify-between px-6">
+      <nav className="fixed top-0 left-0 right-0 z-50 border-b border-white/[0.06] bg-[#0A0A0A]/95 backdrop-blur-xl">
+        <div className="mx-auto flex h-16 max-w-[1800px] items-center justify-between px-6 lg:px-8">
+          
           {/* Logo */}
-          <Link href="/dashboard" className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-[#4F8CFF] to-[#C7B9FF]">
-              <div className="h-5 w-5 rounded-md bg-[#0A0A0A]" />
+          <Link href="/dashboard" className="flex items-center gap-3 group">
+            <div className="relative">
+              <div className="absolute -inset-1 rounded-xl bg-gradient-to-br from-[#4F8CFF] to-[#C7B9FF] opacity-70 blur group-hover:opacity-100 transition-opacity" />
+              <div className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-[#4F8CFF] to-[#C7B9FF]">
+                <Sparkle weight="fill" className="h-5 w-5 text-black" />
+              </div>
             </div>
-            <div className="text-xl font-bold tracking-tight text-white">
+            <span className="text-xl font-bold tracking-tight text-white group-hover:text-[#4F8CFF] transition-colors">
               ETHOS
-            </div>
+            </span>
+            <span className="text-xs text-white/30 font-normal tracking-wide hidden sm:block">
+              your universe
+            </span>
           </Link>
 
           {/* Center Nav */}
-          <div className="flex items-center gap-2">
+          <div className="hidden md:flex items-center gap-1.5">
             {NAV_ITEMS.map((item) => {
               const active = isActive(item.href, item.exact);
               const Icon = item.icon;
@@ -71,41 +79,61 @@ export default function DashboardLayout({
                   key={item.href}
                   href={item.href}
                   className={`
-                    flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition-all duration-200
+                    group relative flex items-center gap-2.5 rounded-xl px-5 py-2.5 text-sm font-medium transition-all duration-200
                     ${
                       active
-                        ? "bg-white/[0.08] text-white"
-                        : "text-white/50 hover:text-white hover:bg-white/[0.04]"
+                        ? "text-white"
+                        : "text-white/50 hover:text-white"
                     }
                   `}
                 >
+                  {/* Active background */}
+                  {active && (
+                    <div className="absolute inset-0 rounded-xl bg-white/[0.08] border border-white/[0.08]" />
+                  )}
+                  
+                  {/* Hover glow */}
+                  {!active && (
+                    <div className="absolute inset-0 rounded-xl bg-white/[0.04] opacity-0 group-hover:opacity-100 transition-opacity" />
+                  )}
+                  
                   <Icon
                     weight={active ? "fill" : "regular"}
-                    className="h-5 w-5"
+                    className={`relative h-5 w-5 transition-colors ${active ? 'text-[#4F8CFF]' : ''}`}
                   />
-                  {item.label}
+                  <span className="relative">{item.label}</span>
                 </Link>
               );
             })}
           </div>
 
-          {/* User Button */}
-          <UserButton
-            appearance={{
-              elements: {
-                avatarBox: "w-9 h-9 ring-2 ring-white/10",
-              },
-            }}
-            afterSignOutUrl="/"
-          />
+          {/* Right Side */}
+          <div className="flex items-center gap-4">
+            {/* Search - placeholder for future */}
+            <button className="hidden lg:flex items-center gap-2 px-4 py-2 rounded-xl bg-white/[0.03] border border-white/[0.06] text-white/40 text-sm hover:border-white/[0.12] hover:text-white/60 transition-all">
+              <span className="text-xs">⌘K</span>
+            </button>
+            
+            {/* User Button */}
+            <UserButton
+              appearance={{
+                elements: {
+                  avatarBox: "w-9 h-9 ring-2 ring-white/10 hover:ring-white/20 transition-all",
+                },
+              }}
+              afterSignOutUrl="/"
+            />
+          </div>
         </div>
       </nav>
 
       {/* ================================================================
-          MAIN CONTENT
+          MAIN CONTENT AREA
           ================================================================ */}
-      <main className="relative">
-        {children}
+      <main className="relative pt-16">
+        <div className="mx-auto max-w-[1800px] px-6 lg:px-8 py-8">
+          {children}
+        </div>
       </main>
     </div>
   );

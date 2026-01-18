@@ -37,13 +37,18 @@ export function MainNav() {
     setMobileOpen(false);
   }, [pathname]);
 
+  // Hide MainNav on dashboard routes (dashboard has its own nav in layout)
+  if (pathname?.startsWith('/dashboard')) {
+    return null;
+  }
+
   if (!isLoaded) return null;
 
   const isActive = (href: string) => {
     if (href === "/dashboard") {
       return pathname === "/dashboard";
     }
-    return pathname === href || pathname.startsWith(href);
+    return pathname === href || pathname?.startsWith(href);
   };
 
   return (
@@ -152,24 +157,10 @@ export function MainNav() {
                   );
                 })}
               </div>
-              
-              <div className="mt-4 pt-4 border-t border-white/10 flex items-center gap-3 px-4">
-                <UserButton
-                  afterSignOutUrl="/"
-                  appearance={{
-                    elements: {
-                      avatarBox: "w-10 h-10",
-                    },
-                  }}
-                />
-                <span className="text-white/70 text-sm">Your Profile</span>
-              </div>
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
-
-      <div className="h-16" />
     </>
   );
 }
