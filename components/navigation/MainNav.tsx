@@ -37,8 +37,9 @@ export function MainNav() {
     setMobileOpen(false);
   }, [pathname]);
 
-  // Hide MainNav on dashboard and marketplace routes (they have their own navigation)
-  if (pathname?.startsWith('/dashboard') || pathname?.startsWith('/marketplace')) {
+  // Hide MainNav only on dashboard routes (dashboard has its own nav in layout)
+  // Keep showing on marketplace
+  if (pathname?.startsWith('/dashboard')) {
     return null;
   }
 
