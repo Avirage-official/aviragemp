@@ -40,6 +40,11 @@ export default function DashboardLayout({
   const isActive = (href: string, exact?: boolean) =>
     exact ? pathname === href : pathname?.startsWith(href);
 
+  // Messages page has its own full-screen layout with nav
+  if (pathname?.startsWith('/dashboard/messages')) {
+    return children;
+  }
+
   return (
     <div className="relative min-h-screen bg-[#0A0A0A] text-white">
       {/* ================================================================
@@ -55,22 +60,24 @@ export default function DashboardLayout({
           TOP NAV BAR
           ================================================================ */}
       <nav className="fixed top-0 left-0 right-0 z-50 border-b border-white/[0.06] bg-[#0A0A0A]/95 backdrop-blur-xl">
-        <div className="mx-auto flex h-16 max-w-[1800px] items-center justify-between px-4 lg:px-8">
+        <div className="mx-auto flex h-16 max-w-[1800px] items-center justify-between gap-4 px-4 lg:px-8">
           
           {/* Logo */}
-          <Link href="/dashboard" className="flex items-center gap-2 lg:gap-3 group">
+          <Link href="/dashboard" className="flex items-center gap-2 lg:gap-3 group shrink-0">
             <div className="relative">
               <div className="absolute -inset-1 rounded-xl bg-gradient-to-br from-[#4F8CFF] to-[#C7B9FF] opacity-70 blur group-hover:opacity-100 transition-opacity" />
               <div className="relative flex h-9 w-9 lg:h-10 lg:w-10 items-center justify-center rounded-xl bg-gradient-to-br from-[#4F8CFF] to-[#C7B9FF]">
                 <Sparkle weight="fill" className="h-4 w-4 lg:h-5 lg:w-5 text-black" />
               </div>
             </div>
-            <span className="text-lg lg:text-xl font-bold tracking-tight text-white group-hover:text-[#4F8CFF] transition-colors">
-              ETHOS
-            </span>
-            <span className="text-xs text-white/30 font-normal tracking-wide hidden sm:block">
-              your universe
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="text-lg lg:text-xl font-bold tracking-tight text-white group-hover:text-[#4F8CFF] transition-colors">
+                ETHOS
+              </span>
+              <span className="text-xs text-white/30 font-normal tracking-wide hidden lg:block">
+                your universe
+              </span>
+            </div>
           </Link>
 
           {/* Desktop Nav */}
@@ -105,7 +112,7 @@ export default function DashboardLayout({
           </div>
 
           {/* Right side */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 shrink-0">
             <div className="hidden sm:block">
               <UserButton
                 afterSignOutUrl="/"
