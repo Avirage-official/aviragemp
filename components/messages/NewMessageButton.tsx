@@ -71,10 +71,10 @@ export function NewMessageButton() {
       {/* New Message Button */}
       <button
         onClick={handleOpen}
-        className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#4F8CFF] hover:bg-[#4F8CFF]/90 text-white text-sm font-semibold transition-colors"
+        className="flex items-center gap-2 px-3 lg:px-4 py-2 lg:py-2.5 rounded-xl bg-[#4F8CFF] hover:bg-[#4F8CFF]/90 text-white text-sm font-semibold transition-colors"
       >
         <PencilSimple weight="bold" className="w-4 h-4" />
-        New Message
+        <span className="hidden sm:inline">New Message</span>
       </button>
 
       {/* Modal */}

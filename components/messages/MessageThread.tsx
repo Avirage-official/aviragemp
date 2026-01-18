@@ -182,8 +182,8 @@ export function MessageThread({
 
   return (
     <div className="flex flex-col h-full">
-      {/* Header */}
-      <div className="px-6 py-4 border-b border-white/[0.06] flex items-center gap-3">
+      {/* Header - Desktop only (mobile shows in MessagesClient) */}
+      <div className="hidden lg:flex px-6 py-4 border-b border-white/[0.06] items-center gap-3">
         <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#4F8CFF] to-[#C7B9FF] flex items-center justify-center text-white text-sm font-bold">
           {otherUserName.slice(0, 2).toUpperCase()}
         </div>
@@ -196,7 +196,7 @@ export function MessageThread({
       {/* Messages */}
       <div
         ref={scrollContainerRef}
-        className="flex-1 overflow-y-auto px-6 py-4 space-y-4"
+        className="flex-1 overflow-y-auto px-4 lg:px-6 py-3 lg:py-4 space-y-3 lg:space-y-4"
       >
         {messages.length === 0 ? (
           <div className="flex items-center justify-center h-full">
@@ -224,8 +224,8 @@ export function MessageThread({
       </div>
 
       {/* Input */}
-      <div className="px-6 py-4 border-t border-white/[0.06]">
-        <div className="flex items-end gap-3">
+      <div className="px-4 lg:px-6 py-3 lg:py-4 border-t border-white/[0.06]">
+        <div className="flex items-end gap-2 lg:gap-3">
           <div className="flex-1 relative">
             <textarea
               value={inputValue}
@@ -233,30 +233,30 @@ export function MessageThread({
               onKeyDown={handleKeyDown}
               placeholder="Type a message..."
               rows={1}
-              className="w-full px-4 py-3 pr-12 rounded-xl bg-white/[0.04] border border-white/[0.08] text-white text-sm placeholder:text-white/40 focus:border-[#4F8CFF]/50 focus:bg-white/[0.06] outline-none resize-none"
+              className="w-full px-3 lg:px-4 py-2.5 lg:py-3 pr-10 lg:pr-12 rounded-xl bg-white/[0.04] border border-white/[0.08] text-white text-sm placeholder:text-white/40 focus:border-[#4F8CFF]/50 focus:bg-white/[0.06] outline-none resize-none"
               style={{ minHeight: "44px", maxHeight: "120px" }}
             />
             
             {/* Emoji button */}
             <button
               type="button"
-              className="absolute right-3 bottom-3 p-1.5 rounded-lg hover:bg-white/[0.08] transition-colors"
+              className="absolute right-2 lg:right-3 bottom-2.5 lg:bottom-3 p-1.5 rounded-lg hover:bg-white/[0.08] transition-colors"
             >
-              <Smiley weight="regular" className="w-5 h-5 text-white/40" />
+              <Smiley weight="regular" className="w-4 h-4 lg:w-5 lg:h-5 text-white/40" />
             </button>
           </div>
 
           <button
             onClick={handleSend}
             disabled={!inputValue.trim() || isSending}
-            className="shrink-0 w-11 h-11 rounded-xl bg-[#4F8CFF] hover:bg-[#4F8CFF]/90 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center transition-colors"
+            className="shrink-0 w-10 h-10 lg:w-11 lg:h-11 rounded-xl bg-[#4F8CFF] hover:bg-[#4F8CFF]/90 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center transition-colors"
           >
-            <PaperPlaneRight weight="fill" className="w-5 h-5 text-white" />
+            <PaperPlaneRight weight="fill" className="w-4 h-4 lg:w-5 lg:h-5 text-white" />
           </button>
         </div>
 
-        {/* Formatting toolbar placeholder */}
-        <div className="flex items-center gap-1 mt-2 text-white/30">
+        {/* Formatting toolbar - desktop only */}
+        <div className="hidden lg:flex items-center gap-1 mt-2 text-white/30">
           <button className="p-1.5 rounded hover:bg-white/[0.04] transition-colors">
             <span className="text-xs font-semibold">B</span>
           </button>

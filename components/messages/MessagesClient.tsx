@@ -1,11 +1,11 @@
 // components/messages/MessagesClient.tsx
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { ConversationsList } from "./ConversationsList";
 import { MessageThread } from "./MessageThread";
 import { NewMessageButton } from "./NewMessageButton";
-import { ChatCircle } from "@phosphor-icons/react";
+import { ChatCircle, ArrowLeft } from "@phosphor-icons/react";
 
 type Conversation = {
   id: string;
@@ -37,14 +37,33 @@ export function MessagesClient({
   
   const selectedConversation = conversations.find((c) => c.id === selectedConversationId);
 
+  // Mobile: show chat when conversation selected, otherwise show sidebar
+  const showSidebar = !selectedConversationId;
+
+  const handleSelectConversation = (id: string) => {
+    setSelectedConversationId(id);
+  };
+
+  const handleBackToList = () => {
+    setSelectedConversationId(null);
+  };
+
   return (
     <div className="fixed inset-0 bg-[#0A0A0A] flex">
       {/* Left Sidebar - Conversations List */}
-      <div className="w-[380px] border-r border-white/[0.06] flex flex-col bg-[#0D0D14]">
+      <div 
+        className={`
+          ${showSidebar ? 'flex' : 'hidden'} lg:flex
+          w-full lg:w-[380px] 
+          border-r border-white/[0.06] 
+          flex-col 
+          bg-[#0D0D14]
+        `}
+      >
         {/* Header */}
-        <div className="p-5 border-b border-white/[0.06] space-y-3">
+        <div className="p-4 lg:p-5 border-b border-white/[0.06] space-y-3">
           <div className="flex items-center justify-between">
-            <h1 className="text-lg font-bold text-white">Messages</h1>
+            <h1 className="text-base lg:text-lg font-bold text-white">Messages</h1>
             <NewMessageButton />
           </div>
           <div className="flex items-center gap-2">
@@ -59,23 +78,55 @@ export function MessagesClient({
             conversations={conversations}
             currentUserId={currentUserId}
             selectedId={selectedConversationId}
-            onSelect={setSelectedConversationId}
+            onSelect={handleSelectConversation}
           />
         </div>
       </div>
 
       {/* Right Main Chat Area */}
-      <div className="flex-1 flex flex-col">
+      <div 
+        className={`
+          ${!showSidebar ? 'flex' : 'hidden'} lg:flex
+          flex-1 
+          flex-col
+        `}
+      >
         {selectedConversation && selectedConversation.otherUser ? (
-          <MessageThread
-            conversationId={selectedConversation.id}
-            otherUser={selectedConversation.otherUser}
-            currentUserId={currentUserId}
-            currentUserName={currentUserName}
-          />
+          <div className="flex flex-col h-full">
+            {/* Mobile back button */}
+            <div className="lg:hidden p-4 border-b border-white/[0.06] flex items-center gap-3">
+              <button
+                onClick={handleBackToList}
+                className="p-2 rounded-lg hover:bg-white/[0.08] transition-colors"
+              >
+                <ArrowLeft weight="bold" className="w-5 h-5 text-white" />
+              </button>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#4F8CFF] to-[#C7B9FF] flex items-center justify-center text-white text-sm font-bold">
+                  {(selectedConversation.otherUser.name || selectedConversation.otherUser.username || "?").slice(0, 2).toUpperCase()}
+                </div>
+                <div>
+                  <h2 className="text-base font-semibold text-white">
+                    {selectedConversation.otherUser.name || selectedConversation.otherUser.username || "Unknown"}
+                  </h2>
+                  <p className="text-xs text-white/50">Online</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Message thread */}
+            <div className="flex-1 overflow-hidden">
+              <MessageThread
+                conversationId={selectedConversation.id}
+                otherUser={selectedConversation.otherUser}
+                currentUserId={currentUserId}
+                currentUserName={currentUserName}
+              />
+            </div>
+          </div>
         ) : (
           // Empty state
-          <div className="flex-1 flex items-center justify-center">
+          <div className="flex-1 flex items-center justify-center p-6">
             <div className="text-center">
               <div className="w-16 h-16 rounded-full bg-white/[0.03] flex items-center justify-center mx-auto mb-4">
                 <ChatCircle weight="duotone" className="w-8 h-8 text-white/30" />
