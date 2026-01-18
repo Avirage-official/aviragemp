@@ -4,6 +4,7 @@
 import { useState, useEffect } from "react";
 import { ConversationsList } from "./ConversationsList";
 import { MessageThread } from "./MessageThread";
+import { NewMessageButton } from "./NewMessageButton";
 import { ChatCircle } from "@phosphor-icons/react";
 
 type Conversation = {
@@ -42,8 +43,11 @@ export function MessagesClient({
       <div className="w-[380px] border-r border-white/[0.06] flex flex-col bg-[#0D0D14]">
         {/* Header */}
         <div className="p-5 border-b border-white/[0.06]">
-          <h1 className="text-lg font-bold text-white">Messages</h1>
-          <div className="flex items-center gap-2 mt-1">
+          <div className="flex items-center justify-between mb-3">
+            <h1 className="text-lg font-bold text-white">Messages</h1>
+            <NewMessageButton />
+          </div>
+          <div className="flex items-center gap-2">
             <div className="w-2 h-2 rounded-full bg-[#7CF5C8]" />
             <span className="text-xs text-white/50">{conversations.length} conversations</span>
           </div>
