@@ -1,460 +1,474 @@
+// app/marketplace/MarketplaceClient.tsx
 "use client";
 
+import { useState, useMemo } from "react";
 import Link from "next/link";
-import clsx from "clsx";
-import { useMemo, useState } from "react";
-import { Sparkles, MapPin, Users, Clock } from "lucide-react";
+import { motion } from "framer-motion";
+import {
+  MagnifyingGlass,
+  Funnel,
+  Heart,
+  Clock,
+  Eye,
+  MapPin,
+  Plus,
+  Sparkle,
+  TrendUp,
+  Users,
+  BookOpen,
+  Lightning,
+} from "@phosphor-icons/react";
 
-/* -------------------------------------------------------------------------- */
-/* ETHOS MARKETPLACE - NEON PASTEL TECH VIBE                                  */
-/* -------------------------------------------------------------------------- */
+/* ============================================================================
+   TYPES
+   ============================================================================ */
 
-// All 20 Mythical Codes
-const MYTHICAL_CODES = [
-  "khoisan",
-  "kayori",
-  "sahen",
-  "enzuka",
-  "siyuane",
-  "jaejin",
-  "namsea",
-  "shokunin",
-  "khoruun",
-  "lhumir",
-  "yatevar",
-  "tahiri",
-  "karayni",
-  "wohaka",
-  "tjukari",
-  "kinmora",
-  "siljoa",
-  "skenari",
-  "ashkara",
-  "alethir",
-] as const;
-
-type MythicalCode = (typeof MYTHICAL_CODES)[number];
-
-// Mapping internal codes to display names
-const CODE_LABELS: Record<MythicalCode, string> = {
-  khoisan: "Earthlistener",
-  kayori: "Fireweaver",
-  sahen: "HorizonWalker",
-  enzuka: "Shieldbearer",
-  siyuane: "Kitsune",
-  jaejin: "Harmonist",
-  namsea: "Flowbinder",
-  shokunin: "BladeSmith",
-  khoruun: "SkyRider",
-  lhumir: "StillMind",
-  yatevar: "CycleKeeper",
-  tahiri: "HeartBearer",
-  karayni: "AncestorRoot",
-  wohaka: "SonglineKeeper",
-  tjukari: "Dreampath Navigator",
-  kinmora: "TimeArchitect",
-  siljoa: "FrostSentinel",
-  skenari: "FutureGuardian",
-  ashkara: "TruthForger",
-  alethir: "Seeker",
-};
-
-type LensMode = "browse" | "codes" | "mood" | "location" | "saved";
-
-type MoodLens =
-  | "calm"
-  | "reflective"
-  | "social"
-  | "expressive"
-  | "grounded"
-  | "exploratory";
-
-type ExperienceTraits = {
-  energy: number;
-  social: number;
-  structure: number;
-  expression: number;
-  nature: number;
-  pace: number;
-  introspection: number;
-};
-
-export type Experience = {
+type Experience = {
   id: string;
   title: string;
   description: string;
   location: string;
   city: string;
   category: "experience" | "retreat" | "workshop" | "event" | "service";
-  duration: string;
-  groupSize: string;
-  bookingType: "INQUIRY" | "INSTANT";
   priceLabel: string;
-  traits: ExperienceTraits;
-  resonatesWith: MythicalCode[];
+  bookingType: "INQUIRY" | "INSTANT";
   tags: string[];
+  createdAt?: string;
+  views?: number;
+  likes?: number;
+  businessName?: string;
 };
 
-/* -------------------------------------------------------------------------- */
-/* MOOD SCORING                                                               */
-/* -------------------------------------------------------------------------- */
-
-const MOOD_LENS_TRAITS: Record<MoodLens, Partial<Record<keyof ExperienceTraits, [number, number]>>> = {
-  calm: { energy: [0, 35], pace: [0, 40], social: [0, 40] },
-  reflective: { introspection: [65, 100], expression: [0, 45] },
-  social: { social: [60, 100], energy: [50, 100] },
-  expressive: { expression: [65, 100], energy: [55, 100] },
-  grounded: { nature: [60, 100], pace: [0, 45] },
-  exploratory: { energy: [55, 100], structure: [0, 45] },
+type Category = {
+  id: string;
+  label: string;
+  icon: React.ReactNode;
 };
 
-function scoreMoodMatch(traits: ExperienceTraits, mood: MoodLens): number {
-  const ranges = MOOD_LENS_TRAITS[mood];
-  let score = 0;
-  let checks = 0;
+type SortOption = "newest" | "popular" | "price-low" | "price-high";
+type FilterStatus = "all" | "available" | "instant";
 
-  (Object.keys(ranges) as (keyof ExperienceTraits)[]).forEach((key) => {
-    const range = ranges[key];
-    if (!range) return;
-    checks++;
-    const v = traits[key];
-    if (v >= range[0] && v <= range[1]) score++;
-  });
+/* ============================================================================
+   CONSTANTS
+   ============================================================================ */
 
-  return checks === 0 ? 0 : score / checks;
-}
+const CATEGORIES: Category[] = [
+  { id: "all", label: "All", icon: <Sparkle weight="fill" className="w-4 h-4" /> },
+  { id: "experience", label: "Experiences", icon: <Lightning weight="fill" className="w-4 h-4" /> },
+  { id: "retreat", label: "Retreats", icon: <MapPin weight="fill" className="w-4 h-4" /> },
+  { id: "workshop", label: "Workshops", icon: <Users weight="fill" className="w-4 h-4" /> },
+  { id: "event", label: "Events", icon: <Clock weight="fill" className="w-4 h-4" /> },
+  { id: "service", label: "Services", icon: <BookOpen weight="fill" className="w-4 h-4" /> },
+];
 
-/* -------------------------------------------------------------------------- */
-/* UI PRIMITIVES                                                              */
-/* -------------------------------------------------------------------------- */
+const SIDEBAR_NAV = [
+  { label: "Explore", href: "/marketplace", icon: <Sparkle weight="fill" className="w-5 h-5" /> },
+  { label: "Activity", href: "/marketplace/activity", icon: <TrendUp weight="fill" className="w-5 h-5" /> },
+  { label: "How it works", href: "/marketplace/how-it-works", icon: <BookOpen weight="fill" className="w-5 h-5" /> },
+  { label: "Community", href: "/marketplace/community", icon: <Users weight="fill" className="w-5 h-5" /> },
+];
 
-function TraitBar({ 
-  label, 
-  value, 
-  color 
-}: { 
-  label: string; 
-  value: number;
-  color: "blue" | "mint" | "lavender";
-}) {
-  const colorClasses = {
-    blue: "bg-[#4F8CFF]/20 [&>div]:bg-[#4F8CFF]",
-    mint: "bg-[#7CF5C8]/20 [&>div]:bg-[#7CF5C8]",
-    lavender: "bg-[#C7B9FF]/20 [&>div]:bg-[#C7B9FF]"
-  };
+/* ============================================================================
+   UTILITY FUNCTIONS
+   ============================================================================ */
 
-  return (
-    <div className="space-y-1">
-      <div className="flex justify-between items-center">
-        <span className="text-[10px] uppercase tracking-wider text-[#FAFAFA]/50 font-medium">
-          {label}
-        </span>
-        <span className="text-[10px] text-[#FAFAFA]/70 font-mono">
-          {value}
-        </span>
-      </div>
-      <div className={clsx("h-1.5 w-full rounded-full overflow-hidden", colorClasses[color])}>
-        <div 
-          className="h-full rounded-full transition-all duration-500 ease-out"
-          style={{ width: `${Math.max(0, Math.min(100, value))}%` }}
-        />
-      </div>
-    </div>
-  );
-}
-
-function CodeBadge({ code }: { code: MythicalCode }) {
-  const displayName = CODE_LABELS[code];
+function getTimeAgo(dateString?: string): string {
+  if (!dateString) return "Recently";
   
-  return (
-    <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#C7B9FF]/10 border border-[#C7B9FF]/20 hover:bg-[#C7B9FF]/15 transition-colors">
-      <Sparkles className="h-3 w-3 text-[#C7B9FF]" />
-      <span className="text-xs font-medium text-[#C7B9FF]">
-        {displayName}
-      </span>
-    </div>
-  );
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffInMs = now.getTime() - date.getTime();
+  const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
+  
+  if (diffInHours < 1) return "Just now";
+  if (diffInHours < 24) return `${diffInHours}h ago`;
+  
+  const diffInDays = Math.floor(diffInHours / 24);
+  if (diffInDays < 7) return `${diffInDays}d ago`;
+  
+  const diffInWeeks = Math.floor(diffInDays / 7);
+  return `${diffInWeeks}w ago`;
 }
 
-function PersonalityStrip({ traits }: { traits: ExperienceTraits }) {
-  const traitRows = [
-    { key: "energy" as const, label: "Energy", color: "blue" as const },
-    { key: "social" as const, label: "Social", color: "mint" as const },
-    { key: "structure" as const, label: "Structure", color: "lavender" as const },
-    { key: "expression" as const, label: "Expression", color: "blue" as const },
-  ];
+/* ============================================================================
+   LISTING CARD COMPONENT
+   ============================================================================ */
+
+function ListingCard({ experience }: { experience: Experience }) {
+  const [isLiked, setIsLiked] = useState(false);
+  
+  // Generate gradient based on category
+  const categoryGradients: Record<string, string> = {
+    experience: "from-[#4F8CFF] to-[#7CF5C8]",
+    retreat: "from-[#C7B9FF] to-[#FFB5E8]",
+    workshop: "from-[#FFD97D] to-[#FF8F8F]",
+    event: "from-[#7CF5C8] to-[#4F8CFF]",
+    service: "from-[#FFB5E8] to-[#C7B9FF]",
+  };
+  
+  const gradient = categoryGradients[experience.category] || categoryGradients.experience;
 
   return (
-    <div className="space-y-3 pt-4 border-t border-[#FAFAFA]/5">
-      <p className="text-[10px] uppercase tracking-wider text-[#FAFAFA]/40 font-medium mb-2">
-        Experience Personality
-      </p>
-      {traitRows.map((row) => (
-        <TraitBar 
-          key={row.key}
-          label={row.label}
-          value={traits[row.key]}
-          color={row.color}
-        />
-      ))}
-    </div>
-  );
-}
-
-/* -------------------------------------------------------------------------- */
-/* EXPERIENCE CARD                                                            */
-/* -------------------------------------------------------------------------- */
-
-function ExperienceCard({
-  experience,
-  lensMode,
-  activeCode,
-  activeMood,
-  query,
-  expanded,
-  onToggleExpanded,
-}: {
-  experience: Experience;
-  lensMode: LensMode;
-  activeCode: MythicalCode | null;
-  activeMood: MoodLens | null;
-  query: string;
-  expanded: boolean;
-  onToggleExpanded: () => void;
-}) {
-  const resonates =
-    activeCode !== null && experience.resonatesWith.includes(activeCode);
-
-  const moodScore = activeMood
-    ? scoreMoodMatch(experience.traits, activeMood)
-    : 0;
-
-  const emphasized = resonates || moodScore >= 0.6;
-
-  return (
-    <article
-      className={clsx(
-        "group relative rounded-2xl border transition-all duration-300",
-        "bg-gradient-to-br from-[#111827] to-[#111827]/80 backdrop-blur-sm",
-        emphasized 
-          ? "border-[#7CF5C8]/30 shadow-lg shadow-[#7CF5C8]/5" 
-          : "border-[#FAFAFA]/10 hover:border-[#4F8CFF]/30",
-        expanded && "ring-1 ring-[#4F8CFF]/20"
-      )}
+    <motion.article
+      whileHover={{ y: -8 }}
+      transition={{ type: "spring", stiffness: 300, damping: 25 }}
+      className="group relative"
     >
-      {/* Resonance Pulse Indicator */}
-      {resonates && (
-        <div className="absolute -top-2 -right-2 z-10">
-          <div className="relative">
-            <div className="h-4 w-4 rounded-full bg-[#7CF5C8] shadow-lg shadow-[#7CF5C8]/50" />
-            <div className="absolute inset-0 h-4 w-4 rounded-full bg-[#7CF5C8] animate-ping" />
-          </div>
-        </div>
-      )}
+      <Link href={`/marketplace/${experience.id}`} className="block">
+        <div className="relative overflow-hidden rounded-2xl bg-[#0D0D14] border border-white/[0.06] hover:border-white/[0.12] transition-all duration-300">
+          {/* Image placeholder with gradient */}
+          <div className={`relative aspect-square bg-gradient-to-br ${gradient} opacity-60`}>
+            <div className="absolute inset-0 bg-[#0A0A0A]/20 backdrop-blur-sm" />
+            
+            {/* Category badge */}
+            <div className="absolute top-3 left-3 px-3 py-1.5 rounded-lg bg-black/60 backdrop-blur-md border border-white/10">
+              <span className="text-xs font-semibold text-white uppercase tracking-wider">
+                {experience.category}
+              </span>
+            </div>
 
-      <div className="p-6 space-y-4">
-        {/* Header */}
-        <div className="space-y-2">
-          <div className="flex items-start justify-between gap-3">
-            <h3 className="text-lg font-semibold text-[#FAFAFA] leading-tight group-hover:text-[#4F8CFF] transition-colors">
+            {/* Booking type badge */}
+            {experience.bookingType === "INSTANT" && (
+              <div className="absolute top-3 right-3 px-3 py-1.5 rounded-lg bg-[#7CF5C8]/20 backdrop-blur-md border border-[#7CF5C8]/30">
+                <span className="text-xs font-bold text-[#7CF5C8] uppercase">
+                  <Lightning weight="fill" className="w-3 h-3 inline mr-1" />
+                  Instant
+                </span>
+              </div>
+            )}
+
+            {/* Center emoji/icon */}
+            <div className="absolute inset-0 flex items-center justify-center">
+              <span className="text-6xl opacity-80">
+                {experience.category === "retreat" ? "🧘" : 
+                 experience.category === "workshop" ? "🛠️" :
+                 experience.category === "event" ? "🎉" :
+                 experience.category === "service" ? "💼" : "✨"}
+              </span>
+            </div>
+          </div>
+
+          {/* Content */}
+          <div className="p-5">
+            {/* Title */}
+            <h3 className="text-lg font-bold text-white mb-2 line-clamp-2 group-hover:text-[#4F8CFF] transition-colors">
               {experience.title}
             </h3>
-            <span className={clsx(
-              "text-xs px-2 py-1 rounded-full capitalize whitespace-nowrap flex-shrink-0",
-              "bg-[#4F8CFF]/10 text-[#4F8CFF] border border-[#4F8CFF]/20"
-            )}>
-              {experience.category}
-            </span>
-          </div>
-          
-          <p className="text-sm text-[#FAFAFA]/60 leading-relaxed line-clamp-2">
-            {experience.description}
-          </p>
-        </div>
 
-        {/* Meta Info with Icons */}
-        <div className="flex flex-wrap gap-3">
-          <div className="flex items-center gap-1.5 text-xs text-[#FAFAFA]/50">
-            <MapPin className="h-3.5 w-3.5 text-[#4F8CFF]" />
-            <span>{experience.city}</span>
-          </div>
-          <div className="flex items-center gap-1.5 text-xs text-[#FAFAFA]/50">
-            <Clock className="h-3.5 w-3.5 text-[#7CF5C8]" />
-            <span>{experience.duration}</span>
-          </div>
-          <div className="flex items-center gap-1.5 text-xs text-[#FAFAFA]/50">
-            <Users className="h-3.5 w-3.5 text-[#C7B9FF]" />
-            <span>{experience.groupSize}</span>
-          </div>
-        </div>
-
-        {/* Tags */}
-        {experience.tags.length > 0 && (
-          <div className="flex flex-wrap gap-2">
-            {experience.tags.slice(0, 3).map((tag, i) => (
-              <span 
-                key={i}
-                className="text-[10px] px-2 py-1 rounded-full bg-[#FAFAFA]/5 text-[#FAFAFA]/50 border border-[#FAFAFA]/10"
-              >
-                {tag}
-              </span>
-            ))}
-            {experience.tags.length > 3 && (
-              <span className="text-[10px] px-2 py-1 text-[#FAFAFA]/40">
-                +{experience.tags.length - 3}
-              </span>
+            {/* Business name */}
+            {experience.businessName && (
+              <p className="text-sm text-white/40 mb-3">
+                by {experience.businessName}
+              </p>
             )}
-          </div>
-        )}
 
-        {/* Mythical Code Badges */}
-        {experience.resonatesWith.length > 0 && (
-          <div className="flex flex-wrap gap-2">
-            {experience.resonatesWith.slice(0, 2).map((code) => (
-              <CodeBadge key={code} code={code} />
-            ))}
-            {experience.resonatesWith.length > 2 && (
-              <span className="text-xs text-[#FAFAFA]/40 self-center flex items-center gap-1">
-                <Sparkles className="h-3 w-3" />
-                +{experience.resonatesWith.length - 2} more
-              </span>
-            )}
-          </div>
-        )}
+            {/* Location */}
+            <div className="flex items-center gap-2 text-sm text-white/60 mb-4">
+              <MapPin weight="fill" className="w-4 h-4" />
+              <span>{experience.city}</span>
+            </div>
 
-        {/* Personality Traits (Expanded State) */}
-        {expanded && <PersonalityStrip traits={experience.traits} />}
+            {/* Footer */}
+            <div className="flex items-center justify-between pt-4 border-t border-white/[0.06]">
+              {/* Price */}
+              <div>
+                <span className="text-xl font-bold text-white">
+                  {experience.priceLabel}
+                </span>
+              </div>
 
-        {/* Footer */}
-        <div className="flex items-center justify-between pt-3 border-t border-[#FAFAFA]/5">
-          <span className="text-sm font-medium text-[#4F8CFF]">
-            {experience.priceLabel}
-          </span>
-          <div className="flex items-center gap-3">
-            <button
-              onClick={onToggleExpanded}
-              className="text-xs text-[#FAFAFA]/50 hover:text-[#FAFAFA] transition-colors"
-            >
-              {expanded ? "Hide traits" : "View traits"}
-            </button>
-            <Link 
-              href={`/marketplace/${experience.id}`}
-              className="text-xs text-[#4F8CFF] hover:text-[#7CF5C8] transition-colors font-medium"
-            >
-              View details →
-            </Link>
+              {/* Stats */}
+              <div className="flex items-center gap-4 text-sm text-white/40">
+                <div className="flex items-center gap-1">
+                  <Eye weight="fill" className="w-4 h-4" />
+                  <span>{experience.views || 0}</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <Clock weight="fill" className="w-4 h-4" />
+                  <span>{getTimeAgo(experience.createdAt)}</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
-    </article>
+      </Link>
+
+      {/* Like button */}
+      <button
+        onClick={(e) => {
+          e.preventDefault();
+          setIsLiked(!isLiked);
+        }}
+        className="absolute bottom-5 right-5 w-10 h-10 rounded-full bg-black/80 backdrop-blur-md border border-white/10 flex items-center justify-center hover:scale-110 transition-transform z-10"
+      >
+        <Heart
+          weight={isLiked ? "fill" : "regular"}
+          className={`w-5 h-5 ${isLiked ? "text-red-500" : "text-white/60"}`}
+        />
+      </button>
+    </motion.article>
   );
 }
 
-/* -------------------------------------------------------------------------- */
-/* MAIN CLIENT COMPONENT                                                      */
-/* -------------------------------------------------------------------------- */
+/* ============================================================================
+   MAIN COMPONENT
+   ============================================================================ */
 
 export default function MarketplaceClient({
   initialExperiences,
 }: {
   initialExperiences: Experience[];
 }) {
-  const [mode, setMode] = useState<LensMode>("browse");
-  const [activeCode, setActiveCode] = useState<MythicalCode | null>(null);
-  const [activeMood, setActiveMood] = useState<MoodLens | null>(null);
-  const [query, setQuery] = useState("");
-  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("all");
+  const [sortBy, setSortBy] = useState<SortOption>("newest");
+  const [filterStatus, setFilterStatus] = useState<FilterStatus>("all");
+  const [displayCount, setDisplayCount] = useState(12);
 
-  const experiences = useMemo(() => {
-    let list = [...initialExperiences];
+  // Filter and sort experiences
+  const filteredExperiences = useMemo(() => {
+    let filtered = [...initialExperiences];
 
-    // Sort by code resonance
-    if (activeCode) {
-      list.sort(
-        (a, b) =>
-          Number(b.resonatesWith.includes(activeCode)) -
-          Number(a.resonatesWith.includes(activeCode))
-      );
-    }
-
-    // Sort by mood match
-    if (activeMood) {
-      list.sort(
-        (a, b) =>
-          scoreMoodMatch(b.traits, activeMood) -
-          scoreMoodMatch(a.traits, activeMood)
-      );
-    }
-
-    // Filter by search query
-    if (query.trim()) {
-      list = list.filter((e) =>
-        [e.title, e.description, e.city, e.tags.join(" ")]
+    // Search filter
+    if (searchQuery.trim()) {
+      filtered = filtered.filter((exp) =>
+        [exp.title, exp.description, exp.city, exp.businessName]
           .join(" ")
           .toLowerCase()
-          .includes(query.toLowerCase())
+          .includes(searchQuery.toLowerCase())
       );
     }
 
-    return list;
-  }, [initialExperiences, activeCode, activeMood, query]);
+    // Category filter
+    if (selectedCategory !== "all") {
+      filtered = filtered.filter((exp) => exp.category === selectedCategory);
+    }
+
+    // Status filter
+    if (filterStatus === "instant") {
+      filtered = filtered.filter((exp) => exp.bookingType === "INSTANT");
+    } else if (filterStatus === "available") {
+      filtered = filtered.filter((exp) => exp.bookingType === "INQUIRY");
+    }
+
+    // Sort
+    filtered.sort((a, b) => {
+      if (sortBy === "newest") {
+        return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
+      } else if (sortBy === "popular") {
+        return (b.views || 0) - (a.views || 0);
+      }
+      return 0;
+    });
+
+    return filtered;
+  }, [initialExperiences, searchQuery, selectedCategory, sortBy, filterStatus]);
+
+  const displayedExperiences = filteredExperiences.slice(0, displayCount);
+  const hasMore = displayCount < filteredExperiences.length;
 
   return (
-  <div className="min-h-screen bg-[#111827] text-[#FAFAFA]">
-    <div className="max-w-7xl mx-auto px-6 py-10">
-      {/* Page Header with Search */}
-      <div className="mb-8">
-        <div className="flex items-center justify-between flex-wrap gap-4 mb-6">
-          <div>
-            <h1 className="text-3xl font-bold text-[#FAFAFA]">
-              Marketplace
-            </h1>
-            <p className="text-sm text-[#FAFAFA]/50 mt-1">
-              {experiences.length} {experiences.length === 1 ? 'experience' : 'experiences'} found
-            </p>
-          </div>
-          
-          {/* Search */}
-          <input
-            type="text"
-            placeholder="Search experiences..."
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            className="px-4 py-2 rounded-xl bg-[#FAFAFA]/5 border border-[#FAFAFA]/10 text-sm text-[#FAFAFA] placeholder:text-[#FAFAFA]/30 focus:outline-none focus:border-[#4F8CFF]/50 focus:ring-2 focus:ring-[#4F8CFF]/20 transition-all min-w-[250px]"
-          />
-        </div>
-      </div>
-      </div>
-      
-      {/* Grid */}
-      <div className="max-w-7xl mx-auto px-6 py-10">
-        {experiences.length === 0 ? (
-          <div className="text-center py-20">
-            <div className="inline-flex h-16 w-16 rounded-full bg-[#FAFAFA]/5 items-center justify-center mb-4">
-              <Sparkles className="h-8 w-8 text-[#FAFAFA]/20" />
+    <div className="flex min-h-screen bg-[#0A0A0A]">
+      {/* ================================================================
+          LEFT SIDEBAR
+          ================================================================ */}
+      <aside className="hidden lg:flex w-64 shrink-0 border-r border-white/[0.06] bg-[#0D0D14]/50 backdrop-blur-xl">
+        <div className="fixed w-64 h-screen flex flex-col p-6">
+          {/* Logo */}
+          <Link href="/dashboard" className="flex items-center gap-3 mb-12 group">
+            <div className="relative">
+              <div className="absolute -inset-1 rounded-xl bg-gradient-to-br from-[#4F8CFF] to-[#C7B9FF] opacity-70 blur group-hover:opacity-100 transition-opacity" />
+              <div className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-[#4F8CFF] to-[#C7B9FF]">
+                <Sparkle weight="fill" className="h-5 w-5 text-black" />
+              </div>
             </div>
-            <p className="text-[#FAFAFA]/40">No experiences found</p>
-            <p className="text-sm text-[#FAFAFA]/30 mt-2">Try adjusting your search</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {experiences.map((exp) => (
-              <ExperienceCard
-                key={exp.id}
-                experience={exp}
-                lensMode={mode}
-                activeCode={activeCode}
-                activeMood={activeMood}
-                query={query}
-                expanded={expandedId === exp.id}
-                onToggleExpanded={() =>
-                  setExpandedId(expandedId === exp.id ? null : exp.id)
-                }
-              />
+            <span className="text-xl font-bold text-white">ETHOS</span>
+          </Link>
+
+          {/* Navigation */}
+          <nav className="flex-1 space-y-2">
+            {SIDEBAR_NAV.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
+                  item.href === "/marketplace"
+                    ? "bg-white/[0.08] text-white"
+                    : "text-white/50 hover:text-white hover:bg-white/[0.04]"
+                }`}
+              >
+                {item.icon}
+                {item.label}
+              </Link>
             ))}
+          </nav>
+
+          {/* Create button */}
+          <Link
+            href="/business/listings/new"
+            className="flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-[#4F8CFF] to-[#7CF5C8] text-black font-semibold hover:opacity-90 transition-opacity"
+          >
+            <Plus weight="bold" className="w-5 h-5" />
+            Create
+          </Link>
+        </div>
+      </aside>
+
+      {/* ================================================================
+          MAIN CONTENT
+          ================================================================ */}
+      <main className="flex-1 overflow-y-auto">
+        <div className="max-w-[1600px] mx-auto px-6 lg:px-8 py-8">
+          
+          {/* ================================================================
+              TOP FILTERS BAR
+              ================================================================ */}
+          <div className="mb-8 space-y-6">
+            
+            {/* Search + Filters Row */}
+            <div className="flex flex-col md:flex-row gap-4">
+              {/* Search */}
+              <div className="flex-1 relative">
+                <MagnifyingGlass
+                  weight="bold"
+                  className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/40"
+                />
+                <input
+                  type="text"
+                  placeholder="Search experiences, retreats, workshops..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full h-12 pl-12 pr-4 rounded-xl bg-white/[0.03] border border-white/[0.08] text-white placeholder:text-white/40 focus:border-[#4F8CFF]/50 focus:bg-white/[0.05] outline-none transition-all"
+                />
+              </div>
+
+              {/* Filter dropdown */}
+              <div className="flex items-center gap-3">
+                <div className="relative">
+                  <Funnel
+                    weight="bold"
+                    className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40"
+                  />
+                  <select
+                    value={filterStatus}
+                    onChange={(e) => setFilterStatus(e.target.value as FilterStatus)}
+                    className="h-12 pl-10 pr-8 rounded-xl bg-white/[0.03] border border-white/[0.08] text-white text-sm font-medium appearance-none cursor-pointer hover:bg-white/[0.05] transition-all outline-none"
+                  >
+                    <option value="all">All Status</option>
+                    <option value="available">Available</option>
+                    <option value="instant">Instant Book</option>
+                  </select>
+                </div>
+
+                {/* Sort dropdown */}
+                <div className="relative">
+                  <select
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value as SortOption)}
+                    className="h-12 px-4 pr-8 rounded-xl bg-white/[0.03] border border-white/[0.08] text-white text-sm font-medium appearance-none cursor-pointer hover:bg-white/[0.05] transition-all outline-none"
+                  >
+                    <option value="newest">Newest</option>
+                    <option value="popular">Most Popular</option>
+                    <option value="price-low">Price: Low to High</option>
+                    <option value="price-high">Price: High to Low</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            {/* Category Tabs */}
+            <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide">
+              {CATEGORIES.map((cat) => (
+                <button
+                  key={cat.id}
+                  onClick={() => setSelectedCategory(cat.id)}
+                  className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold whitespace-nowrap transition-all ${
+                    selectedCategory === cat.id
+                      ? "bg-white/[0.08] text-white border border-white/[0.08]"
+                      : "text-white/50 hover:text-white hover:bg-white/[0.04]"
+                  }`}
+                >
+                  {cat.icon}
+                  {cat.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Results count + Active filters */}
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-white/50">
+                <span className="text-white font-semibold">{filteredExperiences.length}</span> experiences found
+              </p>
+
+              {/* Active filter badges */}
+              {(searchQuery || selectedCategory !== "all" || filterStatus !== "all") && (
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-white/40">Active filters:</span>
+                  {searchQuery && (
+                    <span className="px-3 py-1 rounded-full bg-white/[0.06] border border-white/[0.08] text-xs text-white/70">
+                      Search: {searchQuery}
+                    </span>
+                  )}
+                  {selectedCategory !== "all" && (
+                    <span className="px-3 py-1 rounded-full bg-white/[0.06] border border-white/[0.08] text-xs text-white/70">
+                      {CATEGORIES.find((c) => c.id === selectedCategory)?.label}
+                    </span>
+                  )}
+                  {filterStatus !== "all" && (
+                    <span className="px-3 py-1 rounded-full bg-white/[0.06] border border-white/[0.08] text-xs text-white/70">
+                      {filterStatus === "instant" ? "Instant Book" : "Available"}
+                    </span>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
-        )}
-      </div>
+
+          {/* ================================================================
+              LISTINGS GRID
+              ================================================================ */}
+          {displayedExperiences.length > 0 ? (
+            <>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-12">
+                {displayedExperiences.map((exp) => (
+                  <ListingCard key={exp.id} experience={exp} />
+                ))}
+              </div>
+
+              {/* Load More Button */}
+              {hasMore && (
+                <div className="flex justify-center">
+                  <button
+                    onClick={() => setDisplayCount((prev) => prev + 12)}
+                    className="px-8 py-3 rounded-xl bg-white/[0.03] border border-white/[0.08] text-white font-medium hover:bg-white/[0.06] hover:border-white/[0.12] transition-all"
+                  >
+                    Load More ({filteredExperiences.length - displayCount} remaining)
+                  </button>
+                </div>
+              )}
+            </>
+          ) : (
+            // Empty state
+            <div className="flex flex-col items-center justify-center py-20 text-center">
+              <div className="w-20 h-20 rounded-full bg-white/[0.03] flex items-center justify-center mb-6">
+                <MagnifyingGlass weight="duotone" className="w-10 h-10 text-white/20" />
+              </div>
+              <h3 className="text-2xl font-bold text-white mb-2">No experiences found</h3>
+              <p className="text-white/50 mb-6">Try adjusting your filters or search query</p>
+              <button
+                onClick={() => {
+                  setSearchQuery("");
+                  setSelectedCategory("all");
+                  setFilterStatus("all");
+                }}
+                className="px-6 py-2.5 rounded-xl bg-white/[0.06] border border-white/[0.08] text-white text-sm font-medium hover:bg-white/[0.08] transition-all"
+              >
+                Clear all filters
+              </button>
+            </div>
+          )}
+        </div>
+      </main>
     </div>
   );
 }
