@@ -27,9 +27,28 @@ export default async function CodesPage() {
     redirect("/onboarding");
   }
 
-  const primaryData = MYTHICAL_CODES[user.primaryCode.toLowerCase() as keyof typeof MYTHICAL_CODES];
-  const secondaryData = user.secondaryCode ? MYTHICAL_CODES[user.secondaryCode.toLowerCase() as keyof typeof MYTHICAL_CODES] : null;
-  const tertiaryData = user.tertiaryCode ? MYTHICAL_CODES[user.tertiaryCode.toLowerCase() as keyof typeof MYTHICAL_CODES] : null;
+  // Get code data - try lowercase key lookup
+  const getPrimaryCode = () => {
+    const key = user.primaryCode?.toLowerCase();
+    if (!key) return null;
+    return MYTHICAL_CODES[key as keyof typeof MYTHICAL_CODES] || null;
+  };
+
+  const getSecondaryCode = () => {
+    const key = user.secondaryCode?.toLowerCase();
+    if (!key) return null;
+    return MYTHICAL_CODES[key as keyof typeof MYTHICAL_CODES] || null;
+  };
+
+  const getTertiaryCode = () => {
+    const key = user.tertiaryCode?.toLowerCase();
+    if (!key) return null;
+    return MYTHICAL_CODES[key as keyof typeof MYTHICAL_CODES] || null;
+  };
+
+  const primaryData = getPrimaryCode();
+  const secondaryData = getSecondaryCode();
+  const tertiaryData = getTertiaryCode();
 
   const quizResults = user.quizResults as any;
 
@@ -63,82 +82,86 @@ export default async function CodesPage() {
         </div>
 
         {/* Primary Code - Hero Section */}
-        {primaryData && (
-          <div className="rounded-3xl border border-white/10 bg-gradient-to-br from-[#C7B9FF]/10 to-transparent p-8 sm:p-12 relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-br from-[#C7B9FF]/5 via-transparent to-[#4F8CFF]/5" />
-            
-            <div className="relative z-10 space-y-6">
-              <div className="flex items-start justify-between">
-                <div className="space-y-3">
-                  <span className="text-xs uppercase tracking-wider text-[#C7B9FF] font-semibold">Primary Code</span>
-                  <h2 className="text-5xl sm:text-6xl font-bold">{primaryData.label}</h2>
-                  <p className="text-xl text-white/70">{primaryData.essence}</p>
-                </div>
-              </div>
-
-              {/* Strengths & Blind Spots Grid */}
-              <div className="grid md:grid-cols-2 gap-6 pt-6">
-                {/* Strengths */}
-                <div className="space-y-4 rounded-2xl bg-[#7CF5C8]/5 border border-[#7CF5C8]/10 p-6">
-                  <div className="flex items-center gap-2">
-                    <TrendingUp className="w-5 h-5 text-[#7CF5C8]" />
-                    <h3 className="text-sm uppercase tracking-wider text-[#7CF5C8] font-semibold">Strengths</h3>
-                  </div>
-                  <ul className="space-y-2">
-                    {primaryData.strengths.map((strength, i) => (
-                      <li key={i} className="text-white/80 flex items-start gap-3 text-sm">
-                        <span className="w-1.5 h-1.5 rounded-full bg-[#7CF5C8] mt-2 flex-shrink-0" />
-                        <span>{strength}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                {/* Blind Spots */}
-                <div className="space-y-4 rounded-2xl bg-[#FFB5E8]/5 border border-[#FFB5E8]/10 p-6">
-                  <div className="flex items-center gap-2">
-                    <Lightbulb className="w-5 h-5 text-[#FFB5E8]" />
-                    <h3 className="text-sm uppercase tracking-wider text-[#FFB5E8] font-semibold">Blind Spots</h3>
-                  </div>
-                  <ul className="space-y-2">
-                    {primaryData.blindSpots.map((spot, i) => (
-                      <li key={i} className="text-white/80 flex items-start gap-3 text-sm">
-                        <span className="w-1.5 h-1.5 rounded-full bg-[#FFB5E8] mt-2 flex-shrink-0" />
-                        <span>{spot}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-
-              {/* Primary Advice */}
-              <div className="rounded-2xl bg-white/5 border border-white/10 p-6">
-                <div className="flex items-start gap-3">
-                  <Target className="w-5 h-5 text-[#4F8CFF] mt-1 flex-shrink-0" />
-                  <div>
-                    <h3 className="text-sm uppercase tracking-wider text-[#4F8CFF] font-semibold mb-2">Core Guidance</h3>
-                    <p className="text-white/80 leading-relaxed">{primaryData.primaryAdvice}</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Ideal Audience */}
-              <div className="space-y-3">
-                <h3 className="text-sm uppercase tracking-wider text-white/60 font-semibold">Ideal Audience</h3>
-                <div className="flex flex-wrap gap-2">
-                  {primaryData.idealAudience.map((audience, i) => (
-                    <span 
-                      key={i}
-                      className="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-white/80 text-sm font-medium"
-                    >
-                      {audience}
-                    </span>
-                  ))}
-                </div>
-              </div>
+        <div className="rounded-3xl border border-white/10 bg-gradient-to-br from-[#C7B9FF]/10 to-transparent p-8 sm:p-12 relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-[#C7B9FF]/5 via-transparent to-[#4F8CFF]/5" />
+          
+          <div className="relative z-10 space-y-6">
+            <div className="space-y-3">
+              <span className="text-xs uppercase tracking-wider text-[#C7B9FF] font-semibold">Primary Code</span>
+              <h2 className="text-5xl sm:text-6xl font-bold">
+                {primaryData?.label || user.primaryCode}
+              </h2>
+              {primaryData?.essence && (
+                <p className="text-xl text-white/70 leading-relaxed">{primaryData.essence}</p>
+              )}
             </div>
+
+            {primaryData && (
+              <>
+                {/* Strengths & Blind Spots Grid */}
+                <div className="grid md:grid-cols-2 gap-6 pt-6">
+                  {/* Strengths */}
+                  <div className="space-y-4 rounded-2xl bg-[#7CF5C8]/5 border border-[#7CF5C8]/10 p-6">
+                    <div className="flex items-center gap-2">
+                      <TrendingUp className="w-5 h-5 text-[#7CF5C8]" />
+                      <h3 className="text-sm uppercase tracking-wider text-[#7CF5C8] font-semibold">Strengths</h3>
+                    </div>
+                    <ul className="space-y-2">
+                      {primaryData.strengths.map((strength, i) => (
+                        <li key={i} className="text-white/80 flex items-start gap-3 text-sm">
+                          <span className="w-1.5 h-1.5 rounded-full bg-[#7CF5C8] mt-2 flex-shrink-0" />
+                          <span>{strength}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  {/* Blind Spots */}
+                  <div className="space-y-4 rounded-2xl bg-[#FFB5E8]/5 border border-[#FFB5E8]/10 p-6">
+                    <div className="flex items-center gap-2">
+                      <Lightbulb className="w-5 h-5 text-[#FFB5E8]" />
+                      <h3 className="text-sm uppercase tracking-wider text-[#FFB5E8] font-semibold">Blind Spots</h3>
+                    </div>
+                    <ul className="space-y-2">
+                      {primaryData.blindSpots.map((spot, i) => (
+                        <li key={i} className="text-white/80 flex items-start gap-3 text-sm">
+                          <span className="w-1.5 h-1.5 rounded-full bg-[#FFB5E8] mt-2 flex-shrink-0" />
+                          <span>{spot}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+
+                {/* Primary Advice */}
+                <div className="rounded-2xl bg-white/5 border border-white/10 p-6">
+                  <div className="flex items-start gap-3">
+                    <Target className="w-5 h-5 text-[#4F8CFF] mt-1 flex-shrink-0" />
+                    <div>
+                      <h3 className="text-sm uppercase tracking-wider text-[#4F8CFF] font-semibold mb-2">Core Guidance</h3>
+                      <p className="text-white/80 leading-relaxed">{primaryData.primaryAdvice}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Ideal Audience */}
+                <div className="space-y-3">
+                  <h3 className="text-sm uppercase tracking-wider text-white/60 font-semibold">Ideal Audience</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {primaryData.idealAudience.map((audience, i) => (
+                      <span 
+                        key={i}
+                        className="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-white/80 text-sm font-medium"
+                      >
+                        {audience}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </>
+            )}
           </div>
-        )}
+        </div>
 
         {/* Secondary & Tertiary Codes */}
         {(secondaryData || tertiaryData) && (
