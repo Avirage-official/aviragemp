@@ -6,216 +6,225 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import {
   MagnifyingGlass,
-  Funnel,
-  Heart,
-  Clock,
-  Eye,
   MapPin,
+  Check,
+  CaretRight,
   Sparkle,
-  TrendUp,
-  Users,
-  BookOpen,
-  Lightning,
-  Image as ImageIcon,
 } from "@phosphor-icons/react";
 
 /* ============================================================================
    TYPES
    ============================================================================ */
 
-type Experience = {
+type Venue = {
   id: string;
-  title: string;
-  description: string;
-  location: string;
+  name: string;
+  description: string | null;
+  neighborhood: string | null;
   city: string;
-  category: "experience" | "retreat" | "workshop" | "event" | "service";
-  priceLabel: string;
-  bookingType: "INQUIRY" | "INSTANT";
-  tags: string[];
-  createdAt?: string;
-  views?: number;
-  likes?: number;
-  businessName?: string;
-  imageUrl?: string | null;
+  countryCode: string;
+  subcategory: string;
+  priceRange: string | null;
+  imageUrl: string | null;
+  compatibilityScores: Record<string, number>;
+  vibes: string[];
+  googleMapsUrl: string | null;
+  website: string | null;
 };
 
-type Category = {
-  id: string;
-  label: string;
-  icon: React.ReactNode;
-};
-
-type SortOption = "newest" | "popular" | "price-low" | "price-high";
-type FilterStatus = "all" | "available" | "instant";
+type SubcategoryFilter = "all" | "nomnoms" | "creative";
 
 /* ============================================================================
    CONSTANTS
    ============================================================================ */
 
-const CATEGORIES: Category[] = [
-  { id: "all", label: "All", icon: <Sparkle weight="fill" className="w-3.5 h-3.5" /> },
-  { id: "experience", label: "Experiences", icon: <Lightning weight="fill" className="w-3.5 h-3.5" /> },
-  { id: "retreat", label: "Retreats", icon: <MapPin weight="fill" className="w-3.5 h-3.5" /> },
-  { id: "workshop", label: "Workshops", icon: <Users weight="fill" className="w-3.5 h-3.5" /> },
-  { id: "event", label: "Events", icon: <Clock weight="fill" className="w-3.5 h-3.5" /> },
-  { id: "service", label: "Services", icon: <BookOpen weight="fill" className="w-3.5 h-3.5" /> },
+const SUBCATEGORIES = [
+  { id: "all" as const, label: "All Spaces", count: 0 },
+  { id: "nomnoms" as const, label: "NomNoms", count: 0 },
+  { id: "creative" as const, label: "Creative Vibe", count: 0 },
 ];
 
-const SIDEBAR_NAV = [
-  { label: "Explore", href: "/marketplace", icon: <Sparkle weight="fill" className="w-4 h-4" /> },
-  { label: "Activity", href: "/marketplace/activity", icon: <TrendUp weight="fill" className="w-4 h-4" /> },
-  { label: "How it works", href: "/marketplace/how-it-works", icon: <BookOpen weight="fill" className="w-4 h-4" /> },
-  { label: "Community", href: "/marketplace/community", icon: <Users weight="fill" className="w-4 h-4" /> },
-];
+// Vibe labels for display
+const VIBE_LABELS: Record<string, string> = {
+  date_quiet: "Date · Quiet",
+  loud_friends: "Friends · Lively",
+  solo_treat: "Solo · Treat",
+  work_lunch: "Work Lunch",
+  calm_focus: "Calm · Focus",
+  high_energy_social: "High Energy · Social",
+  creative_flow: "Creative Flow",
+  solo_recharge: "Solo · Recharge",
+};
 
 /* ============================================================================
    UTILITY FUNCTIONS
    ============================================================================ */
 
-function getTimeAgo(dateString?: string): string {
-  if (!dateString) return "Recently";
-  
-  const date = new Date(dateString);
-  const now = new Date();
-  const diffInMs = now.getTime() - date.getTime();
-  const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
-  
-  if (diffInHours < 1) return "Just now";
-  if (diffInHours < 24) return `${diffInHours}h ago`;
-  
-  const diffInDays = Math.floor(diffInHours / 24);
-  if (diffInDays < 7) return `${diffInDays}d ago`;
-  
-  const diffInWeeks = Math.floor(diffInDays / 7);
-  return `${diffInWeeks}w ago`;
+function getMatchPercentage(
+  scores: Record<string, number>,
+  userArchetype: string | null
+): number {
+  if (!userArchetype) return 0;
+  const archetypeLower = userArchetype.toLowerCase();
+  return scores[archetypeLower] || 0;
+}
+
+function getMatchLevel(percentage: number): {
+  label: string;
+  color: string;
+  bgColor: string;
+} {
+  if (percentage >= 85)
+    return {
+      label: "Perfect Match",
+      color: "text-emerald-400",
+      bgColor: "bg-emerald-500/10",
+    };
+  if (percentage >= 70)
+    return {
+      label: "Great Match",
+      color: "text-green-400",
+      bgColor: "bg-green-500/10",
+    };
+  if (percentage >= 50)
+    return {
+      label: "Good Match",
+      color: "text-blue-400",
+      bgColor: "bg-blue-500/10",
+    };
+  return {
+    label: "Explore",
+    color: "text-zinc-400",
+    bgColor: "bg-zinc-500/10",
+  };
 }
 
 /* ============================================================================
-   LISTING CARD COMPONENT
+   VENUE CARD COMPONENT
    ============================================================================ */
 
-function ListingCard({ experience }: { experience: Experience }) {
-  const [isLiked, setIsLiked] = useState(false);
-  const [imageError, setImageError] = useState(false);
-  
-  // Generate gradient based on category
-  const categoryGradients: Record<string, string> = {
-    experience: "from-[#4F8CFF] to-[#7CF5C8]",
-    retreat: "from-[#C7B9FF] to-[#FFB5E8]",
-    workshop: "from-[#FFD97D] to-[#FF8F8F]",
-    event: "from-[#7CF5C8] to-[#4F8CFF]",
-    service: "from-[#FFB5E8] to-[#C7B9FF]",
-  };
-  
-  const gradient = categoryGradients[experience.category] || categoryGradients.experience;
-  const hasImage = experience.imageUrl && !imageError;
+function VenueCard({
+  venue,
+  userArchetype,
+}: {
+  venue: Venue;
+  userArchetype: string | null;
+}) {
+  const matchPercentage = getMatchPercentage(
+    venue.compatibilityScores,
+    userArchetype
+  );
+  const matchLevel = getMatchLevel(matchPercentage);
 
   return (
-    <motion.article
-      whileHover={{ y: -6 }}
-      transition={{ type: "spring", stiffness: 300, damping: 25 }}
-      className="group relative"
-    >
-      <Link href={`/marketplace/${experience.id}`} className="block">
-        <div className="relative overflow-hidden rounded-xl bg-[#0D0D14] border border-white/[0.06] hover:border-white/[0.12] transition-all duration-300">
-          {/* Image */}
-          <div className="relative aspect-square overflow-hidden">
-            {hasImage ? (
-              <>
-                <img
-                  src={experience.imageUrl!}
-                  alt={experience.title}
-                  onError={() => setImageError(true)}
-                  className="w-full h-full object-cover"
-                />
-                {/* Overlay gradient */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-              </>
+    <Link href={`/marketplace/${venue.id}`}>
+      <motion.article
+        whileHover={{ y: -2 }}
+        transition={{ duration: 0.2 }}
+        className="group h-full"
+      >
+        <div className="relative h-full bg-[#111111] border border-white/5 hover:border-white/10 rounded-lg overflow-hidden transition-all duration-200">
+          {/* Image Section */}
+          <div className="relative aspect-[4/3] bg-zinc-900 overflow-hidden">
+            {venue.imageUrl ? (
+              <img
+                src={venue.imageUrl}
+                alt={venue.name}
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              />
             ) : (
-              // Fallback when no image
-              <div className={`w-full h-full bg-gradient-to-br ${gradient} opacity-40 flex items-center justify-center`}>
-                <ImageIcon weight="duotone" className="w-16 h-16 text-white/30" />
+              <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-zinc-900 to-zinc-800">
+                <Sparkle className="w-12 h-12 text-zinc-700" weight="duotone" />
               </div>
             )}
-            
-            {/* Category badge */}
-            <div className="absolute top-2 left-2 px-2.5 py-1 rounded-lg bg-black/60 backdrop-blur-md border border-white/10">
-              <span className="text-[10px] font-semibold text-white uppercase tracking-wider">
-                {experience.category}
+
+            {/* Match Badge - Only show if user has archetype */}
+            {userArchetype && matchPercentage > 0 && (
+              <div
+                className={`absolute top-3 right-3 px-2.5 py-1.5 rounded-md ${matchLevel.bgColor} backdrop-blur-sm border border-white/10`}
+              >
+                <span className={`text-xs font-semibold ${matchLevel.color}`}>
+                  {matchPercentage}% Match
+                </span>
+              </div>
+            )}
+
+            {/* Subcategory Badge */}
+            <div className="absolute top-3 left-3 px-2.5 py-1.5 rounded-md bg-black/60 backdrop-blur-sm border border-white/10">
+              <span className="text-xs font-medium text-white">
+                {venue.subcategory === "nomnoms"
+                  ? "NomNoms"
+                  : "Creative Vibe"}
+              </span>
+            </div>
+          </div>
+
+          {/* Content Section */}
+          <div className="p-4 space-y-3">
+            {/* Title */}
+            <h3 className="text-base font-semibold text-white group-hover:text-blue-400 transition-colors line-clamp-2 leading-snug">
+              {venue.name}
+            </h3>
+
+            {/* Location */}
+            <div className="flex items-center gap-1.5 text-sm text-zinc-400">
+              <MapPin className="w-4 h-4 flex-shrink-0" weight="fill" />
+              <span className="truncate">
+                {venue.neighborhood
+                  ? `${venue.neighborhood}, ${venue.city}`
+                  : venue.city}
               </span>
             </div>
 
-            {/* Booking type badge */}
-            {experience.bookingType === "INSTANT" && (
-              <div className="absolute top-2 right-2 px-2.5 py-1 rounded-lg bg-[#7CF5C8]/20 backdrop-blur-md border border-[#7CF5C8]/30">
-                <span className="text-[10px] font-bold text-[#7CF5C8] uppercase flex items-center gap-1">
-                  <Lightning weight="fill" className="w-2.5 h-2.5" />
-                  Instant
-                </span>
-              </div>
-            )}
-          </div>
-
-          {/* Content */}
-          <div className="p-4">
-            {/* Title */}
-            <h3 className="text-sm font-bold text-white mb-1.5 line-clamp-2 group-hover:text-[#4F8CFF] transition-colors leading-tight">
-              {experience.title}
-            </h3>
-
-            {/* Business name */}
-            {experience.businessName && (
-              <p className="text-xs text-white/40 mb-2.5">
-                by {experience.businessName}
+            {/* Description */}
+            {venue.description && (
+              <p className="text-sm text-zinc-500 line-clamp-2 leading-relaxed">
+                {venue.description}
               </p>
             )}
 
-            {/* Location */}
-            <div className="flex items-center gap-1.5 text-xs text-white/60 mb-3">
-              <MapPin weight="fill" className="w-3.5 h-3.5" />
-              <span>{experience.city}</span>
-            </div>
+            {/* Vibes */}
+            {venue.vibes.length > 0 && (
+              <div className="flex flex-wrap gap-1.5">
+                {venue.vibes.slice(0, 2).map((vibe) => (
+                  <span
+                    key={vibe}
+                    className="px-2 py-1 rounded bg-zinc-800/50 border border-white/5 text-xs text-zinc-400"
+                  >
+                    {VIBE_LABELS[vibe] || vibe}
+                  </span>
+                ))}
+                {venue.vibes.length > 2 && (
+                  <span className="px-2 py-1 rounded bg-zinc-800/50 border border-white/5 text-xs text-zinc-400">
+                    +{venue.vibes.length - 2}
+                  </span>
+                )}
+              </div>
+            )}
 
             {/* Footer */}
-            <div className="flex items-center justify-between pt-3 border-t border-white/[0.06]">
+            <div className="pt-3 border-t border-white/5 flex items-center justify-between">
               {/* Price */}
               <div>
-                <span className="text-base font-bold text-white">
-                  {experience.priceLabel}
-                </span>
+                {venue.priceRange ? (
+                  <span className="text-sm font-semibold text-white">
+                    {venue.priceRange}
+                  </span>
+                ) : (
+                  <span className="text-sm text-zinc-500">Price varies</span>
+                )}
               </div>
 
-              {/* Stats */}
-              <div className="flex items-center gap-3 text-xs text-white/40">
-                <div className="flex items-center gap-1">
-                  <Eye weight="fill" className="w-3.5 h-3.5" />
-                  <span>{experience.views || 0}</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <Clock weight="fill" className="w-3.5 h-3.5" />
-                  <span>{getTimeAgo(experience.createdAt)}</span>
-                </div>
+              {/* CTA */}
+              <div className="flex items-center gap-1 text-sm text-blue-400 group-hover:gap-2 transition-all">
+                <span className="font-medium">View</span>
+                <CaretRight className="w-4 h-4" weight="bold" />
               </div>
             </div>
           </div>
         </div>
-      </Link>
-
-      {/* Like button */}
-      <button
-        onClick={(e) => {
-          e.preventDefault();
-          setIsLiked(!isLiked);
-        }}
-        className="absolute bottom-4 right-4 w-8 h-8 rounded-full bg-black/80 backdrop-blur-md border border-white/10 flex items-center justify-center hover:scale-110 transition-transform z-10"
-      >
-        <Heart
-          weight={isLiked ? "fill" : "regular"}
-          className={`w-4 h-4 ${isLiked ? "text-red-500" : "text-white/60"}`}
-        />
-      </button>
-    </motion.article>
+      </motion.article>
+    </Link>
   );
 }
 
@@ -224,240 +233,222 @@ function ListingCard({ experience }: { experience: Experience }) {
    ============================================================================ */
 
 export default function MarketplaceClient({
-  initialExperiences,
+  initialVenues,
+  userArchetype,
 }: {
-  initialExperiences: Experience[];
+  initialVenues: Venue[];
+  userArchetype: string | null;
 }) {
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("all");
-  const [sortBy, setSortBy] = useState<SortOption>("newest");
-  const [filterStatus, setFilterStatus] = useState<FilterStatus>("all");
-  const [displayCount, setDisplayCount] = useState(12);
+  const [selectedSubcategory, setSelectedSubcategory] =
+    useState<SubcategoryFilter>("all");
+  const [showMatchedOnly, setShowMatchedOnly] = useState(false);
 
-  // Filter and sort experiences
-  const filteredExperiences = useMemo(() => {
-    let filtered = [...initialExperiences];
+  // Calculate category counts
+  const counts = useMemo(() => {
+    return {
+      all: initialVenues.length,
+      nomnoms: initialVenues.filter((v) => v.subcategory === "nomnoms").length,
+      creative: initialVenues.filter((v) => v.subcategory === "creative")
+        .length,
+    };
+  }, [initialVenues]);
+
+  // Filter venues
+  const filteredVenues = useMemo(() => {
+    let filtered = [...initialVenues];
 
     // Search filter
     if (searchQuery.trim()) {
-      filtered = filtered.filter((exp) =>
-        [exp.title, exp.description, exp.city, exp.businessName]
-          .join(" ")
-          .toLowerCase()
-          .includes(searchQuery.toLowerCase())
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(
+        (v) =>
+          v.name.toLowerCase().includes(query) ||
+          v.description?.toLowerCase().includes(query) ||
+          v.city.toLowerCase().includes(query) ||
+          v.neighborhood?.toLowerCase().includes(query)
       );
     }
 
-    // Category filter
-    if (selectedCategory !== "all") {
-      filtered = filtered.filter((exp) => exp.category === selectedCategory);
+    // Subcategory filter
+    if (selectedSubcategory !== "all") {
+      filtered = filtered.filter((v) => v.subcategory === selectedSubcategory);
     }
 
-    // Status filter
-    if (filterStatus === "instant") {
-      filtered = filtered.filter((exp) => exp.bookingType === "INSTANT");
-    } else if (filterStatus === "available") {
-      filtered = filtered.filter((exp) => exp.bookingType === "INQUIRY");
+    // Matched only filter
+    if (showMatchedOnly && userArchetype) {
+      filtered = filtered.filter((v) => {
+        const match = getMatchPercentage(v.compatibilityScores, userArchetype);
+        return match >= 70; // Only show 70%+ matches
+      });
     }
 
-    // Sort
-    filtered.sort((a, b) => {
-      if (sortBy === "newest") {
-        return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
-      } else if (sortBy === "popular") {
-        return (b.views || 0) - (a.views || 0);
-      }
-      return 0;
-    });
+    // Sort by match percentage if user has archetype
+    if (userArchetype) {
+      filtered.sort((a, b) => {
+        const matchA = getMatchPercentage(a.compatibilityScores, userArchetype);
+        const matchB = getMatchPercentage(b.compatibilityScores, userArchetype);
+        return matchB - matchA;
+      });
+    }
 
     return filtered;
-  }, [initialExperiences, searchQuery, selectedCategory, sortBy, filterStatus]);
-
-  const displayedExperiences = filteredExperiences.slice(0, displayCount);
-  const hasMore = displayCount < filteredExperiences.length;
+  }, [initialVenues, searchQuery, selectedSubcategory, showMatchedOnly, userArchetype]);
 
   return (
-    <div className="flex min-h-screen bg-[#0A0A0A] pt-16">
-      {/* ================================================================
-          LEFT SIDEBAR
-          ================================================================ */}
-      <aside className="hidden lg:flex w-56 shrink-0 border-r border-white/[0.06] bg-[#0D0D14]/50 backdrop-blur-xl">
-        <div className="fixed w-56 h-screen flex flex-col p-5">
-          
-          {/* Navigation */}
-          <nav className="flex-1 space-y-1.5 mt-4">
-            {SIDEBAR_NAV.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
-                  item.href === "/marketplace"
-                    ? "bg-white/[0.08] text-white"
-                    : "text-white/50 hover:text-white hover:bg-white/[0.04]"
-                }`}
-              >
-                {item.icon}
-                {item.label}
-              </Link>
-            ))}
-          </nav>
-        </div>
-      </aside>
-
-      {/* ================================================================
-          MAIN CONTENT
-          ================================================================ */}
-      <main className="flex-1 overflow-y-auto">
-        <div className="max-w-[1600px] mx-auto px-6 lg:px-8 py-6">
-          
-          {/* ================================================================
-              TOP FILTERS BAR
-              ================================================================ */}
-          <div className="mb-6 space-y-5">
-            
-            {/* Search + Filters Row */}
-            <div className="flex flex-col md:flex-row gap-3">
-              {/* Search */}
-              <div className="flex-1 relative">
-                <MagnifyingGlass
-                  weight="bold"
-                  className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40"
-                />
-                <input
-                  type="text"
-                  placeholder="Search experiences, retreats, workshops..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full h-10 pl-10 pr-3 rounded-lg bg-white/[0.03] border border-white/[0.08] text-sm text-white placeholder:text-white/40 focus:border-[#4F8CFF]/50 focus:bg-white/[0.05] outline-none transition-all"
-                />
-              </div>
-
-              {/* Filter dropdown */}
-              <div className="flex items-center gap-2.5">
-                <div className="relative">
-                  <Funnel
-                    weight="bold"
-                    className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/40"
-                  />
-                  <select
-                    value={filterStatus}
-                    onChange={(e) => setFilterStatus(e.target.value as FilterStatus)}
-                    className="h-10 pl-8 pr-6 rounded-lg bg-white/[0.03] border border-white/[0.08] text-white text-xs font-medium appearance-none cursor-pointer hover:bg-white/[0.05] transition-all outline-none"
-                  >
-                    <option value="all">All Status</option>
-                    <option value="available">Available</option>
-                    <option value="instant">Instant Book</option>
-                  </select>
-                </div>
-
-                {/* Sort dropdown */}
-                <div className="relative">
-                  <select
-                    value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value as SortOption)}
-                    className="h-10 px-3 pr-6 rounded-lg bg-white/[0.03] border border-white/[0.08] text-white text-xs font-medium appearance-none cursor-pointer hover:bg-white/[0.05] transition-all outline-none"
-                  >
-                    <option value="newest">Newest</option>
-                    <option value="popular">Most Popular</option>
-                    <option value="price-low">Price: Low to High</option>
-                    <option value="price-high">Price: High to Low</option>
-                  </select>
-                </div>
-              </div>
-            </div>
-
-            {/* Category Tabs */}
-            <div className="flex items-center gap-1.5 overflow-x-auto pb-2 scrollbar-hide">
-              {CATEGORIES.map((cat) => (
-                <button
-                  key={cat.id}
-                  onClick={() => setSelectedCategory(cat.id)}
-                  className={`flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-semibold whitespace-nowrap transition-all ${
-                    selectedCategory === cat.id
-                      ? "bg-white/[0.08] text-white border border-white/[0.08]"
-                      : "text-white/50 hover:text-white hover:bg-white/[0.04]"
-                  }`}
-                >
-                  {cat.icon}
-                  {cat.label}
-                </button>
-              ))}
-            </div>
-
-            {/* Results count + Active filters */}
-            <div className="flex items-center justify-between">
-              <p className="text-xs text-white/50">
-                <span className="text-white font-semibold">{filteredExperiences.length}</span> experiences found
-              </p>
-
-              {/* Active filter badges */}
-              {(searchQuery || selectedCategory !== "all" || filterStatus !== "all") && (
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] text-white/40">Active filters:</span>
-                  {searchQuery && (
-                    <span className="px-2.5 py-1 rounded-full bg-white/[0.06] border border-white/[0.08] text-[10px] text-white/70">
-                      Search: {searchQuery}
-                    </span>
-                  )}
-                  {selectedCategory !== "all" && (
-                    <span className="px-2.5 py-1 rounded-full bg-white/[0.06] border border-white/[0.08] text-[10px] text-white/70">
-                      {CATEGORIES.find((c) => c.id === selectedCategory)?.label}
-                    </span>
-                  )}
-                  {filterStatus !== "all" && (
-                    <span className="px-2.5 py-1 rounded-full bg-white/[0.06] border border-white/[0.08] text-[10px] text-white/70">
-                      {filterStatus === "instant" ? "Instant Book" : "Available"}
-                    </span>
-                  )}
-                </div>
-              )}
-            </div>
+    <div className="min-h-screen bg-black">
+      {/* Header */}
+      <header className="sticky top-0 z-10 bg-black/80 backdrop-blur-xl border-b border-white/5">
+        <div className="max-w-[1600px] mx-auto px-6 py-4">
+          {/* Title Section */}
+          <div className="mb-6">
+            <h1 className="text-2xl font-bold text-white mb-1">
+              Discover Spaces
+            </h1>
+            <p className="text-sm text-zinc-400">
+              Curated venues matched to your personality
+            </p>
           </div>
 
-          {/* ================================================================
-              LISTINGS GRID
-              ================================================================ */}
-          {displayedExperiences.length > 0 ? (
-            <>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-10">
-                {displayedExperiences.map((exp) => (
-                  <ListingCard key={exp.id} experience={exp} />
-                ))}
-              </div>
+          {/* Search Bar */}
+          <div className="relative mb-4">
+            <MagnifyingGlass
+              className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500"
+              weight="bold"
+            />
+            <input
+              type="text"
+              placeholder="Search spaces, neighborhoods, vibes..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full h-11 pl-10 pr-4 rounded-lg bg-[#111111] border border-white/5 text-sm text-white placeholder:text-zinc-500 focus:border-white/10 focus:bg-[#151515] outline-none transition-all"
+            />
+          </div>
 
-              {/* Load More Button */}
-              {hasMore && (
-                <div className="flex justify-center">
+          {/* Filters Row */}
+          <div className="flex items-center justify-between gap-4">
+            {/* Category Tabs */}
+            <div className="flex items-center gap-2">
+              {SUBCATEGORIES.map((cat) => {
+                const count = counts[cat.id];
+                return (
                   <button
-                    onClick={() => setDisplayCount((prev) => prev + 12)}
-                    className="px-6 py-2.5 rounded-lg bg-white/[0.03] border border-white/[0.08] text-white text-sm font-medium hover:bg-white/[0.06] hover:border-white/[0.12] transition-all"
+                    key={cat.id}
+                    onClick={() => setSelectedSubcategory(cat.id)}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                      selectedSubcategory === cat.id
+                        ? "bg-white text-black"
+                        : "bg-[#111111] text-zinc-400 hover:text-white hover:bg-[#151515] border border-white/5"
+                    }`}
                   >
-                    Load More ({filteredExperiences.length - displayCount} remaining)
+                    {cat.label}
+                    <span
+                      className={`ml-2 text-xs ${
+                        selectedSubcategory === cat.id
+                          ? "text-black/60"
+                          : "text-zinc-500"
+                      }`}
+                    >
+                      {count}
+                    </span>
                   </button>
-                </div>
-              )}
-            </>
-          ) : (
-            // Empty state
-            <div className="flex flex-col items-center justify-center py-16 text-center">
-              <div className="w-16 h-16 rounded-full bg-white/[0.03] flex items-center justify-center mb-5">
-                <MagnifyingGlass weight="duotone" className="w-8 h-8 text-white/20" />
-              </div>
-              <h3 className="text-xl font-bold text-white mb-2">No experiences found</h3>
-              <p className="text-sm text-white/50 mb-5">Try adjusting your filters or search query</p>
-              <button
-                onClick={() => {
-                  setSearchQuery("");
-                  setSelectedCategory("all");
-                  setFilterStatus("all");
-                }}
-                className="px-5 py-2 rounded-lg bg-white/[0.06] border border-white/[0.08] text-white text-xs font-medium hover:bg-white/[0.08] transition-all"
-              >
-                Clear all filters
-              </button>
+                );
+              })}
             </div>
+
+            {/* Match Filter Toggle - Only show if user has archetype */}
+            {userArchetype && (
+              <button
+                onClick={() => setShowMatchedOnly(!showMatchedOnly)}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                  showMatchedOnly
+                    ? "bg-blue-500/10 text-blue-400 border border-blue-500/20"
+                    : "bg-[#111111] text-zinc-400 hover:text-white hover:bg-[#151515] border border-white/5"
+                }`}
+              >
+                <div
+                  className={`w-4 h-4 rounded border flex items-center justify-center ${
+                    showMatchedOnly
+                      ? "bg-blue-500 border-blue-500"
+                      : "border-zinc-600"
+                  }`}
+                >
+                  {showMatchedOnly && (
+                    <Check className="w-3 h-3 text-white" weight="bold" />
+                  )}
+                </div>
+                Best Matches Only
+              </button>
+            )}
+          </div>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <main className="max-w-[1600px] mx-auto px-6 py-8">
+        {/* Results Info */}
+        <div className="mb-6 flex items-center justify-between">
+          <p className="text-sm text-zinc-400">
+            <span className="text-white font-medium">
+              {filteredVenues.length}
+            </span>{" "}
+            {filteredVenues.length === 1 ? "space" : "spaces"} found
+          </p>
+
+          {/* Active Filters */}
+          {(searchQuery || showMatchedOnly || selectedSubcategory !== "all") && (
+            <button
+              onClick={() => {
+                setSearchQuery("");
+                setSelectedSubcategory("all");
+                setShowMatchedOnly(false);
+              }}
+              className="text-sm text-zinc-400 hover:text-white transition-colors"
+            >
+              Clear filters
+            </button>
           )}
         </div>
+
+        {/* Venues Grid */}
+        {filteredVenues.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+            {filteredVenues.map((venue) => (
+              <VenueCard
+                key={venue.id}
+                venue={venue}
+                userArchetype={userArchetype}
+              />
+            ))}
+          </div>
+        ) : (
+          // Empty State
+          <div className="flex flex-col items-center justify-center py-20 text-center">
+            <div className="w-16 h-16 rounded-full bg-zinc-900 flex items-center justify-center mb-4">
+              <MagnifyingGlass
+                className="w-8 h-8 text-zinc-700"
+                weight="duotone"
+              />
+            </div>
+            <h3 className="text-lg font-semibold text-white mb-2">
+              No spaces found
+            </h3>
+            <p className="text-sm text-zinc-500 mb-6 max-w-md">
+              Try adjusting your filters or search terms to discover more
+              venues.
+            </p>
+            <button
+              onClick={() => {
+                setSearchQuery("");
+                setSelectedSubcategory("all");
+                setShowMatchedOnly(false);
+              }}
+              className="px-4 py-2 rounded-lg bg-[#111111] border border-white/5 text-white text-sm font-medium hover:bg-[#151515] transition-all"
+            >
+              Clear all filters
+            </button>
+          </div>
+        )}
       </main>
     </div>
   );

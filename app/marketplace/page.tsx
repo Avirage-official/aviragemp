@@ -1,5 +1,6 @@
 // app/marketplace/page.tsx
 import { prisma } from "@/lib/prisma";
+import { auth } from "@clerk/nextjs/server";
 import MarketplaceClient from "./MarketplaceClient";
 
 export const dynamic = "force-dynamic";
@@ -8,21 +9,20 @@ export const dynamic = "force-dynamic";
    TYPES
    ============================================================================ */
 
-type Experience = {
+type Venue = {
   id: string;
-  title: string;
-  description: string;
-  location: string;
+  name: string;
+  description: string | null;
+  neighborhood: string | null;
   city: string;
-  category: "experience" | "retreat" | "workshop" | "event" | "service";
-  priceLabel: string;
-  bookingType: "INQUIRY" | "INSTANT";
-  tags: string[];
-  createdAt: string;
-  views: number;
-  likes: number;
-  businessName: string;
+  countryCode: string;
+  subcategory: string; // "nomnoms" | "creative"
+  priceRange: string | null;
   imageUrl: string | null;
+  compatibilityScores: Record<string, number>;
+  vibes: string[];
+  googleMapsUrl: string | null;
+  website: string | null;
 };
 
 /* ============================================================================
@@ -30,62 +30,66 @@ type Experience = {
    ============================================================================ */
 
 export default async function MarketplacePage() {
-  const listings = await prisma.listing.findMany({
-    where: { isActive: true },
+  // Get current user's archetype
+  const { userId } = await auth();
+  let userArchetype: string | null = null;
+
+  if (userId) {
+    const user = await prisma.user.findUnique({
+      where: { clerkId: userId },
+      select: { primaryCode: true },
+    });
+    userArchetype = user?.primaryCode || null;
+  }
+  // Fetch all active venues with vibes
+  const venues = await prisma.venue.findMany({
+    where: {
+      isActive: true,
+      // Optionally filter by user's country later
+      // countryCode: "SG"
+    },
     include: {
-      business: {
+      vibes: {
         select: {
-          businessName: true,
-        },
-      },
-      analytics: {
-        where: {
-          action: "VIEW",
-        },
-        select: {
-          id: true,
+          vibe: true,
         },
       },
     },
-    orderBy: { createdAt: "desc" },
+    orderBy: {
+      createdAt: "desc",
+    },
   });
 
-  const experiences: Experience[] = listings.map((listing) => {
-    // Price formatting
-    const priceLabel = (() => {
-      const pricingType = String(listing.pricingType ?? "").toUpperCase();
-      if (pricingType === "CUSTOM") return "Contact";
-      
-      const price = typeof listing.price === "number" ? listing.price : null;
-      if (price === null) return "Contact";
-      
-      return `$${Math.round(price)}`;
-    })();
-
-    // Tags (safe array)
-    const tags = Array.isArray(listing.tags)
-      ? listing.tags.filter((t): t is string => typeof t === "string")
-      : [];
+  // Transform to client format
+  const clientVenues: Venue[] = venues.map((venue) => {
+    // Parse compatibility scores from JSON
+    const scores =
+      typeof venue.compatibilityScores === "object" &&
+      venue.compatibilityScores !== null
+        ? (venue.compatibilityScores as Record<string, number>)
+        : {};
 
     return {
-      id: listing.id,
-      title: listing.title,
-      description: listing.description,
-      location: listing.location ?? "—",
-      city: listing.city ?? "—",
-      category: listing.category as Experience["category"],
-      priceLabel,
-      bookingType: listing.bookingType as "INQUIRY" | "INSTANT",
-      tags,
-      createdAt: listing.createdAt.toISOString(),
-      views: listing.analytics.length,
-      likes: 0, // TODO: Implement likes system
-      businessName: listing.business?.businessName ?? "Unknown Business",
-      imageUrl: Array.isArray(listing.images) && listing.images.length > 0 
-        ? listing.images[0] 
-        : null, // Use first image from images array
+      id: venue.id,
+      name: venue.name,
+      description: venue.description,
+      neighborhood: venue.neighborhood,
+      city: venue.city,
+      countryCode: venue.countryCode,
+      subcategory: venue.subcategory,
+      priceRange: venue.priceRange,
+      imageUrl: venue.imageUrl,
+      compatibilityScores: scores,
+      vibes: venue.vibes.map((v) => v.vibe),
+      googleMapsUrl: venue.googleMapsUrl,
+      website: venue.website,
     };
   });
 
-  return <MarketplaceClient initialExperiences={experiences} />;
+  return (
+    <MarketplaceClient
+      initialVenues={clientVenues}
+      userArchetype={userArchetype}
+    />
+  );
 }
