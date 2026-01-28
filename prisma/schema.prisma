@@ -615,3 +615,142 @@ model ListingAnalytics {
   @@index([viewerCode])
   @@index([action])
 }
+// ============================================================
+// PHASE 2: MARKETPLACE TABLES
+// Add these to your existing schema.prisma file
+// ============================================================
+
+// Countries reference table
+model Country {
+  id        String   @id @default(cuid())
+  code      String   @unique // ISO 2-letter: SG, MY, TH
+  name      String   // Singapore, Malaysia, Thailand
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  
+  venues    Venue[]
+  userCountries UserCountry[]
+  
+  @@index([code])
+  @@index([isActive])
+}
+
+// User's location preference
+model UserCountry {
+  id                String   @id @default(cuid())
+  userId            String   @unique
+  preferredCountry  String   // User's selected country
+  detectedCountry   String?  // Auto-detected from IP
+  updatedAt         DateTime @updatedAt
+  
+  country           Country  @relation(fields: [preferredCountry], references: [code])
+  
+  @@index([userId])
+}
+
+// Venues/Spaces table
+model Venue {
+  id                  String   @id @default(cuid())
+  name                String
+  countryCode         String
+  city                String
+  neighborhood        String?
+  
+  // Address & location
+  address             String?  @db.Text
+  latitude            Decimal? @db.Decimal(10, 8)
+  longitude           Decimal? @db.Decimal(11, 8)
+  googleMapsUrl       String?
+  
+  // Classification
+  category            String   @default("spaces") // Always "spaces" for Phase 2
+  subcategory         String   // "nomnoms" or "creative"
+  
+  // Details
+  description         String?  @db.Text
+  imageUrl            String?
+  website             String?
+  phone               String?
+  hours               Json?    // {"mon": "9am-10pm", "tue": "closed"}
+  priceRange          String?  // "$", "$$", "$$$"
+  
+  // Archetype compatibility (JSON for flexibility)
+  compatibilityScores Json     // {"sentinel": 95, "wanderer": 45, ...}
+  
+  // Airtable sync
+  airtableId          String?  @unique
+  
+  // Status
+  isActive            Boolean  @default(true)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  
+  // Relations
+  country             Country  @relation(fields: [countryCode], references: [code])
+  vibes               VenueVibe[]
+  chats               VenueChat[]
+  
+  @@index([countryCode])
+  @@index([subcategory])
+  @@index([isActive])
+  @@index([city])
+}
+
+// Venue vibe tags (many-to-many)
+model VenueVibe {
+  id       String   @id @default(cuid())
+  venueId  String
+  vibe     String   // date_quiet, loud_friends, calm_focus, etc
+  
+  venue    Venue    @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  
+  @@unique([venueId, vibe])
+  @@index([vibe])
+}
+
+// Community chat at venues
+model VenueChat {
+  id            String   @id @default(cuid())
+  venueId       String
+  userId        String   // Clerk userId
+  message       String   @db.Text
+  
+  // User status at venue
+  isCheckedIn   Boolean  @default(false)
+  mood          String?  // "focused", "social", "relaxed"
+  
+  // Moderation
+  isDeleted     Boolean  @default(false)
+  reportCount   Int      @default(0)
+  
+  createdAt     DateTime @default(now())
+  editedAt      DateTime?
+  
+  venue         Venue    @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  
+  @@index([venueId, createdAt])
+  @@index([userId])
+}
+
+// Chat moderation - reports
+model ChatReport {
+  id          String   @id @default(cuid())
+  chatId      String
+  reportedBy  String   // Clerk userId
+  reason      String?  @db.Text
+  createdAt   DateTime @default(now())
+  
+  @@index([chatId])
+}
+
+// User bans from chat
+model UserBan {
+  id          String    @id @default(cuid())
+  userId      String    @unique // Clerk userId
+  banReason   String?   @db.Text
+  reportCount Int       @default(0)
+  bannedAt    DateTime  @default(now())
+  bannedUntil DateTime? // NULL = permanent ban
+  
+  @@index([userId])
+}
