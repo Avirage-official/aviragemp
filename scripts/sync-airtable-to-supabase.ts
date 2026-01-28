@@ -1,29 +1,17 @@
 // scripts/sync-airtable-to-supabase.ts
-// Phase 2A: Sync venues from Airtable to Supabase
-
 import { PrismaClient } from '@prisma/client'
 
 const prisma = new PrismaClient()
-
-// ============================================================
-// CONFIGURATION - Update these with your Airtable details
-// ============================================================
 
 const AIRTABLE_API_KEY = process.env.AIRTABLE_API_KEY || ''
 const AIRTABLE_BASE_ID = process.env.AIRTABLE_BASE_ID || ''
 const AIRTABLE_VENUES_TABLE = 'Venues'
 const AIRTABLE_SCORES_TABLE = 'Archetype Scores'
 const AIRTABLE_VIBES_TABLE = 'Vibes'
-
-// Airtable API endpoint
 const AIRTABLE_API = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}`
 
-// ============================================================
-// TYPES
-// ============================================================
-
 interface AirtableVenue {
-  id: string // Airtable record ID
+  id: string
   fields: {
     'Venue Name': string
     'Status': 'Active' | 'Draft' | 'Archived'
@@ -46,9 +34,7 @@ interface AirtableVenue {
 
 interface ArchetypeScore {
   venueId: string
-  scores: {
-    [key: string]: number // archetype name -> score (0-100)
-  }
+  scores: { [key: string]: number }
 }
 
 interface VenueVibe {
@@ -56,84 +42,101 @@ interface VenueVibe {
   vibes: string[]
 }
 
-// ============================================================
-// FETCH FROM AIRTABLE
-// ============================================================
-
-async function fetchAirtableVenues(): Promise<AirtableVenue[]> {
-  console.log('📥 Fetching venues from Airtable...')
+// Fetch with pagination support
+async function fetchAllRecords(tableName: string): Promise<any[]> {
+  let allRecords: any[] = []
+  let offset: string | undefined = undefined
   
-  const response = await fetch(
-    `${AIRTABLE_API}/${AIRTABLE_VENUES_TABLE}?filterByFormula={Status}='Active'`,
-    {
+  do {
+    const url = offset 
+      ? `${AIRTABLE_API}/${tableName}?offset=${offset}`
+      : `${AIRTABLE_API}/${tableName}`
+      
+    const response = await fetch(url, {
       headers: {
         'Authorization': `Bearer ${AIRTABLE_API_KEY}`,
         'Content-Type': 'application/json'
       }
+    })
+    
+    if (!response.ok) {
+      throw new Error(`Airtable API error: ${response.statusText}`)
     }
-  )
+    
+    const data = await response.json()
+    allRecords = allRecords.concat(data.records || [])
+    offset = data.offset
+  } while (offset)
   
-  if (!response.ok) {
-    throw new Error(`Airtable API error: ${response.statusText}`)
-  }
+  return allRecords
+}
+
+async function fetchAirtableVenues(): Promise<AirtableVenue[]> {
+  console.log('📥 Fetching venues from Airtable...')
   
-  const data = await response.json()
-  console.log(`✅ Found ${data.records.length} active venues`)
-  return data.records
+  const allRecords = await fetchAllRecords(AIRTABLE_VENUES_TABLE)
+  const activeVenues = allRecords.filter(r => r.fields['Status'] === 'Active')
+  
+  console.log(`✅ Found ${activeVenues.length} active venues`)
+  return activeVenues
 }
 
 async function fetchArchetypeScores(venueRecordId: string): Promise<ArchetypeScore> {
-  // Fetch linked Archetype Scores for this venue
-  const response = await fetch(
-    `${AIRTABLE_API}/${AIRTABLE_SCORES_TABLE}?filterByFormula=FIND('${venueRecordId}',{Venue})`,
-    {
-      headers: {
-        'Authorization': `Bearer ${AIRTABLE_API_KEY}`
-      }
-    }
-  )
+  // Fetch ALL scores and filter client-side (most reliable approach)
+  const allScores = await fetchAllRecords(AIRTABLE_SCORES_TABLE)
   
-  const data = await response.json()
+  // Find score record where Venue field (array) contains our venue ID
+  const scoreRecord = allScores.find(record => {
+    const venueLinks = record.fields['Venue']
+    return Array.isArray(venueLinks) && venueLinks.includes(venueRecordId)
+  })
+  
   const scores: { [key: string]: number } = {}
   
-  if (data.records.length > 0) {
-    const fields = data.records[0].fields
-    // Extract all archetype scores (assuming columns like "Sentinel", "Wanderer", etc.)
-    Object.keys(fields).forEach(key => {
-      if (key !== 'Venue' && typeof fields[key] === 'number') {
-        scores[key.toLowerCase()] = fields[key]
-      }
-    })
+  if (!scoreRecord) {
+    console.warn(`⚠️  No archetype scores found for venue ${venueRecordId}`)
+    return { venueId: venueRecordId, scores: {} }
   }
   
+  // Extract all numeric fields (these are the archetype scores)
+  const fields = scoreRecord.fields
+  Object.keys(fields).forEach(key => {
+    if (key !== 'Venue' && key !== 'Score ID' && typeof fields[key] === 'number') {
+      scores[key.toLowerCase()] = fields[key]
+    }
+  })
+  
+  console.log(`  ✓ Found ${Object.keys(scores).length} archetype scores`)
   return { venueId: venueRecordId, scores }
 }
 
 async function fetchVenueVibes(venueRecordId: string): Promise<VenueVibe> {
-  const response = await fetch(
-    `${AIRTABLE_API}/${AIRTABLE_VIBES_TABLE}?filterByFormula=FIND('${venueRecordId}',{Venue})`,
-    {
-      headers: {
-        'Authorization': `Bearer ${AIRTABLE_API_KEY}`
-      }
-    }
-  )
+  // Fetch ALL vibes and filter client-side
+  const allVibes = await fetchAllRecords(AIRTABLE_VIBES_TABLE)
   
-  const data = await response.json()
-  const vibes = data.records.map((r: any) => r.fields['Vibe Tag']).filter(Boolean)
+  // Find all vibe records linked to this venue
+  const vibeRecords = allVibes.filter(record => {
+    const venueLinks = record.fields['Venue']
+    return Array.isArray(venueLinks) && venueLinks.includes(venueRecordId)
+  })
+  
+  const vibes = vibeRecords
+    .map(r => r.fields['Vibe Tag'])
+    .filter(Boolean)
+  
+  if (vibes.length === 0) {
+    console.warn(`⚠️  No vibes found for venue ${venueRecordId}`)
+  } else {
+    console.log(`  ✓ Found ${vibes.length} vibe(s)`)
+  }
   
   return { venueId: venueRecordId, vibes }
 }
-
-// ============================================================
-// SYNC TO SUPABASE
-// ============================================================
 
 async function syncVenues() {
   console.log('🚀 Starting Airtable → Supabase sync...\n')
   
   try {
-    // Fetch all active venues from Airtable
     const airtableVenues = await fetchAirtableVenues()
     
     let newCount = 0
@@ -145,11 +148,13 @@ async function syncVenues() {
         const fields = airtableVenue.fields
         const airtableId = airtableVenue.id
         
+        console.log(`\n📍 Processing: ${fields['Venue Name']}`)
+        
         // Fetch related data
         const archetypeData = await fetchArchetypeScores(airtableId)
         const vibeData = await fetchVenueVibes(airtableId)
         
-        // Check if venue already exists in Supabase
+        // Check if venue exists
         const existingVenue = await prisma.venue.findUnique({
           where: { airtableId }
         })
@@ -178,13 +183,13 @@ async function syncVenues() {
         }
         
         if (existingVenue) {
-          // UPDATE existing venue
+          // UPDATE
           await prisma.venue.update({
             where: { id: existingVenue.id },
             data: venueData
           })
           
-          // Delete existing vibes and recreate (simplest approach)
+          // Recreate vibes
           await prisma.venueVibe.deleteMany({
             where: { venueId: existingVenue.id }
           })
@@ -201,12 +206,11 @@ async function syncVenues() {
           updateCount++
           console.log(`✏️  Updated: ${fields['Venue Name']}`)
         } else {
-          // CREATE new venue
+          // CREATE
           const newVenue = await prisma.venue.create({
             data: venueData
           })
           
-          // Add vibes
           if (vibeData.vibes.length > 0) {
             await prisma.venueVibe.createMany({
               data: vibeData.vibes.map(vibe => ({
@@ -226,17 +230,13 @@ async function syncVenues() {
       }
     }
     
-    // Clean up archived venues (remove from Supabase if not in Airtable active list)
+    // Archive venues not in Airtable
     const airtableIds = airtableVenues.map(v => v.id)
     const deletedVenues = await prisma.venue.updateMany({
       where: {
-        airtableId: {
-          notIn: airtableIds
-        }
+        airtableId: { notIn: airtableIds }
       },
-      data: {
-        isActive: false
-      }
+      data: { isActive: false }
     })
     
     // Summary
@@ -256,10 +256,6 @@ async function syncVenues() {
     await prisma.$disconnect()
   }
 }
-
-// ============================================================
-// RUN SYNC
-// ============================================================
 
 syncVenues()
   .then(() => {
