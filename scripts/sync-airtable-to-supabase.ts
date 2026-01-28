@@ -150,6 +150,8 @@ async function syncVenues() {
         const airtableId = airtableVenue.id
         
         console.log(`\n📍 Processing: ${fields['Venue Name']}`)
+        console.log('📸 Images:', fields['Images'])
+        console.log('📸 Image URL:', fields['Image URL'])
         
         // Fetch related data
         const archetypeData = await fetchArchetypeScores(airtableId)
@@ -173,7 +175,12 @@ async function syncVenues() {
           category: 'spaces',
           subcategory: fields['Subcategory'].toLowerCase().replace(' ', ''),
           description: fields['Description'] || null,
-          imageUrl: fields['Image URL'] || null,
+          imageUrl: Array.isArray(fields['Images']) && fields['Images'].length > 0
+    ? fields['Images'][0].url
+    : (fields['Image URL'] || null),
+  images: Array.isArray(fields['Images'])
+    ? fields['Images'].map((img: any) => img.url)
+    : [],
           website: fields['Website'] || null,
           phone: fields['Phone'] || null,
           hours: fields['Hours'] ? JSON.parse(fields['Hours']) : null,
@@ -249,6 +256,7 @@ async function syncVenues() {
     console.log(`🗑️  Archived: ${deletedVenues.count}`)
     console.log(`❌ Errors: ${errorCount}`)
     console.log('='.repeat(50) + '\n')
+    
     
   } catch (error) {
     console.error('❌ Sync failed:', error)
