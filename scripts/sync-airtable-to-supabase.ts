@@ -48,11 +48,11 @@ async function fetchAllRecords(tableName: string): Promise<any[]> {
   let offset: string | undefined = undefined
   
   do {
-    const url = offset 
+    const url: string = offset 
       ? `${AIRTABLE_API}/${tableName}?offset=${offset}`
       : `${AIRTABLE_API}/${tableName}`
       
-    const response = await fetch(url, {
+    const response: Response = await fetch(url, {
       headers: {
         'Authorization': `Bearer ${AIRTABLE_API_KEY}`,
         'Content-Type': 'application/json'
@@ -63,7 +63,7 @@ async function fetchAllRecords(tableName: string): Promise<any[]> {
       throw new Error(`Airtable API error: ${response.statusText}`)
     }
     
-    const data = await response.json()
+    const data: any = await response.json()
     allRecords = allRecords.concat(data.records || [])
     offset = data.offset
   } while (offset)
