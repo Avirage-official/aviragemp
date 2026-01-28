@@ -25,6 +25,7 @@ export type VenueDetail = {
   subcategory: string;
   priceRange: string | null;
   imageUrl: string | null;
+  images: string[];  // ADD THIS LINE
   googleMapsUrl: string | null;
   website: string | null;
   phone: string | null;

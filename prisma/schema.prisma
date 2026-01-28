@@ -669,6 +669,7 @@ model Venue {
   // Details
   description         String?  @db.Text
   imageUrl            String?
+  images              String[]  @default([])  // ADD THIS LINE
   website             String?
   phone               String?
   hours               Json?    // {"mon": "9am-10pm", "tue": "closed"}

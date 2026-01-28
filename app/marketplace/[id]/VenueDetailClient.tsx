@@ -34,6 +34,7 @@ type VenueDetail = {
   subcategory: string;
   priceRange: string | null;
   imageUrl: string | null;
+  images: string[];  // ADD THIS
   googleMapsUrl: string | null;
   website: string | null;
   phone: string | null;
@@ -196,7 +197,8 @@ export default function VenueDetailClient({ venue }: { venue: VenueDetail }) {
   const [imageError, setImageError] = useState(false);
 
   // Prepare images array (currently just one, but ready for multiple)
-  const images = venue.imageUrl && !imageError ? [venue.imageUrl] : [];
+  const images = venue.images.length > 0 ? venue.images : 
+               (venue.imageUrl && !imageError ? [venue.imageUrl] : []);
 
   // Check if user's archetype matches venue's dominant archetype
   const isSameArchetype =

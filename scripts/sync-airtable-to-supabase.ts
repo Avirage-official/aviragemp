@@ -25,6 +25,7 @@ interface AirtableVenue {
     'Google Maps URL'?: string
     'Description'?: string
     'Image URL'?: string
+    'Images'?: Array<{ url: string; filename: string }>
     'Website'?: string
     'Phone'?: string
     'Hours'?: string
