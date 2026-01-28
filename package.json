@@ -55,5 +55,11 @@
     "tailwindcss": "^3.4.19",
     "ts-node": "^10.9.2",
     "typescript": "^5"
-  }
+  },
+  "scripts": {
+  "dev": "next dev",
+  "build": "next build",
+  "start": "next start",
+  "sync-venues": "tsx scripts/sync-airtable-to-supabase.ts"
+}
 }
