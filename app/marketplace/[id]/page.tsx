@@ -163,6 +163,7 @@ export default async function VenueDetailPage({ params }: PageProps) {
     subcategory: venue.subcategory,
     priceRange: venue.priceRange,
     imageUrl: venue.imageUrl,
+    images: venue.images, 
     googleMapsUrl: venue.googleMapsUrl,
     website: venue.website,
     phone: venue.phone,
