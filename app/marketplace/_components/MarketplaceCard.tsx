@@ -1,15 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { Heart, ShareNetwork, Sparkle } from "@phosphor-icons/react";
+import { Heart, ShareNetwork, Sparkle, MapPin, Calendar } from "@phosphor-icons/react";
 import type { Venue } from "../page";
 
 export function MarketplaceCard({ venue }: { venue: Venue }) {
   const [isHovered, setIsHovered] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
+  const [checkinStatus, setCheckinStatus] = useState<string | null>(null);
+  const [isCheckingIn, setIsCheckingIn] = useState(false);
 
   const handleSave = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -29,6 +31,71 @@ export function MarketplaceCard({ venue }: { venue: Venue }) {
     }
   };
 
+  const handleCheckin = async (e: React.MouseEvent, status: "here" | "going") => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (isCheckingIn) return;
+    
+    setIsCheckingIn(true);
+    
+    try {
+      if (checkinStatus === status) {
+        // Remove check-in
+        const response = await fetch(`/api/venue-checkin?venueId=${venue.id}`, {
+          method: "DELETE",
+        });
+        
+        if (!response.ok) {
+          throw new Error('Failed to remove check-in');
+        }
+        
+        setCheckinStatus(null);
+      } else {
+        // Create or update check-in
+        const response = await fetch("/api/venue-checkin", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            venueId: venue.id,
+            status,
+          }),
+        });
+        
+        if (!response.ok) {
+          throw new Error('Failed to update check-in');
+        }
+        
+        setCheckinStatus(status);
+      }
+    } catch (error) {
+      console.error("Error updating check-in:", error);
+      // Revert optimistic update on error
+      // In a real app, you might show a toast notification here
+    } finally {
+      setIsCheckingIn(false);
+    }
+  };
+
+  // Fetch current check-in status on mount
+  useEffect(() => {
+    const fetchCheckinStatus = async () => {
+      try {
+        const response = await fetch(`/api/venue-checkin?venueId=${venue.id}`);
+        if (response.ok) {
+          const data = await response.json();
+          if (data.checkin) {
+            setCheckinStatus(data.checkin.status);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching check-in status:", error);
+      }
+    };
+    
+    fetchCheckinStatus();
+  }, [venue.id]);
+
   return (
     <Link href={`/marketplace/${venue.id}`}>
       <motion.article
@@ -45,8 +112,8 @@ export function MarketplaceCard({ venue }: { venue: Venue }) {
             : "0 4px 15px rgba(0,0,0,0.08)",
         }}
       >
-        {/* Image Hero - Better Aspect Ratio */}
-        <div className="relative aspect-[3/2] bg-slate-100 overflow-hidden">
+        {/* Image Hero - Smaller Aspect Ratio for busier layout */}
+        <div className="relative aspect-[4/3] bg-slate-100 overflow-hidden">
           {venue.imageUrl ? (
             <Image
               src={venue.imageUrl}
@@ -104,17 +171,49 @@ export function MarketplaceCard({ venue }: { venue: Venue }) {
           </motion.div>
         </div>
 
-        {/* Content - Enhanced Padding and Typography */}
-        <div className="p-5 backdrop-blur-md">
-          <h3 className="text-base md:text-lg font-semibold text-slate-900 mb-2.5 line-clamp-2 leading-tight tracking-tight">
+        {/* Content - Compact padding for smaller cards */}
+        <div className="p-4 backdrop-blur-md">
+          <h3 className="text-sm md:text-base font-semibold text-slate-900 mb-1.5 line-clamp-2 leading-tight tracking-tight">
             {venue.name}
           </h3>
           
-          <p className="text-xs md:text-sm text-slate-600 mb-4 line-clamp-1 font-medium">
+          <p className="text-xs text-slate-600 mb-3 line-clamp-1 font-medium">
             {venue.neighborhood
               ? `${venue.neighborhood}, ${venue.city}`
               : venue.city}
           </p>
+
+          {/* Check-in buttons */}
+          <div className="flex gap-2 mb-3">
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={(e) => handleCheckin(e, "here")}
+              disabled={isCheckingIn}
+              className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all ${
+                checkinStatus === "here"
+                  ? "bg-blue-500 text-white border-blue-600"
+                  : "bg-white border border-slate-200 text-slate-700 hover:border-blue-300 hover:bg-blue-50"
+              }`}
+            >
+              <MapPin className="w-3.5 h-3.5" weight={checkinStatus === "here" ? "fill" : "regular"} />
+              I'm here
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={(e) => handleCheckin(e, "going")}
+              disabled={isCheckingIn}
+              className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all ${
+                checkinStatus === "going"
+                  ? "bg-purple-500 text-white border-purple-600"
+                  : "bg-white border border-slate-200 text-slate-700 hover:border-purple-300 hover:bg-purple-50"
+              }`}
+            >
+              <Calendar className="w-3.5 h-3.5" weight={checkinStatus === "going" ? "fill" : "regular"} />
+              I'm going
+            </motion.button>
+          </div>
 
           {/* Meta row - Enhanced Vibe Chips */}
           <div className="flex items-center gap-2 flex-wrap">
@@ -125,7 +224,7 @@ export function MarketplaceCard({ venue }: { venue: Venue }) {
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: idx * 0.05 }}
-                className="px-3 py-1.5 rounded-full bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 text-xs font-medium text-blue-700 hover:border-blue-300 transition-all"
+                className="px-2.5 py-1 rounded-full bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 text-xs font-medium text-blue-700 hover:border-blue-300 transition-all"
               >
                 {vibe.replace(/_/g, " ")}
               </motion.span>
@@ -133,7 +232,7 @@ export function MarketplaceCard({ venue }: { venue: Venue }) {
             
             {/* Price range - Enhanced Design */}
             {venue.priceRange && (
-              <span className="px-3 py-1.5 rounded-full bg-slate-100 border border-slate-200 text-xs font-medium text-slate-700">
+              <span className="px-2.5 py-1 rounded-full bg-slate-100 border border-slate-200 text-xs font-medium text-slate-700">
                 {venue.priceRange}
               </span>
             )}

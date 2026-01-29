@@ -36,6 +36,7 @@ model User {
 
   currentMood   String?
   moodUpdatedAt DateTime?
+  currentVenue  String? // Current venue ID for location sharing
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -55,6 +56,7 @@ model User {
   notifications   Notification[]
   
   astrology AstrologyProfile?
+  venueCheckins VenueCheckin[]
 
   @@index([type])
   @@index([city])
@@ -690,6 +692,7 @@ model Venue {
   country             Country  @relation(fields: [countryCode], references: [code])
   vibes               VenueVibe[]
   chats               VenueChat[]
+  checkins            VenueCheckin[]
   
   @@index([countryCode])
   @@index([subcategory])
@@ -754,4 +757,29 @@ model UserBan {
   bannedUntil DateTime? // NULL = permanent ban
   
   @@index([userId])
+}
+
+////////////////////////
+// VENUE CHECK-INS
+////////////////////////
+
+model VenueCheckin {
+  id        String   @id @default(cuid())
+  userId    String
+  venueId   String
+  
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  venue     Venue    @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  
+  status    String   // "here" or "going"
+  expiresAt DateTime // Auto-expire check-ins after a certain time
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@unique([userId, venueId])
+  @@index([userId])
+  @@index([venueId])
+  @@index([status])
+  @@index([expiresAt])
 }
