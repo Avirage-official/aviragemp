@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Sparkles } from "@phosphor-icons/react";
+import { Sparkle } from "@phosphor-icons/react";
 import { useState, useEffect } from "react";
 
 interface ArchetypeSpotlightProps {
@@ -90,7 +90,7 @@ export function ArchetypeSpotlight({ userArchetype }: ArchetypeSpotlightProps) {
           transition={{ delay: 0.2 }}
           className="flex items-center gap-3 mb-4"
         >
-          <Sparkles className="w-8 h-8 text-yellow-300" weight="fill" />
+          <Sparkle className="w-8 h-8 text-yellow-300" weight="fill" />
           <span className="text-sm font-medium text-white/90 uppercase tracking-wider">
             Your Archetype
           </span>

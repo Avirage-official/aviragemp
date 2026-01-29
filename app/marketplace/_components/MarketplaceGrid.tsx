@@ -4,6 +4,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { MarketplaceCard } from "./MarketplaceCard";
 import { SkeletonCard } from "./SkeletonCard";
+import { FunLoadingState } from "./FunLoadingState";
 import type { Venue } from "../page";
 
 interface MarketplaceGridProps {
@@ -24,13 +25,7 @@ export function MarketplaceGrid({ venues, isLoading = false }: MarketplaceGridPr
   };
 
   if (isLoading) {
-    return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-        {Array.from({ length: 8 }).map((_, i) => (
-          <SkeletonCard key={i} />
-        ))}
-      </div>
-    );
+    return <FunLoadingState />;
   }
 
   if (venues.length === 0) {
@@ -68,7 +63,8 @@ export function MarketplaceGrid({ venues, isLoading = false }: MarketplaceGridPr
 
   return (
     <div className="space-y-10">
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+      {/* Smaller grid spacing for busier, more discoverable layout */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
         {visibleVenues.map((venue) => (
           <MarketplaceCard key={venue.id} venue={venue} />
         ))}

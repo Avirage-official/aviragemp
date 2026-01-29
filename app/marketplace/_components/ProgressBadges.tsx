@@ -1,10 +1,10 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Trophy, Star, Sparkles, Medal } from "@phosphor-icons/react";
+import { Trophy, Star, Sparkle, Medal } from "@phosphor-icons/react";
 
 const BADGES = [
-  { id: "explorer", label: "Explorer", icon: Sparkles, progress: 75, color: "from-blue-500 to-cyan-500" },
+  { id: "explorer", label: "Explorer", icon: Sparkle, progress: 75, color: "from-blue-500 to-cyan-500" },
   { id: "socialite", label: "Socialite", icon: Star, progress: 50, color: "from-purple-500 to-pink-500" },
   { id: "adventurer", label: "Adventurer", icon: Trophy, progress: 30, color: "from-orange-500 to-red-500" },
 ];

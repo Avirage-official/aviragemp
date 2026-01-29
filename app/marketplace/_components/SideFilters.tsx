@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Funnel, CaretRight, SlidersHorizontal, Sparkles, MapPin } from "@phosphor-icons/react";
+import { X, Funnel, CaretRight, SlidersHorizontal, Sparkle, MapPin } from "@phosphor-icons/react";
 
 interface SideFiltersProps {
   selectedVibes: string[];
@@ -162,7 +162,7 @@ export function SideFilters({
               whileTap={{ scale: 0.98 }}
               className="w-full px-6 py-4 rounded-xl bg-gradient-to-r from-purple-500 via-pink-500 to-orange-500 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center gap-2"
             >
-              <Sparkles className="w-5 h-5" weight="fill" />
+              <Sparkle className="w-5 h-5" weight="fill" />
               <span>Surprise Me!</span>
             </motion.button>
           </div>
@@ -365,7 +365,7 @@ export function SideFilters({
                       whileTap={{ scale: 0.98 }}
                       className="w-full px-6 py-4 rounded-xl bg-gradient-to-r from-purple-500 via-pink-500 to-orange-500 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center gap-2"
                     >
-                      <Sparkles className="w-5 h-5" weight="fill" />
+                      <Sparkle className="w-5 h-5" weight="fill" />
                       <span>Surprise Me!</span>
                     </motion.button>
                   </div>

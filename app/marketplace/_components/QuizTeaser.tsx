@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Question, ArrowRight, Sparkles } from "@phosphor-icons/react";
+import { Question, ArrowRight, Sparkle } from "@phosphor-icons/react";
 
 export function QuizTeaser() {
   return (
@@ -48,7 +48,7 @@ export function QuizTeaser() {
               <h3 className="text-white font-bold text-sm">Discover Your Archetype</h3>
               <p className="text-white/90 text-xs">Take the 5-minute quiz</p>
             </div>
-            <Sparkles className="w-5 h-5 text-yellow-300" weight="fill" />
+            <Sparkle className="w-5 h-5 text-yellow-300" weight="fill" />
           </div>
 
           <div className="flex items-center justify-between">

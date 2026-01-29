@@ -16,6 +16,10 @@ import { MoodTracker } from "./_components/MoodTracker";
 import { ProgressBadges } from "./_components/ProgressBadges";
 import { NotificationsBell } from "./_components/NotificationsBell";
 import { QuizTeaser } from "./_components/QuizTeaser";
+import { FunLoadingState } from "./_components/FunLoadingState";
+import { TrendingSection } from "./_components/TrendingSection";
+import { SeasonalSection } from "./_components/SeasonalSection";
+import { CrossPromotionLinks } from "./_components/CrossPromotionLinks";
 
 /* ============================================================================
    TYPES & CONSTANTS
@@ -287,6 +291,16 @@ export default function MarketplaceClient({
           <>
             <MarketplaceHero slides={heroVenues} userArchetype={userArchetype} />
             <div className="px-6 py-8">
+              {/* Trending Section */}
+              <TrendingSection venues={initialVenues.slice(0, 6)} />
+
+              {/* Seasonal Section */}
+              <SeasonalSection venues={initialVenues.slice(6, 12)} />
+
+              {/* Cross-Promotion Links */}
+              <CrossPromotionLinks />
+
+              {/* Editorial Lanes by Category */}
               {editorialLanes.map((lane) => (
                 <EditorialLane
                   key={lane.title}
