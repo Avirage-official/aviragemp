@@ -42,7 +42,7 @@ export function MarketplaceHero({ slides }: MarketplaceHeroProps) {
   };
 
   return (
-    <section className="relative w-full h-[70vh] min-h-[520px] max-h-[800px] overflow-hidden bg-[#0B0D10]">
+    <section className="relative w-full h-[70vh] min-h-[520px] max-h-[800px] overflow-hidden bg-gradient-to-br from-blue-50 via-purple-50 to-cyan-50">
       <AnimatePresence mode="wait">
         <motion.div
           key={currentIndex}
@@ -73,13 +73,13 @@ export function MarketplaceHero({ slides }: MarketplaceHeroProps) {
               />
             </motion.div>
           ) : (
-            <div className="absolute inset-0 bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-900" />
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-100 via-purple-100 to-cyan-100" />
           )}
 
           {/* Enhanced Gradient Overlays for Premium Depth */}
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0B0D10] via-[#0B0D10]/70 to-transparent" />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#0B0D10]/90 via-[#0B0D10]/30 to-[#0B0D10]/60" />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-white via-white/80 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-r from-white/95 via-white/40 to-white/70" />
+          <div className="absolute inset-0 bg-gradient-to-b from-blue-500/5 via-transparent to-transparent" />
 
           {/* Ambient Color Fields */}
           <motion.div
@@ -88,9 +88,9 @@ export function MarketplaceHero({ slides }: MarketplaceHeroProps) {
             transition={{ duration: 1.5, ease: "easeOut" }}
             className="absolute inset-0 pointer-events-none"
           >
-            <div className="absolute -top-24 -left-24 h-[420px] w-[420px] rounded-full bg-[#4F8CFF]/15 blur-3xl" />
-            <div className="absolute top-24 right-[-140px] h-[520px] w-[520px] rounded-full bg-[#C7B9FF]/12 blur-3xl" />
-            <div className="absolute bottom-[-220px] left-1/3 h-[520px] w-[520px] rounded-full bg-[#7CF5C8]/10 blur-3xl" />
+            <div className="absolute -top-24 -left-24 h-[420px] w-[420px] rounded-full bg-blue-300/20 blur-3xl" />
+            <div className="absolute top-24 right-[-140px] h-[520px] w-[520px] rounded-full bg-purple-300/15 blur-3xl" />
+            <div className="absolute bottom-[-220px] left-1/3 h-[520px] w-[520px] rounded-full bg-cyan-300/15 blur-3xl" />
           </motion.div>
         </motion.div>
       </AnimatePresence>
@@ -110,20 +110,20 @@ export function MarketplaceHero({ slides }: MarketplaceHeroProps) {
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.4, delay: 0.3 }}
-              className="inline-flex items-center gap-2 mb-5 px-4 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/[0.06] text-sm text-white"
+              className="inline-flex items-center gap-2 mb-5 px-4 py-2 rounded-full bg-white/90 backdrop-blur-md border border-blue-200/50 text-sm text-blue-700 shadow-sm"
             >
-              <Lightning weight="fill" className="text-[#7CF5C8]" />
-              <span>Resonating right now</span>
+              <Lightning weight="fill" className="text-cyan-500" />
+              <span className="font-medium">Resonating right now</span>
             </motion.div>
 
             {/* Title - Enhanced Typography */}
-            <h1 className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-white leading-[1.1] mb-4 tracking-tight">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-slate-900 leading-[1.1] mb-4 tracking-tight">
               {currentSlide.venue.name}
             </h1>
 
             {/* Location - Enhanced Styling */}
-            <div className="flex items-center gap-2 text-zinc-300 mb-6 text-sm md:text-base">
-              <MapPin weight="fill" className="w-5 h-5 text-[#7CF5C8]" />
+            <div className="flex items-center gap-2 text-slate-700 mb-6 text-sm md:text-base">
+              <MapPin weight="fill" className="w-5 h-5 text-cyan-500" />
               <span className="font-medium">
                 {currentSlide.venue.neighborhood
                   ? `${currentSlide.venue.neighborhood}, ${currentSlide.venue.city}`
@@ -133,7 +133,7 @@ export function MarketplaceHero({ slides }: MarketplaceHeroProps) {
 
             {/* Description - Improved Readability */}
             {currentSlide.venue.description && (
-              <p className="text-zinc-200 text-base md:text-lg leading-[1.7] max-w-[65ch] mb-8 font-light">
+              <p className="text-slate-700 text-base md:text-lg leading-[1.7] max-w-[65ch] mb-8">
                 {currentSlide.venue.description}
               </p>
             )}
@@ -143,7 +143,7 @@ export function MarketplaceHero({ slides }: MarketplaceHeroProps) {
               <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                 <Link
                   href={`/marketplace/${currentSlide.venue.id}`}
-                  className="inline-flex items-center justify-center px-9 h-13 md:h-14 rounded-full bg-gradient-to-r from-[#4F8CFF] to-[#C7B9FF] text-[#041021] text-sm md:text-base font-semibold hover:shadow-[0_10px_40px_rgba(79,140,255,0.5)] transition-all duration-300 shadow-[0_6px_30px_rgba(79,140,255,0.35)]"
+                  className="inline-flex items-center justify-center px-9 h-13 md:h-14 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 text-white text-sm md:text-base font-semibold hover:shadow-xl hover:shadow-blue-500/30 transition-all duration-300 shadow-lg shadow-blue-500/25"
                   aria-label={`Explore ${currentSlide.venue.name}`}
                 >
                   Explore this space
@@ -151,13 +151,13 @@ export function MarketplaceHero({ slides }: MarketplaceHeroProps) {
               </motion.div>
 
               {/* Meta Pills - Enhanced Design */}
-              <div className="flex items-center gap-2 text-xs md:text-sm text-zinc-400">
+              <div className="flex items-center gap-2 text-xs md:text-sm">
                 {currentSlide.match > 0 && (
                   <motion.span
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ delay: 0.5 }}
-                    className="px-4 py-2 rounded-full bg-gradient-to-r from-[#7CF5C8]/15 to-[#7CF5C8]/5 border border-[#7CF5C8]/20 backdrop-blur-md text-[#7CF5C8] font-medium"
+                    className="px-4 py-2 rounded-full bg-gradient-to-r from-cyan-50 to-cyan-100 border border-cyan-200 backdrop-blur-md text-cyan-700 font-medium shadow-sm"
                   >
                     {currentSlide.match}% match
                   </motion.span>
@@ -167,7 +167,7 @@ export function MarketplaceHero({ slides }: MarketplaceHeroProps) {
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ delay: 0.6 }}
-                    className="px-4 py-2 rounded-full bg-white/[0.08] border border-white/[0.08] backdrop-blur-md capitalize text-white/90 font-medium"
+                    className="px-4 py-2 rounded-full bg-white/90 border border-slate-200 backdrop-blur-md capitalize text-slate-700 font-medium shadow-sm"
                   >
                     {currentSlide.venue.subcategory}
                   </motion.span>
@@ -186,22 +186,22 @@ export function MarketplaceHero({ slides }: MarketplaceHeroProps) {
             <motion.button
               onClick={goToPrevious}
               aria-label="Previous slide"
-              whileHover={{ scale: 1.1, backgroundColor: "rgba(0,0,0,0.7)" }}
+              whileHover={{ scale: 1.1, backgroundColor: "rgba(255,255,255,0.95)" }}
               whileTap={{ scale: 0.95 }}
-              className="pointer-events-auto w-14 h-14 rounded-full bg-black/50 backdrop-blur-xl border border-white/15 flex items-center justify-center transition-all duration-200 shadow-lg hover:shadow-2xl"
+              className="pointer-events-auto w-14 h-14 rounded-full bg-white/80 backdrop-blur-xl border border-slate-200 flex items-center justify-center transition-all duration-200 shadow-lg hover:shadow-xl"
               type="button"
             >
-              <CaretLeft className="w-6 h-6 text-white" weight="bold" />
+              <CaretLeft className="w-6 h-6 text-slate-700" weight="bold" />
             </motion.button>
             <motion.button
               onClick={goToNext}
               aria-label="Next slide"
-              whileHover={{ scale: 1.1, backgroundColor: "rgba(0,0,0,0.7)" }}
+              whileHover={{ scale: 1.1, backgroundColor: "rgba(255,255,255,0.95)" }}
               whileTap={{ scale: 0.95 }}
-              className="pointer-events-auto w-14 h-14 rounded-full bg-black/50 backdrop-blur-xl border border-white/15 flex items-center justify-center transition-all duration-200 shadow-lg hover:shadow-2xl"
+              className="pointer-events-auto w-14 h-14 rounded-full bg-white/80 backdrop-blur-xl border border-slate-200 flex items-center justify-center transition-all duration-200 shadow-lg hover:shadow-xl"
               type="button"
             >
-              <CaretRight className="w-6 h-6 text-white" weight="bold" />
+              <CaretRight className="w-6 h-6 text-slate-700" weight="bold" />
             </motion.button>
           </div>
 
@@ -217,8 +217,8 @@ export function MarketplaceHero({ slides }: MarketplaceHeroProps) {
                 aria-label={`Go to slide ${index + 1}`}
                 className={`h-1.5 rounded-full transition-all ${
                   index === currentIndex
-                    ? "w-8 bg-white"
-                    : "w-1.5 bg-white/30 hover:bg-white/50"
+                    ? "w-8 bg-blue-500"
+                    : "w-1.5 bg-slate-400 hover:bg-slate-500"
                 }`}
                 type="button"
               />

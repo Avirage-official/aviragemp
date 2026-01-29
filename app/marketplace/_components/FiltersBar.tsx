@@ -57,15 +57,15 @@ export function FiltersBar({
   };
 
   return (
-    <div className="sticky top-0 z-40 bg-[#0B0D10]/90 backdrop-blur-2xl border-b border-white/[0.08]">
+    <div className="sticky top-0 z-40 bg-white/95 backdrop-blur-xl border-b border-slate-200/80">
       <div className="max-w-[1800px] mx-auto px-6 py-5">
         {/* Top row: Title + Search + Actions */}
         <div className="flex items-center justify-between gap-4 mb-5">
           <div className="hidden md:block">
-            <h1 className="text-xl md:text-2xl font-semibold text-white tracking-tight">
+            <h1 className="text-xl md:text-2xl font-semibold text-slate-900 tracking-tight">
               Discover Spaces
             </h1>
-            <p className="text-xs text-zinc-400 mt-1 font-medium">
+            <p className="text-xs text-slate-600 mt-1 font-medium">
               Curated discovery without noise
             </p>
           </div>
@@ -73,7 +73,7 @@ export function FiltersBar({
           {/* Search Input - Enhanced Design */}
           <div className="relative flex-1 md:flex-none md:w-[460px]">
             <MagnifyingGlass
-              className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500"
+              className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400"
               weight="bold"
             />
             <input
@@ -82,7 +82,7 @@ export function FiltersBar({
               value={localSearch}
               onChange={(e) => setLocalSearch(e.target.value)}
               aria-label="Search venues"
-              className="w-full h-12 pl-12 pr-4 rounded-xl bg-[#111111] border border-white/[0.08] text-sm text-white placeholder:text-zinc-500 focus:border-[#4F8CFF]/50 focus:ring-2 focus:ring-[#4F8CFF]/20 outline-none transition-all duration-200"
+              className="w-full h-12 pl-12 pr-4 rounded-xl bg-slate-50 border border-slate-200 text-sm text-slate-900 placeholder:text-slate-500 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none transition-all duration-200"
             />
           </div>
 
@@ -96,7 +96,7 @@ export function FiltersBar({
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 aria-label="Reset all filters"
-                className="h-12 px-5 rounded-xl text-sm text-zinc-400 hover:text-white hover:bg-white/5 transition-all duration-200 font-medium"
+                className="h-12 px-5 rounded-xl text-sm text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-all duration-200 font-medium"
                 type="button"
               >
                 Reset All
@@ -110,10 +110,10 @@ export function FiltersBar({
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             aria-label="Open filter menu"
-            className="md:hidden w-12 h-12 rounded-xl bg-gradient-to-br from-white/[0.08] to-white/[0.04] border border-white/10 flex items-center justify-center shadow-lg"
+            className="md:hidden w-12 h-12 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center shadow-sm"
             type="button"
           >
-            <Funnel className="w-5 h-5 text-white" weight="bold" />
+            <Funnel className="w-5 h-5 text-slate-700" weight="bold" />
           </motion.button>
         </div>
 
@@ -127,8 +127,8 @@ export function FiltersBar({
               whileTap={{ scale: 0.97 }}
               className={`px-6 py-3 rounded-xl text-sm font-semibold whitespace-nowrap transition-all duration-300 ${
                 selectedCategory === cat.id
-                  ? "bg-gradient-to-r from-[#4F8CFF] to-[#C7B9FF] text-[#041021] shadow-[0_4px_20px_rgba(79,140,255,0.4)]"
-                  : "bg-white/[0.04] text-zinc-400 hover:text-white hover:bg-white/[0.08] border border-white/[0.06] hover:border-white/10"
+                  ? "bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg shadow-blue-500/25"
+                  : "bg-slate-50 text-slate-600 hover:text-slate-900 hover:bg-slate-100 border border-slate-200 hover:border-slate-300"
               }`}
               type="button"
               aria-pressed={selectedCategory === cat.id}
@@ -145,7 +145,7 @@ export function FiltersBar({
             animate={{ opacity: 1, y: 0 }}
             className="flex items-center gap-2 mt-5 flex-wrap"
           >
-            <span className="text-xs text-zinc-500 font-semibold uppercase tracking-wider">Active filters:</span>
+            <span className="text-xs text-slate-500 font-semibold uppercase tracking-wider">Active filters:</span>
             {selectedVibes.map((vibe, idx) => (
               <motion.button
                 key={vibe}
@@ -155,7 +155,7 @@ export function FiltersBar({
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => removeVibe(vibe)}
-                className="group flex items-center gap-2.5 px-3.5 py-2 rounded-full bg-gradient-to-r from-[#4F8CFF]/15 to-[#C7B9FF]/15 border border-[#4F8CFF]/25 text-xs font-medium text-[#C7B9FF] hover:border-[#4F8CFF]/50 transition-all duration-200 shadow-sm"
+                className="group flex items-center gap-2.5 px-3.5 py-2 rounded-full bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 text-xs font-medium text-blue-700 hover:border-blue-300 transition-all duration-200 shadow-sm"
                 type="button"
                 aria-label={`Remove ${vibe} filter`}
               >

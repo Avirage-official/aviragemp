@@ -38,38 +38,38 @@ export function MarketplaceCard({ venue }: { venue: Venue }) {
         whileHover={{ y: -12 }}
         onHoverStart={() => setIsHovered(true)}
         onHoverEnd={() => setIsHovered(false)}
-        className="group relative rounded-2xl overflow-hidden bg-[#0F1114] border border-white/[0.08] hover:border-white/15 transition-all duration-500"
+        className="group relative rounded-2xl overflow-hidden bg-white border border-slate-200 hover:border-slate-300 transition-all duration-500"
         style={{
           boxShadow: isHovered
-            ? "0 24px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.05)"
-            : "0 8px 30px rgba(0,0,0,0.4)",
+            ? "0 20px 60px rgba(0,0,0,0.12), 0 0 0 1px rgba(59,130,246,0.1)"
+            : "0 4px 15px rgba(0,0,0,0.08)",
         }}
       >
         {/* Image Hero - Better Aspect Ratio */}
-        <div className="relative aspect-[3/2] bg-zinc-900 overflow-hidden">
+        <div className="relative aspect-[3/2] bg-slate-100 overflow-hidden">
           {venue.imageUrl ? (
             <Image
               src={venue.imageUrl}
               alt={venue.name}
               fill
               sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
-              className="object-cover transition-all duration-700 ease-out group-hover:scale-110 group-hover:brightness-110"
+              className="object-cover transition-all duration-700 ease-out group-hover:scale-110 group-hover:brightness-105"
               loading="lazy"
             />
           ) : (
-            <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-900">
-              <Sparkle className="w-14 h-14 text-zinc-700 opacity-50" weight="duotone" />
+            <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-slate-100 via-slate-50 to-slate-100">
+              <Sparkle className="w-14 h-14 text-slate-300 opacity-50" weight="duotone" />
             </div>
           )}
           
           {/* Enhanced Gradient overlay with premium glow */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-black/0 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
           <motion.div
             initial={false}
             animate={{
               opacity: isHovered ? 1 : 0,
             }}
-            className="absolute inset-0 bg-gradient-to-br from-[#4F8CFF]/10 via-transparent to-[#C7B9FF]/10"
+            className="absolute inset-0 bg-gradient-to-br from-blue-500/10 via-transparent to-purple-500/10"
           />
           
           {/* Quick actions - Enhanced Design */}
@@ -84,12 +84,12 @@ export function MarketplaceCard({ venue }: { venue: Venue }) {
               whileTap={{ scale: 0.95 }}
               onClick={handleSave}
               aria-label={isSaved ? "Unsave venue" : "Save venue"}
-              className="w-10 h-10 rounded-full bg-black/60 backdrop-blur-xl border border-white/15 flex items-center justify-center hover:bg-black/80 transition-all shadow-lg"
+              className="w-10 h-10 rounded-full bg-white/90 backdrop-blur-xl border border-slate-200 flex items-center justify-center hover:bg-white transition-all shadow-lg"
             >
               <Heart
                 className="w-4.5 h-4.5"
                 weight={isSaved ? "fill" : "regular"}
-                color={isSaved ? "#ef4444" : "white"}
+                color={isSaved ? "#ef4444" : "#475569"}
               />
             </motion.button>
             <motion.button
@@ -97,20 +97,20 @@ export function MarketplaceCard({ venue }: { venue: Venue }) {
               whileTap={{ scale: 0.95 }}
               onClick={handleShare}
               aria-label="Share venue"
-              className="w-10 h-10 rounded-full bg-black/60 backdrop-blur-xl border border-white/15 flex items-center justify-center hover:bg-black/80 transition-all shadow-lg"
+              className="w-10 h-10 rounded-full bg-white/90 backdrop-blur-xl border border-slate-200 flex items-center justify-center hover:bg-white transition-all shadow-lg"
             >
-              <ShareNetwork className="w-4.5 h-4.5 text-white" weight="bold" />
+              <ShareNetwork className="w-4.5 h-4.5 text-slate-700" weight="bold" />
             </motion.button>
           </motion.div>
         </div>
 
         {/* Content - Enhanced Padding and Typography */}
         <div className="p-5 backdrop-blur-md">
-          <h3 className="text-base md:text-lg font-semibold text-white mb-2.5 line-clamp-2 leading-tight tracking-tight">
+          <h3 className="text-base md:text-lg font-semibold text-slate-900 mb-2.5 line-clamp-2 leading-tight tracking-tight">
             {venue.name}
           </h3>
           
-          <p className="text-xs md:text-sm text-zinc-400 mb-4 line-clamp-1 font-medium">
+          <p className="text-xs md:text-sm text-slate-600 mb-4 line-clamp-1 font-medium">
             {venue.neighborhood
               ? `${venue.neighborhood}, ${venue.city}`
               : venue.city}
@@ -125,7 +125,7 @@ export function MarketplaceCard({ venue }: { venue: Venue }) {
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: idx * 0.05 }}
-                className="px-3 py-1.5 rounded-full bg-gradient-to-r from-[#4F8CFF]/12 to-[#C7B9FF]/12 border border-[#4F8CFF]/20 text-xs font-medium text-[#C7B9FF] hover:border-[#4F8CFF]/40 transition-all"
+                className="px-3 py-1.5 rounded-full bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 text-xs font-medium text-blue-700 hover:border-blue-300 transition-all"
               >
                 {vibe.replace(/_/g, " ")}
               </motion.span>
@@ -133,7 +133,7 @@ export function MarketplaceCard({ venue }: { venue: Venue }) {
             
             {/* Price range - Enhanced Design */}
             {venue.priceRange && (
-              <span className="px-3 py-1.5 rounded-full bg-white/[0.06] border border-white/[0.08] text-xs font-medium text-zinc-300">
+              <span className="px-3 py-1.5 rounded-full bg-slate-100 border border-slate-200 text-xs font-medium text-slate-700">
                 {venue.priceRange}
               </span>
             )}
@@ -148,7 +148,7 @@ export function MarketplaceCard({ venue }: { venue: Venue }) {
           }}
           className="absolute inset-0 rounded-2xl pointer-events-none"
           style={{
-            boxShadow: "inset 0 0 0 1px rgba(79, 140, 255, 0.2), 0 0 40px rgba(79, 140, 255, 0.1)",
+            boxShadow: "inset 0 0 0 1px rgba(59, 130, 246, 0.15), 0 0 30px rgba(59, 130, 246, 0.08)",
           }}
         />
       </motion.article>

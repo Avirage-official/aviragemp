@@ -199,7 +199,7 @@ export default function MarketplaceClient({
   };
 
   return (
-    <div className="min-h-screen bg-[#0B0D10]">
+    <div className="min-h-screen bg-white">
       {/* Sticky Filters Bar */}
       <FiltersBar
         searchValue={searchQuery}
@@ -232,9 +232,9 @@ export default function MarketplaceClient({
       {layoutMode === "grid" && (
         <div className="max-w-[1800px] mx-auto px-6 py-10">
           <div className="flex items-center justify-between mb-8">
-            <h2 className="text-2xl font-semibold text-white">
+            <h2 className="text-2xl font-semibold text-slate-900">
               Results
-              <span className="ml-3 text-zinc-500 text-lg">
+              <span className="ml-3 text-slate-500 text-lg">
                 ({filteredVenues.length})
               </span>
             </h2>
@@ -246,20 +246,20 @@ export default function MarketplaceClient({
 
       {/* Mobile Vibe Filter Bottom Sheet - Enhanced Design */}
       {showMobileFilter && (
-        <div className="md:hidden fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-end">
+        <div className="md:hidden fixed inset-0 bg-black/20 backdrop-blur-sm z-50 flex items-end">
           <motion.div
             initial={{ y: "100%" }}
             animate={{ y: 0 }}
             exit={{ y: "100%" }}
             transition={{ type: "spring", damping: 30, stiffness: 300 }}
-            className="w-full bg-gradient-to-b from-[#0F1114] to-[#0B0D10] rounded-t-3xl p-6 max-h-[85vh] overflow-y-auto border-t-2 border-white/[0.08] shadow-2xl"
+            className="w-full bg-white rounded-t-3xl p-6 max-h-[85vh] overflow-y-auto border-t border-slate-200 shadow-2xl"
           >
             <div className="flex items-center justify-between mb-7">
               <div>
-                <h3 className="text-xl font-semibold text-white tracking-tight">
+                <h3 className="text-xl font-semibold text-slate-900 tracking-tight">
                   Filter by Vibe
                 </h3>
-                <p className="text-xs text-zinc-500 mt-1 font-medium">
+                <p className="text-xs text-slate-500 mt-1 font-medium">
                   Select one or more vibes to refine results
                 </p>
               </div>
@@ -267,11 +267,11 @@ export default function MarketplaceClient({
                 onClick={() => setShowMobileFilter(false)}
                 whileHover={{ scale: 1.1, rotate: 90 }}
                 whileTap={{ scale: 0.9 }}
-                className="w-10 h-10 rounded-full bg-zinc-800/80 backdrop-blur-sm flex items-center justify-center border border-white/10"
+                className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center border border-slate-200"
                 type="button"
                 aria-label="Close filter menu"
               >
-                <X className="w-5 h-5 text-white" weight="bold" />
+                <X className="w-5 h-5 text-slate-700" weight="bold" />
               </motion.button>
             </div>
 
@@ -285,8 +285,8 @@ export default function MarketplaceClient({
                   onClick={() => toggleVibe(vibe.id)}
                   className={`w-full text-left px-5 py-3.5 rounded-xl text-sm font-medium transition-all duration-200 ${
                     selectedVibes.includes(vibe.id)
-                      ? "bg-gradient-to-r from-[#4F8CFF]/15 to-[#C7B9FF]/15 text-[#C7B9FF] border border-[#C7B9FF]/30 shadow-lg"
-                      : "bg-zinc-800/40 text-zinc-400 hover:bg-zinc-800/70 hover:text-white border border-white/5"
+                      ? "bg-gradient-to-r from-blue-50 to-purple-50 text-blue-700 border border-blue-200 shadow-sm"
+                      : "bg-slate-50 text-slate-700 hover:bg-slate-100 hover:text-slate-900 border border-slate-200"
                   }`}
                   type="button"
                 >
@@ -295,12 +295,12 @@ export default function MarketplaceClient({
               ))}
             </div>
 
-            <div className="mt-8 flex gap-3 sticky bottom-0 bg-gradient-to-t from-[#0B0D10] pt-4 pb-2">
+            <div className="mt-8 flex gap-3 sticky bottom-0 bg-white pt-4 pb-2">
               <motion.button
                 onClick={() => setShowMobileFilter(false)}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                className="flex-1 h-14 rounded-2xl bg-gradient-to-r from-[#4F8CFF] to-[#C7B9FF] text-[#041021] text-base font-bold shadow-[0_8px_30px_rgba(79,140,255,0.4)]"
+                className="flex-1 h-14 rounded-2xl bg-gradient-to-r from-blue-500 to-purple-500 text-white text-base font-bold shadow-lg shadow-blue-500/30"
                 type="button"
               >
                 Apply Filters
@@ -309,7 +309,7 @@ export default function MarketplaceClient({
                 onClick={() => setSelectedVibes([])}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                className="h-14 px-7 rounded-2xl bg-white/[0.08] text-white text-base font-semibold border border-white/15 backdrop-blur-sm"
+                className="h-14 px-7 rounded-2xl bg-slate-100 text-slate-700 text-base font-semibold border border-slate-200"
                 type="button"
               >
                 Clear
