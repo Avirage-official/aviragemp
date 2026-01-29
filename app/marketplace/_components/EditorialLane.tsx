@@ -18,10 +18,10 @@ export function EditorialLane({
       {/* Section Header - Enhanced with Count */}
       <div className="flex items-end justify-between mb-7 px-6">
         <div>
-          <h2 className="text-2xl md:text-3xl font-semibold text-white tracking-tight mb-1">
+          <h2 className="text-2xl md:text-3xl font-semibold text-slate-900 tracking-tight mb-1">
             {title}
           </h2>
-          <p className="text-sm text-zinc-500 font-medium">
+          <p className="text-sm text-slate-600 font-medium">
             {venues.length} {venues.length === 1 ? "space" : "spaces"} available
           </p>
         </div>
@@ -45,8 +45,8 @@ export function EditorialLane({
         </div>
         
         {/* Scroll Fade Indicators */}
-        <div className="absolute top-0 right-0 bottom-4 w-32 bg-gradient-to-l from-[#0B0D10] to-transparent pointer-events-none" />
-        <div className="absolute top-0 left-0 bottom-4 w-32 bg-gradient-to-r from-[#0B0D10] to-transparent pointer-events-none" />
+        <div className="absolute top-0 right-0 bottom-4 w-32 bg-gradient-to-l from-white to-transparent pointer-events-none" />
+        <div className="absolute top-0 left-0 bottom-4 w-32 bg-gradient-to-r from-white to-transparent pointer-events-none" />
       </div>
     </section>
   );

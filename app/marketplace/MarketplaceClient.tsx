@@ -215,7 +215,7 @@ export default function MarketplaceClient({
       {/* Editorial Mode: Hero + Lanes */}
       {layoutMode === "editorial" && (
         <>
-          <MarketplaceHero slides={heroVenues} />
+          <MarketplaceHero slides={heroVenues} userArchetype={userArchetype} />
           <div className="max-w-[1800px] mx-auto py-8">
             {editorialLanes.map((lane) => (
               <EditorialLane

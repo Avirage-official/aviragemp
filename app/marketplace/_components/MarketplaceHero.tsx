@@ -6,12 +6,38 @@ import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { Lightning, MapPin, CaretLeft, CaretRight } from "@phosphor-icons/react";
 import type { Venue } from "../page";
+import { ParticleBackground } from "./ParticleBackground";
 
 interface MarketplaceHeroProps {
   slides: { venue: Venue; match: number }[];
+  userArchetype?: string | null;
 }
 
-export function MarketplaceHero({ slides }: MarketplaceHeroProps) {
+// Archetype-based welcome messages
+const ARCHETYPE_MESSAGES: Record<string, { title: string; subtitle: string }> = {
+  khoisan: { 
+    title: "Welcome, Earthlistener", 
+    subtitle: "Spaces that resonate with your present, observant nature" 
+  },
+  atlantean: { 
+    title: "Welcome, Architect", 
+    subtitle: "Discover venues that match your vision and structure" 
+  },
+  lemurian: { 
+    title: "Welcome, Harmonizer", 
+    subtitle: "Find spaces in sync with your intuitive flow" 
+  },
+  hyperborean: { 
+    title: "Welcome, Visionary", 
+    subtitle: "Explore cutting-edge experiences aligned with your innovation" 
+  },
+  muvian: { 
+    title: "Welcome, Creator", 
+    subtitle: "Venues that celebrate your artistic expression" 
+  },
+};
+
+export function MarketplaceHero({ slides, userArchetype }: MarketplaceHeroProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
 
@@ -43,6 +69,29 @@ export function MarketplaceHero({ slides }: MarketplaceHeroProps) {
 
   return (
     <section className="relative w-full h-[70vh] min-h-[520px] max-h-[800px] overflow-hidden bg-gradient-to-br from-blue-50 via-purple-50 to-cyan-50">
+      {/* Particle Background */}
+      <ParticleBackground />
+      
+      {/* Personalized Welcome Banner (top) */}
+      {userArchetype && ARCHETYPE_MESSAGES[userArchetype.toLowerCase()] && (
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.3 }}
+          className="absolute top-6 left-1/2 -translate-x-1/2 z-30"
+        >
+          <div className="px-6 py-3 rounded-full bg-white/90 backdrop-blur-xl border border-blue-200 shadow-lg">
+            <p className="text-sm font-medium text-slate-700">
+              {ARCHETYPE_MESSAGES[userArchetype.toLowerCase()].title}
+              <span className="mx-2 text-blue-500">·</span>
+              <span className="text-slate-600">
+                {ARCHETYPE_MESSAGES[userArchetype.toLowerCase()].subtitle}
+              </span>
+            </p>
+          </div>
+        </motion.div>
+      )}
+      
       <AnimatePresence mode="wait">
         <motion.div
           key={currentIndex}
