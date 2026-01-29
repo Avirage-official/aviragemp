@@ -7,6 +7,7 @@ import type { Venue } from "./page";
 
 import { MarketplaceHero } from "./_components/MarketplaceHero";
 import { FiltersBar } from "./_components/FiltersBar";
+import { SideFilters } from "./_components/SideFilters";
 import { MarketplaceGrid } from "./_components/MarketplaceGrid";
 import { EditorialLane } from "./_components/EditorialLane";
 
@@ -90,6 +91,7 @@ export default function MarketplaceClient({
   const [selectedVibes, setSelectedVibes] = useState<string[]>([]);
   const [showMobileFilter, setShowMobileFilter] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   // Determine layout mode
   const hasActiveFilters =
@@ -200,7 +202,18 @@ export default function MarketplaceClient({
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Sticky Filters Bar */}
+      {/* Side Filters (Desktop) */}
+      <SideFilters
+        selectedVibes={selectedVibes}
+        onVibesChange={setSelectedVibes}
+        selectedCategory={selectedCategory}
+        onCategoryChange={setSelectedCategory}
+        onReset={resetFilters}
+        isOpen={isSidebarOpen}
+        onToggle={() => setIsSidebarOpen(!isSidebarOpen)}
+      />
+
+      {/* Top Search Bar (Simplified) */}
       <FiltersBar
         searchValue={searchQuery}
         onSearchChange={setSearchQuery}

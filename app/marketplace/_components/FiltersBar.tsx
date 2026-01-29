@@ -58,9 +58,9 @@ export function FiltersBar({
 
   return (
     <div className="sticky top-0 z-40 bg-white/95 backdrop-blur-xl border-b border-slate-200/80">
-      <div className="max-w-[1800px] mx-auto px-6 py-5">
+      <div className="max-w-[1800px] mx-auto px-6 py-4">
         {/* Top row: Title + Search + Actions */}
-        <div className="flex items-center justify-between gap-4 mb-5">
+        <div className="flex items-center justify-between gap-4 mb-4">
           <div className="hidden md:block">
             <h1 className="text-xl md:text-2xl font-semibold text-slate-900 tracking-tight">
               Discover Spaces
@@ -117,33 +117,12 @@ export function FiltersBar({
           </motion.button>
         </div>
 
-        {/* Category Tabs - Enhanced Design */}
-        <div className="flex items-center gap-3 overflow-x-auto scrollbar-hide pb-2 -mx-1 px-1">
-          {SUBCATEGORIES.map((cat) => (
-            <motion.button
-              key={cat.id}
-              onClick={() => onCategoryChange(cat.id)}
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.97 }}
-              className={`px-6 py-3 rounded-xl text-sm font-semibold whitespace-nowrap transition-all duration-300 ${
-                selectedCategory === cat.id
-                  ? "bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg shadow-blue-500/25"
-                  : "bg-slate-50 text-slate-600 hover:text-slate-900 hover:bg-slate-100 border border-slate-200 hover:border-slate-300"
-              }`}
-              type="button"
-              aria-pressed={selectedCategory === cat.id}
-            >
-              {cat.label}
-            </motion.button>
-          ))}
-        </div>
-
         {/* Active Filter Pills - Enhanced */}
         {selectedVibes.length > 0 && (
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="flex items-center gap-2 mt-5 flex-wrap"
+            className="flex items-center gap-2 flex-wrap"
           >
             <span className="text-xs text-slate-500 font-semibold uppercase tracking-wider">Active filters:</span>
             {selectedVibes.map((vibe, idx) => (

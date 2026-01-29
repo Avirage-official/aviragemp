@@ -41,9 +41,9 @@ export function MarketplaceGrid({ venues, isLoading = false }: MarketplaceGridPr
         transition={{ duration: 0.5 }}
         className="text-center py-24"
       >
-        <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-zinc-900 to-zinc-800 flex items-center justify-center mx-auto mb-6 border border-white/5">
+        <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-slate-100 to-slate-50 flex items-center justify-center mx-auto mb-6 border border-slate-200">
           <svg
-            className="w-10 h-10 text-zinc-600"
+            className="w-10 h-10 text-slate-400"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -56,10 +56,10 @@ export function MarketplaceGrid({ venues, isLoading = false }: MarketplaceGridPr
             />
           </svg>
         </div>
-        <h3 className="text-xl font-semibold text-white mb-3 tracking-tight">
+        <h3 className="text-xl font-semibold text-slate-900 mb-3 tracking-tight">
           No spaces found
         </h3>
-        <p className="text-sm text-zinc-500 max-w-sm mx-auto leading-relaxed">
+        <p className="text-sm text-slate-600 max-w-sm mx-auto leading-relaxed">
           We couldn't find any spaces matching your criteria. Try adjusting your filters or search terms to discover more.
         </p>
       </motion.div>
@@ -80,7 +80,7 @@ export function MarketplaceGrid({ venues, isLoading = false }: MarketplaceGridPr
             onClick={loadMore}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
-            className="px-10 py-4 rounded-full bg-gradient-to-r from-white/[0.12] to-white/[0.06] hover:from-white/[0.18] hover:to-white/[0.10] border border-white/15 text-white text-sm font-semibold transition-all duration-300 backdrop-blur-xl shadow-lg hover:shadow-2xl"
+            className="px-10 py-4 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 text-white text-sm font-semibold transition-all duration-300 shadow-lg hover:shadow-xl hover:shadow-blue-500/30"
             aria-label={`Load ${Math.min(ITEMS_PER_PAGE, venues.length - visibleCount)} more venues`}
           >
             Load More · {venues.length - visibleCount} remaining
