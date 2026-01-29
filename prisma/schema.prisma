@@ -36,7 +36,6 @@ model User {
 
   currentMood   String?
   moodUpdatedAt DateTime?
-  currentVenue  String? // Current venue ID for location sharing
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
