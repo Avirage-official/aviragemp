@@ -24,12 +24,17 @@ interface AirtableVenue {
     'Longitude'?: number
     'Google Maps URL'?: string
     'Description'?: string
+    'What to Expect'?: string;
+    'Best For'?: string;
+    'Atmosphere Notes'?: string;
     'Image URL'?: string
     'Images'?: Array<{ url: string; filename: string }>
     'Website'?: string
     'Phone'?: string
     'Hours'?: string
     'Price Range'?: string
+    
+    
   }
 }
 
@@ -112,24 +117,20 @@ async function fetchArchetypeScores(venueRecordId: string): Promise<ArchetypeSco
 }
 
 async function fetchVenueVibes(venueRecordId: string): Promise<VenueVibe> {
-  // Fetch ALL vibes and filter client-side
   const allVibes = await fetchAllRecords(AIRTABLE_VIBES_TABLE)
   
-  // Find all vibe records linked to this venue
-  const vibeRecords = allVibes.filter(record => {
+  const vibeRecord = allVibes.find(record => {
     const venueLinks = record.fields['Venue']
     return Array.isArray(venueLinks) && venueLinks.includes(venueRecordId)
   })
   
-  const vibes = vibeRecords
-    .map(r => r.fields['Vibe Tag'])
-    .filter(Boolean)
+  const vibes = vibeRecord ? [
+    vibeRecord.fields['Vibe Tag'],
+    vibeRecord.fields['Vibe Tag Secondary'],
+    vibeRecord.fields['Vibe Tag Tertiary']
+  ].filter(Boolean) : []
   
-  if (vibes.length === 0) {
-    console.warn(`⚠️  No vibes found for venue ${venueRecordId}`)
-  } else {
-    console.log(`  ✓ Found ${vibes.length} vibe(s)`)
-  }
+  console.log(`  ✓ Found ${vibes.length} vibe(s)`)
   
   return { venueId: venueRecordId, vibes }
 }
@@ -175,6 +176,9 @@ async function syncVenues() {
           category: 'spaces',
           subcategory: fields['Subcategory'].toLowerCase().replace(' ', ''),
           description: fields['Description'] || null,
+          whatToExpect: fields['What to Expect'] || null,
+          bestFor: fields['Best For'] || null,
+          atmosphereNotes: fields['Atmosphere Notes'] || null,
           imageUrl: Array.isArray(fields['Images']) && fields['Images'].length > 0
     ? fields['Images'][0].url
     : (fields['Image URL'] || null),

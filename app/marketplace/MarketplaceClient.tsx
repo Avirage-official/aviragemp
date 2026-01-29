@@ -32,16 +32,22 @@ type Venue = {
   website: string | null;
 };
 
-type SubcategoryFilter = "all" | "nomnoms" | "creativevibe";
+type SubcategoryFilter = "all" | "nomnoms" | "creativevibe" | "wellness" | "nightlife" | "outdoors" | "learning" | "community";
+
 
 /* ============================================================================
    CONSTANTS
    ============================================================================ */
 
 const SUBCATEGORIES = [
-  { id: "all" as const, label: "All Spaces", count: 0 },
-  { id: "nomnoms" as const, label: "NomNoms", count: 0 },
-  { id: "creativevibe" as const, label: "Creative Vibe", count: 0 },
+  { id: "all" as const, label: "All Spaces" },
+  { id: "nomnoms" as const, label: "NomNoms" },
+  { id: "creativevibe" as const, label: "Creative" },
+  { id: "wellness" as const, label: "Wellness" },
+  { id: "nightlife" as const, label: "Nightlife" },
+  { id: "outdoors" as const, label: "Outdoors" },
+  { id: "learning" as const, label: "Learning" },
+  { id: "community" as const, label: "Community" },
 ];
 
 // Vibe labels for display
@@ -245,14 +251,18 @@ export default function MarketplaceClient({
   const [showMatchedOnly, setShowMatchedOnly] = useState(false);
 
   // Calculate category counts
-  const counts = useMemo(() => {
-    return {
-      all: initialVenues.length,
-      nomnoms: initialVenues.filter((v) => v.subcategory === "nomnoms").length,
-      creativevibe: initialVenues.filter((v) => v.subcategory === "creativevibe")
-        .length,
-    };
-  }, [initialVenues]);
+const counts = useMemo(() => {
+  return {
+    all: initialVenues.length,
+    nomnoms: initialVenues.filter((v) => v.subcategory === "nomnoms").length,
+    creativevibe: initialVenues.filter((v) => v.subcategory === "creativevibe").length,
+    wellness: initialVenues.filter((v) => v.subcategory === "wellness").length,
+    nightlife: initialVenues.filter((v) => v.subcategory === "nightlife").length,
+    outdoors: initialVenues.filter((v) => v.subcategory === "outdoors").length,
+    learning: initialVenues.filter((v) => v.subcategory === "learning").length,
+    community: initialVenues.filter((v) => v.subcategory === "community").length,
+  };
+}, [initialVenues]);
 
   // Filter venues
   const filteredVenues = useMemo(() => {
