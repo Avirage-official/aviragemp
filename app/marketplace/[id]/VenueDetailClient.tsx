@@ -1,7 +1,7 @@
 // app/marketplace/[id]/VenueDetailClient.tsx
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -254,7 +254,7 @@ export default function VenueDetailClient({
   const [currentMood, setCurrentMood] = useState<string | null>(currentUser?.mood || null);
   const [showMoodSelector, setShowMoodSelector] = useState(false);
   
-  // Favorite state
+  // Favorite state (TODO: Implement backend persistence)
   const [isFavorite, setIsFavorite] = useState(false);
   
   // Venue stats
@@ -298,7 +298,7 @@ export default function VenueDetailClient({
   }, [venue.id]);
 
   // Fetch chat messages
-  const fetchChatMessages = () => {
+  const fetchChatMessages = useCallback(() => {
     setLoadingChat(true);
     fetch(`/api/venue-chat?venueId=${venue.id}`)
       .then((res) => res.json())
@@ -310,11 +310,11 @@ export default function VenueDetailClient({
         console.error("Error fetching chat:", err);
         setLoadingChat(false);
       });
-  };
+  }, [venue.id]);
 
   useEffect(() => {
     fetchChatMessages();
-  }, [venue.id]);
+  }, [fetchChatMessages]);
 
   // Check-in handler
   const handleCheckin = async (status: "here" | "going") => {
@@ -431,18 +431,35 @@ export default function VenueDetailClient({
   };
 
   // Share handler
-  const handleShare = () => {
+  const handleShare = async () => {
     if (navigator.share) {
-      navigator.share({
-        title: venue.name,
-        text: `Check out ${venue.name} on Avirage!`,
-        url: window.location.href,
-      }).catch(() => {});
+      try {
+        await navigator.share({
+          title: venue.name,
+          text: `Check out ${venue.name} on Avirage!`,
+          url: window.location.href,
+        });
+      } catch (err: any) {
+        // User cancelled the share dialog - this is normal, ignore it
+        if (err.name !== 'AbortError') {
+          // Actual error, fallback to clipboard
+          fallbackCopyToClipboard();
+        }
+      }
     } else {
-      // Fallback: Copy to clipboard
-      navigator.clipboard.writeText(window.location.href);
-      alert("Link copied to clipboard!");
+      fallbackCopyToClipboard();
     }
+  };
+
+  const fallbackCopyToClipboard = () => {
+    navigator.clipboard.writeText(window.location.href)
+      .then(() => {
+        // Success - could show a toast notification here
+        console.log('Link copied to clipboard');
+      })
+      .catch((err) => {
+        console.error('Failed to copy link:', err);
+      });
   };
 
   // Prepare images array (currently just one, but ready for multiple)
@@ -1208,23 +1225,30 @@ export default function VenueDetailClient({
 
               {/* Chat Input */}
               {currentUser ? (
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={newMessage}
-                    onChange={(e) => setNewMessage(e.target.value)}
-                    onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
-                    placeholder="Share your thoughts..."
-                    maxLength={500}
-                    className="flex-1 px-3 py-2 rounded-lg bg-zinc-900 border border-white/10 text-white text-sm placeholder:text-zinc-500 focus:outline-none focus:border-blue-500/50"
-                  />
-                  <button
-                    onClick={handleSendMessage}
-                    disabled={!newMessage.trim()}
-                    className="px-3 py-2 rounded-lg bg-blue-500 text-white hover:bg-blue-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    <PaperPlaneTilt className="w-5 h-5" weight="fill" />
-                  </button>
+                <div className="space-y-2">
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={newMessage}
+                      onChange={(e) => setNewMessage(e.target.value)}
+                      onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
+                      placeholder="Share your thoughts..."
+                      maxLength={500}
+                      className="flex-1 px-3 py-2 rounded-lg bg-zinc-900 border border-white/10 text-white text-sm placeholder:text-zinc-500 focus:outline-none focus:border-blue-500/50"
+                    />
+                    <button
+                      onClick={handleSendMessage}
+                      disabled={!newMessage.trim()}
+                      className="px-3 py-2 rounded-lg bg-blue-500 text-white hover:bg-blue-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <PaperPlaneTilt className="w-5 h-5" weight="fill" />
+                    </button>
+                  </div>
+                  {newMessage.length > 0 && (
+                    <p className="text-xs text-zinc-500 text-right">
+                      {newMessage.length} / 500
+                    </p>
+                  )}
                 </div>
               ) : (
                 <div className="text-center py-4">

@@ -44,6 +44,24 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Check for duplicate report
+    const existingReport = await prisma.chatReport.findFirst({
+      where: {
+        chatId,
+        reportedBy: userId,
+      },
+    });
+
+    if (existingReport) {
+      return NextResponse.json(
+        { error: "You have already reported this message" },
+        { status: 400 }
+      );
+    }
+
+    // Report threshold
+    const REPORT_THRESHOLD = 3;
+
     // Create the report
     const report = await prisma.chatReport.create({
       data: {
@@ -54,7 +72,7 @@ export async function POST(req: NextRequest) {
     });
 
     // Increment report count on the chat
-    await prisma.venueChat.update({
+    const updatedChat = await prisma.venueChat.update({
       where: { id: chatId },
       data: {
         reportCount: {
@@ -63,12 +81,8 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // Auto-delete if report count exceeds threshold (e.g., 3)
-    const updatedChat = await prisma.venueChat.findUnique({
-      where: { id: chatId },
-    });
-
-    if (updatedChat && updatedChat.reportCount >= 3) {
+    // Auto-delete if report count exceeds threshold
+    if (updatedChat.reportCount >= REPORT_THRESHOLD) {
       await prisma.venueChat.update({
         where: { id: chatId },
         data: { isDeleted: true },

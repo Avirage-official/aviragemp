@@ -108,10 +108,11 @@ export async function POST(req: NextRequest) {
 
     // Check if user is banned
     const ban = await prisma.userBan.findUnique({
-      where: { userId },
+      where: { userId: user.clerkId },
     });
 
     if (ban) {
+      // User is banned if bannedUntil is null (permanent) or in the future
       const isBanned = !ban.bannedUntil || ban.bannedUntil > new Date();
       if (isBanned) {
         return NextResponse.json(
