@@ -17,22 +17,6 @@ import type { Venue } from "./page";
    TYPES
    ============================================================================ */
 
-type Venue = {
-  id: string;
-  name: string;
-  description: string | null;
-  neighborhood: string | null;
-  city: string;
-  countryCode: string;
-  subcategory: string;
-  priceRange: string | null;
-  imageUrl: string | null;
-  compatibilityScores: Record<string, number>;
-  vibes: string[];
-  googleMapsUrl: string | null;
-  website: string | null;
-};
-
 type SubcategoryFilter =
   | "all"
   | "nomnoms"
