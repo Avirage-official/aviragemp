@@ -41,7 +41,7 @@ type SubcategoryFilter = "all" | "nomnoms" | "creative";
 const SUBCATEGORIES = [
   { id: "all" as const, label: "All Spaces", count: 0 },
   { id: "nomnoms" as const, label: "NomNoms", count: 0 },
-  { id: "creative" as const, label: "Creative Vibe", count: 0 },
+  { id: "creativevibe" as const, label: "Creative Vibe", count: 0 },
 ];
 
 // Vibe labels for display
