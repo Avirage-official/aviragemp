@@ -32,7 +32,7 @@ type Venue = {
   website: string | null;
 };
 
-type SubcategoryFilter = "all" | "nomnoms" | "creative";
+type SubcategoryFilter = "all" | "nomnoms" | "creativevibe";
 
 /* ============================================================================
    CONSTANTS
@@ -249,7 +249,7 @@ export default function MarketplaceClient({
     return {
       all: initialVenues.length,
       nomnoms: initialVenues.filter((v) => v.subcategory === "nomnoms").length,
-      creative: initialVenues.filter((v) => v.subcategory === "creative")
+      creativevibe: initialVenues.filter((v) => v.subcategory === "creativevibe")
         .length,
     };
   }, [initialVenues]);
