@@ -153,16 +153,16 @@ function ImageCarousel({ images }: { images: string[] }) {
   return (
     <div className="space-y-3">
       {/* Main Image Display */}
-      <div className="relative aspect-square rounded-lg overflow-hidden bg-zinc-900">
+      <div className="relative aspect-square rounded-lg overflow-hidden bg-gradient-to-br from-zinc-900 to-zinc-800">
         <AnimatePresence mode="wait">
           <motion.img
             key={currentIndex}
             src={images[currentIndex]}
             alt={`Image ${currentIndex + 1}`}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}
+            initial={{ opacity: 0, scale: 1.1 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ duration: 0.4 }}
             className="w-full h-full object-cover"
           />
         </AnimatePresence>
@@ -170,28 +170,36 @@ function ImageCarousel({ images }: { images: string[] }) {
         {/* Navigation Arrows */}
         {images.length > 1 && (
           <>
-            <button
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
               onClick={goToPrevious}
               className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/60 backdrop-blur-sm border border-white/10 flex items-center justify-center hover:bg-black/80 transition-all"
             >
               <CaretLeft className="w-5 h-5 text-white" weight="bold" />
-            </button>
-            <button
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
               onClick={goToNext}
               className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/60 backdrop-blur-sm border border-white/10 flex items-center justify-center hover:bg-black/80 transition-all"
             >
               <CaretRight className="w-5 h-5 text-white" weight="bold" />
-            </button>
+            </motion.button>
           </>
         )}
 
         {/* Image Counter */}
         {images.length > 1 && (
-          <div className="absolute bottom-3 right-3 px-2.5 py-1 rounded-md bg-black/60 backdrop-blur-sm border border-white/10">
+          <motion.div 
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="absolute bottom-3 right-3 px-2.5 py-1 rounded-md bg-black/60 backdrop-blur-sm border border-white/10"
+          >
             <span className="text-xs font-medium text-white">
               {currentIndex + 1} / {images.length}
             </span>
-          </div>
+          </motion.div>
         )}
       </div>
 
@@ -199,12 +207,14 @@ function ImageCarousel({ images }: { images: string[] }) {
       {images.length > 1 && (
         <div className="flex gap-2 overflow-x-auto pb-2">
           {images.map((img, idx) => (
-            <button
+            <motion.button
               key={idx}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
               onClick={() => setCurrentIndex(idx)}
               className={`relative flex-shrink-0 w-16 h-16 rounded-md overflow-hidden border-2 transition-all ${
                 idx === currentIndex
-                  ? "border-white"
+                  ? "border-white shadow-lg shadow-white/20"
                   : "border-white/10 hover:border-white/30"
               }`}
             >
@@ -213,7 +223,7 @@ function ImageCarousel({ images }: { images: string[] }) {
                 alt={`Thumbnail ${idx + 1}`}
                 className="w-full h-full object-cover"
               />
-            </button>
+            </motion.button>
           ))}
         </div>
       )}
@@ -452,7 +462,8 @@ export default function VenueDetailClient({
       : null;
 
   return (
-    <div className="min-h-screen bg-black pb-20">
+    <div className="min-h-screen bg-gradient-to-br from-black via-indigo-950/10 to-black pb-20">{
+
       {/* Header */}
       <div className="sticky top-0 z-20 bg-black/80 backdrop-blur-xl border-b border-white/5">
         <div className="max-w-[1400px] mx-auto px-4 sm:px-6 py-3">
@@ -594,12 +605,23 @@ export default function VenueDetailClient({
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="p-5 sm:p-6 rounded-lg bg-[#111111] border border-white/5"
+              className="p-5 sm:p-6 rounded-lg bg-gradient-to-br from-[#111111] to-[#0a0a0a] border border-white/5 shadow-lg shadow-blue-500/5"
             >
               <div className="flex items-start gap-3 sm:gap-4 mb-4">
-                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-blue-500/20 to-purple-500/20 border border-white/10 flex items-center justify-center flex-shrink-0">
+                <motion.div 
+                  animate={{ 
+                    scale: [1, 1.05, 1],
+                    rotate: [0, 5, -5, 0]
+                  }}
+                  transition={{ 
+                    duration: 4,
+                    repeat: Infinity,
+                    repeatType: "reverse"
+                  }}
+                  className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-blue-500/20 to-purple-500/20 border border-white/10 flex items-center justify-center flex-shrink-0"
+                >
                   <Sparkle className="w-5 h-5 sm:w-6 sm:h-6 text-blue-400" weight="fill" />
-                </div>
+                </motion.div>
                 <div>
                   <h3 className="text-base sm:text-lg font-semibold text-white mb-1">
                     {venue.dominantArchetype.name} Space
@@ -882,15 +904,22 @@ export default function VenueDetailClient({
                       emoji: "✨",
                     };
                     return (
-                      <div
+                      <motion.div
                         key={vibe}
-                        className="flex items-center gap-3 p-4 rounded-lg bg-[#111111] border border-white/5"
+                        whileHover={{ scale: 1.02, borderColor: "rgba(255,255,255,0.2)" }}
+                        className="flex items-center gap-3 p-4 rounded-lg bg-gradient-to-br from-[#111111] to-[#0a0a0a] border border-white/5 cursor-default"
                       >
-                        <span className="text-xl sm:text-2xl">{info.emoji}</span>
+                        <motion.span 
+                          animate={{ rotate: [0, -10, 10, 0] }}
+                          transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
+                          className="text-xl sm:text-2xl"
+                        >
+                          {info.emoji}
+                        </motion.span>
                         <span className="text-sm text-zinc-300">
                           {info.label}
                         </span>
-                      </div>
+                      </motion.div>
                     );
                   })}
                 </div>
