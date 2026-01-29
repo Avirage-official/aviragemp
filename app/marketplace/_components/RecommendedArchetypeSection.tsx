@@ -133,7 +133,7 @@ export function RecommendedArchetypeSection({
                           transition={{ delay: 0.3 + idx * 0.05, type: "spring" }}
                           className="px-3 py-1.5 rounded-full bg-white/95 backdrop-blur-md border border-purple-200 text-xs font-bold text-purple-700 shadow-lg"
                         >
-                          {venue.compatibilityScores[userArchetype.toLowerCase()] || 0}% Match
+                          {venue.compatibilityScores?.[userArchetype.toLowerCase()] || 0}% Match
                         </motion.div>
                       </div>
                     )}

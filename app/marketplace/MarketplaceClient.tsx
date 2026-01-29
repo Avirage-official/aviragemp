@@ -208,10 +208,12 @@ export default function MarketplaceClient({
       .slice(0, 3);
   }, [initialVenues, userArchetype]);
 
-  // Recommended archetype venues (medium match)
+  // Recommended archetype venues (medium match, exclude top recommended)
   const recommendedArchetypeVenues = useMemo(() => {
     if (!userArchetype) return [];
+    const topVenueIds = new Set(topRecommendedVenues.map(v => v.venue.id));
     return [...initialVenues]
+      .filter((v) => !topVenueIds.has(v.id))
       .map((v) => ({
         ...v,
         match: getMatchPercentage(v.compatibilityScores, userArchetype),
@@ -219,7 +221,7 @@ export default function MarketplaceClient({
       .filter((v) => v.match >= 70)
       .sort((a, b) => b.match - a.match)
       .slice(0, 8);
-  }, [initialVenues, userArchetype]);
+  }, [initialVenues, userArchetype, topRecommendedVenues]);
 
   const toggleVibe = (vibeId: string) => {
     setSelectedVibes((prev) =>
@@ -280,22 +282,12 @@ export default function MarketplaceClient({
           
           {/* Editorial Lanes - Full Width */}
           <div className="w-full py-8">
-            {editorialLanes.map((lane, idx) => (
-              <div key={lane.title}>
-                <EditorialLane
-                  title={lane.title}
-                  venues={lane.venues}
-                />
-                {/* Add fun facts between some lanes */}
-                {idx === Math.floor(editorialLanes.length / 2) && (
-                  <div className="my-16">
-                    <FunFactsSection 
-                      totalVenues={initialVenues.length}
-                      userArchetype={userArchetype}
-                    />
-                  </div>
-                )}
-              </div>
+            {editorialLanes.map((lane) => (
+              <EditorialLane
+                key={lane.title}
+                title={lane.title}
+                venues={lane.venues}
+              />
             ))}
           </div>
         </>

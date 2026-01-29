@@ -68,8 +68,8 @@ export function FunFactsSection({ totalVenues, userArchetype }: FunFactsSectionP
 
   return (
     <section className="w-full py-16 md:py-20 px-6 bg-gradient-to-br from-cyan-50 via-blue-50 to-purple-50 overflow-hidden relative">
-      {/* Animated background blobs */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      {/* Animated background blobs - decorative */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden="true">
         <motion.div
           animate={{
             x: [0, 100, 0],

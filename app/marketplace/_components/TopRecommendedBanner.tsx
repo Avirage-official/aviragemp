@@ -51,8 +51,8 @@ export function TopRecommendedBanner({
 
   return (
     <section className="relative w-full bg-gradient-to-br from-blue-50 via-purple-50 to-cyan-50 overflow-hidden">
-      {/* Animated background elements */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      {/* Animated background elements - decorative */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden="true">
         <motion.div
           animate={{
             scale: [1, 1.2, 1],
