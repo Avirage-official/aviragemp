@@ -668,12 +668,15 @@ model Venue {
   
   // Details
   description         String?  @db.Text
+  whatToExpect        String?  @db.Text    // ADD
+  bestFor             String?  @db.Text    // ADD
+  atmosphereNotes     String?  @db.Text    // ADD
   imageUrl            String?
-  images              String[]  @default([])  // ADD THIS LINE
+  images              String[]  @default([])
   website             String?
   phone               String?
-  hours               Json?    // {"mon": "9am-10pm", "tue": "closed"}
-  priceRange          String?  // "$", "$$", "$$$"
+  hours               Json?
+  priceRange          String?
   
   // Archetype compatibility (JSON for flexibility)
   compatibilityScores Json     // {"sentinel": 95, "wanderer": 45, ...}
