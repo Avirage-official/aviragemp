@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 import { MagnifyingGlass, X, Funnel } from "@phosphor-icons/react";
 
 interface FiltersBarProps {

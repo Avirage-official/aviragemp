@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { motion } from "framer-motion";
 import { MarketplaceCard } from "./MarketplaceCard";
 import { SkeletonCard } from "./SkeletonCard";
 import type { Venue } from "../page";
