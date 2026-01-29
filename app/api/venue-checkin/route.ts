@@ -122,13 +122,11 @@ export async function DELETE(req: NextRequest) {
       );
     }
 
-    // Delete the check-in
-    await prisma.venueCheckin.delete({
+    // Delete the check-in (use deleteMany to avoid error if doesn't exist)
+    const result = await prisma.venueCheckin.deleteMany({
       where: {
-        userId_venueId: {
-          userId: user.id,
-          venueId,
-        },
+        userId: user.id,
+        venueId,
       },
     });
 
@@ -142,6 +140,7 @@ export async function DELETE(req: NextRequest) {
 
     return NextResponse.json({
       success: true,
+      deleted: result.count > 0,
     });
   } catch (error) {
     console.error("Error deleting check-in:", error);
@@ -190,6 +189,9 @@ export async function GET(req: NextRequest) {
         })
       : null;
 
+    // Filter out expired check-ins
+    const validCheckin = checkin && checkin.expiresAt > new Date() ? checkin : null;
+
     // Get all active check-ins for this user
     const allCheckins = await prisma.venueCheckin.findMany({
       where: {
@@ -201,7 +203,7 @@ export async function GET(req: NextRequest) {
     });
 
     return NextResponse.json({
-      checkin,
+      checkin: validCheckin,
       allCheckins,
     });
   } catch (error) {

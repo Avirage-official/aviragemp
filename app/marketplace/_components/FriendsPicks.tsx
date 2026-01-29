@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Users, MapPin } from "@phosphor-icons/react";
 import { MarketplaceCard } from "./MarketplaceCard";
+import type { Venue } from "../page";
 
 interface FriendsPicksProps {
   className?: string;
@@ -15,7 +16,7 @@ interface FriendCheckin {
   archetypes: string[];
   status: string;
   updatedAt: Date;
-  venue: any; // Venue type from marketplace
+  venue: Venue;
 }
 
 export function FriendsPicks({ className = "" }: FriendsPicksProps) {

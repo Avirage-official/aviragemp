@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { X, Sparkle } from "@phosphor-icons/react";
 import type { Venue } from "./page";
@@ -96,6 +97,7 @@ export default function MarketplaceClient({
   userArchetype: string | null;
 }) {
   // State
+  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [selectedVibes, setSelectedVibes] = useState<string[]>([]);
@@ -126,7 +128,7 @@ export default function MarketplaceClient({
   const handleSurpriseMe = () => {
     if (filteredVenues.length > 0) {
       const randomVenue = filteredVenues[Math.floor(Math.random() * filteredVenues.length)];
-      window.location.href = `/marketplace/${randomVenue.id}`;
+      router.push(`/marketplace/${randomVenue.id}`);
     }
   };
 

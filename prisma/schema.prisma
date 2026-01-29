@@ -692,6 +692,7 @@ model Venue {
   country             Country  @relation(fields: [countryCode], references: [code])
   vibes               VenueVibe[]
   chats               VenueChat[]
+  checkins            VenueCheckin[]
   
   @@index([countryCode])
   @@index([subcategory])
@@ -768,6 +769,7 @@ model VenueCheckin {
   venueId   String
   
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  venue     Venue    @relation(fields: [venueId], references: [id], onDelete: Cascade)
   
   status    String   // "here" or "going"
   expiresAt DateTime // Auto-expire check-ins after a certain time

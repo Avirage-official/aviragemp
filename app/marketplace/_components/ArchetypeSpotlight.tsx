@@ -13,7 +13,7 @@ const NATURE_IMAGES = [
   "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1200&q=80", // Mountain landscape
   "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=1200&q=80", // Forest
   "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=1200&q=80", // Foggy hills
-  "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1200&q=80", // Aurora
+  "https://images.unsplash.com/photo-1531366936337-7c912a4589a7?w=1200&q=80", // Aurora
   "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=1200&q=80", // Meadow
 ];
 

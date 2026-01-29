@@ -42,13 +42,18 @@ export function MarketplaceCard({ venue }: { venue: Venue }) {
     try {
       if (checkinStatus === status) {
         // Remove check-in
-        await fetch(`/api/venue-checkin?venueId=${venue.id}`, {
+        const response = await fetch(`/api/venue-checkin?venueId=${venue.id}`, {
           method: "DELETE",
         });
+        
+        if (!response.ok) {
+          throw new Error('Failed to remove check-in');
+        }
+        
         setCheckinStatus(null);
       } else {
         // Create or update check-in
-        await fetch("/api/venue-checkin", {
+        const response = await fetch("/api/venue-checkin", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -56,10 +61,17 @@ export function MarketplaceCard({ venue }: { venue: Venue }) {
             status,
           }),
         });
+        
+        if (!response.ok) {
+          throw new Error('Failed to update check-in');
+        }
+        
         setCheckinStatus(status);
       }
     } catch (error) {
       console.error("Error updating check-in:", error);
+      // Revert optimistic update on error
+      // In a real app, you might show a toast notification here
     } finally {
       setIsCheckingIn(false);
     }
