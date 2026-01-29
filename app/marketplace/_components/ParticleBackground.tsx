@@ -30,10 +30,14 @@ export function ParticleBackground() {
       speedY: number;
       color: string;
       opacity: number;
+      canvasWidth: number;
+      canvasHeight: number;
 
-      constructor() {
-        this.x = Math.random() * canvas.width;
-        this.y = Math.random() * canvas.height;
+      constructor(canvasWidth: number, canvasHeight: number) {
+        this.canvasWidth = canvasWidth;
+        this.canvasHeight = canvasHeight;
+        this.x = Math.random() * canvasWidth;
+        this.y = Math.random() * canvasHeight;
         this.size = Math.random() * 3 + 1;
         this.speedX = Math.random() * 0.5 - 0.25;
         this.speedY = Math.random() * 0.5 - 0.25;
@@ -53,10 +57,10 @@ export function ParticleBackground() {
         this.y += this.speedY;
 
         // Wrap around screen
-        if (this.x > canvas.width) this.x = 0;
-        if (this.x < 0) this.x = canvas.width;
-        if (this.y > canvas.height) this.y = 0;
-        if (this.y < 0) this.y = canvas.height;
+        if (this.x > this.canvasWidth) this.x = 0;
+        if (this.x < 0) this.x = this.canvasWidth;
+        if (this.y > this.canvasHeight) this.y = 0;
+        if (this.y < 0) this.y = this.canvasHeight;
       }
 
       draw() {
@@ -75,7 +79,7 @@ export function ParticleBackground() {
     const numberOfParticles = 40;
 
     for (let i = 0; i < numberOfParticles; i++) {
-      particlesArray.push(new Particle());
+      particlesArray.push(new Particle(canvas.width, canvas.height));
     }
 
     // Animation loop
