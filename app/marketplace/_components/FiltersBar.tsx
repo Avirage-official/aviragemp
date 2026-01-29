@@ -56,96 +56,113 @@ export function FiltersBar({
   };
 
   return (
-    <div className="sticky top-0 z-40 bg-[#0B0D10]/80 backdrop-blur-xl border-b border-white/[0.06]">
-      <div className="max-w-[1800px] mx-auto px-6 py-4">
+    <div className="sticky top-0 z-40 bg-[#0B0D10]/90 backdrop-blur-2xl border-b border-white/[0.08]">
+      <div className="max-w-[1800px] mx-auto px-6 py-5">
         {/* Top row: Title + Search + Actions */}
-        <div className="flex items-center justify-between gap-4 mb-4">
+        <div className="flex items-center justify-between gap-4 mb-5">
           <div className="hidden md:block">
-            <h1 className="text-xl font-semibold text-white">
+            <h1 className="text-xl md:text-2xl font-semibold text-white tracking-tight">
               Discover Spaces
             </h1>
-            <p className="text-xs text-zinc-400 mt-0.5">
+            <p className="text-xs text-zinc-400 mt-1 font-medium">
               Curated discovery without noise
             </p>
           </div>
 
-          {/* Search Input */}
-          <div className="relative flex-1 md:flex-none md:w-[420px]">
+          {/* Search Input - Enhanced Design */}
+          <div className="relative flex-1 md:flex-none md:w-[460px]">
             <MagnifyingGlass
-              className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500"
+              className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500"
               weight="bold"
             />
             <input
               type="search"
-              placeholder="Search spaces..."
+              placeholder="Search spaces, neighborhoods, vibes..."
               value={localSearch}
               onChange={(e) => setLocalSearch(e.target.value)}
               aria-label="Search venues"
-              className="w-full h-11 pl-10 pr-4 rounded-lg bg-[#111111] border border-white/[0.06] text-sm text-white placeholder:text-zinc-500 focus:border-white/10 outline-none transition-all"
+              className="w-full h-12 pl-12 pr-4 rounded-xl bg-[#111111] border border-white/[0.08] text-sm text-white placeholder:text-zinc-500 focus:border-[#4F8CFF]/50 focus:ring-2 focus:ring-[#4F8CFF]/20 outline-none transition-all duration-200"
             />
           </div>
 
           {/* Desktop Actions */}
           <div className="hidden md:flex items-center gap-3">
             {hasActiveFilters && (
-              <button
+              <motion.button
                 onClick={onReset}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
                 aria-label="Reset all filters"
-                className="h-11 px-4 rounded-lg text-sm text-zinc-400 hover:text-white transition-colors"
+                className="h-12 px-5 rounded-xl text-sm text-zinc-400 hover:text-white hover:bg-white/5 transition-all duration-200 font-medium"
                 type="button"
               >
-                Reset
-              </button>
+                Reset All
+              </motion.button>
             )}
           </div>
 
-          {/* Mobile Filter Button */}
-          <button
+          {/* Mobile Filter Button - Enhanced */}
+          <motion.button
             onClick={onMobileFilterOpen}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
             aria-label="Open filter menu"
-            className="md:hidden w-11 h-11 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center"
+            className="md:hidden w-12 h-12 rounded-xl bg-gradient-to-br from-white/[0.08] to-white/[0.04] border border-white/10 flex items-center justify-center shadow-lg"
             type="button"
           >
             <Funnel className="w-5 h-5 text-white" weight="bold" />
-          </button>
+          </motion.button>
         </div>
 
-        {/* Category Tabs */}
-        <div className="flex items-center gap-3 overflow-x-auto scrollbar-hide pb-2">
+        {/* Category Tabs - Enhanced Design */}
+        <div className="flex items-center gap-3 overflow-x-auto scrollbar-hide pb-2 -mx-1 px-1">
           {SUBCATEGORIES.map((cat) => (
-            <button
+            <motion.button
               key={cat.id}
               onClick={() => onCategoryChange(cat.id)}
-              className={`px-5 py-2.5 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
+              className={`px-6 py-3 rounded-xl text-sm font-semibold whitespace-nowrap transition-all duration-300 ${
                 selectedCategory === cat.id
-                  ? "bg-gradient-to-r from-[#4F8CFF] to-[#C7B9FF] text-[#041021] shadow-lg"
-                  : "bg-transparent text-zinc-400 hover:text-white hover:bg-white/5"
+                  ? "bg-gradient-to-r from-[#4F8CFF] to-[#C7B9FF] text-[#041021] shadow-[0_4px_20px_rgba(79,140,255,0.4)]"
+                  : "bg-white/[0.04] text-zinc-400 hover:text-white hover:bg-white/[0.08] border border-white/[0.06] hover:border-white/10"
               }`}
               type="button"
               aria-pressed={selectedCategory === cat.id}
             >
               {cat.label}
-            </button>
+            </motion.button>
           ))}
         </div>
 
-        {/* Active Filter Pills */}
+        {/* Active Filter Pills - Enhanced */}
         {selectedVibes.length > 0 && (
-          <div className="flex items-center gap-2 mt-4 flex-wrap">
-            <span className="text-xs text-zinc-500">Active filters:</span>
-            {selectedVibes.map((vibe) => (
-              <button
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex items-center gap-2 mt-5 flex-wrap"
+          >
+            <span className="text-xs text-zinc-500 font-semibold uppercase tracking-wider">Active filters:</span>
+            {selectedVibes.map((vibe, idx) => (
+              <motion.button
                 key={vibe}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: idx * 0.03 }}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
                 onClick={() => removeVibe(vibe)}
-                className="group flex items-center gap-2 px-3 py-1.5 rounded-full bg-gradient-to-r from-[#4F8CFF]/10 to-[#C7B9FF]/10 border border-white/[0.06] text-xs text-zinc-300 hover:border-white/20 transition-all"
+                className="group flex items-center gap-2.5 px-3.5 py-2 rounded-full bg-gradient-to-r from-[#4F8CFF]/15 to-[#C7B9FF]/15 border border-[#4F8CFF]/25 text-xs font-medium text-[#C7B9FF] hover:border-[#4F8CFF]/50 transition-all duration-200 shadow-sm"
                 type="button"
                 aria-label={`Remove ${vibe} filter`}
               >
                 {vibe.replace(/_/g, " ")}
-                <X className="w-3 h-3 opacity-50 group-hover:opacity-100" weight="bold" />
-              </button>
+                <X className="w-3.5 h-3.5 opacity-60 group-hover:opacity-100 transition-opacity" weight="bold" />
+              </motion.button>
             ))}
-          </div>
+          </motion.div>
         )}
       </div>
     </div>

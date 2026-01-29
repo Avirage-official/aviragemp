@@ -244,61 +244,76 @@ export default function MarketplaceClient({
         </div>
       )}
 
-      {/* Mobile Vibe Filter Bottom Sheet */}
+      {/* Mobile Vibe Filter Bottom Sheet - Enhanced Design */}
       {showMobileFilter && (
-        <div className="md:hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-end">
+        <div className="md:hidden fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-end">
           <motion.div
             initial={{ y: "100%" }}
             animate={{ y: 0 }}
             exit={{ y: "100%" }}
-            className="w-full bg-[#0F1114] rounded-t-2xl p-6 max-h-[80vh] overflow-y-auto border-t border-white/[0.06]"
+            transition={{ type: "spring", damping: 30, stiffness: 300 }}
+            className="w-full bg-gradient-to-b from-[#0F1114] to-[#0B0D10] rounded-t-3xl p-6 max-h-[85vh] overflow-y-auto border-t-2 border-white/[0.08] shadow-2xl"
           >
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-semibold text-white">
-                Filter by Vibe
-              </h3>
-              <button
+            <div className="flex items-center justify-between mb-7">
+              <div>
+                <h3 className="text-xl font-semibold text-white tracking-tight">
+                  Filter by Vibe
+                </h3>
+                <p className="text-xs text-zinc-500 mt-1 font-medium">
+                  Select one or more vibes to refine results
+                </p>
+              </div>
+              <motion.button
                 onClick={() => setShowMobileFilter(false)}
-                className="w-9 h-9 rounded-full bg-zinc-800 flex items-center justify-center"
+                whileHover={{ scale: 1.1, rotate: 90 }}
+                whileTap={{ scale: 0.9 }}
+                className="w-10 h-10 rounded-full bg-zinc-800/80 backdrop-blur-sm flex items-center justify-center border border-white/10"
                 type="button"
                 aria-label="Close filter menu"
               >
                 <X className="w-5 h-5 text-white" weight="bold" />
-              </button>
+              </motion.button>
             </div>
 
-            <div className="space-y-2">
-              {VIBE_OPTIONS.map((vibe) => (
-                <button
+            <div className="space-y-2.5">
+              {VIBE_OPTIONS.map((vibe, idx) => (
+                <motion.button
                   key={vibe.id}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: idx * 0.01 }}
                   onClick={() => toggleVibe(vibe.id)}
-                  className={`w-full text-left px-4 py-3 rounded-lg text-sm transition-all ${
+                  className={`w-full text-left px-5 py-3.5 rounded-xl text-sm font-medium transition-all duration-200 ${
                     selectedVibes.includes(vibe.id)
-                      ? "bg-gradient-to-r from-[#4F8CFF]/10 to-[#C7B9FF]/10 text-[#C7B9FF] border border-[#C7B9FF]/20"
-                      : "bg-zinc-800/30 text-zinc-400 hover:bg-zinc-800/50"
+                      ? "bg-gradient-to-r from-[#4F8CFF]/15 to-[#C7B9FF]/15 text-[#C7B9FF] border border-[#C7B9FF]/30 shadow-lg"
+                      : "bg-zinc-800/40 text-zinc-400 hover:bg-zinc-800/70 hover:text-white border border-white/5"
                   }`}
                   type="button"
                 >
                   {vibe.label}
-                </button>
+                </motion.button>
               ))}
             </div>
 
-            <div className="mt-6 flex gap-3">
-              <button
+            <div className="mt-8 flex gap-3 sticky bottom-0 bg-gradient-to-t from-[#0B0D10] pt-4 pb-2">
+              <motion.button
                 onClick={() => setShowMobileFilter(false)}
-                className="flex-1 h-12 rounded-full bg-gradient-to-r from-[#4F8CFF] to-[#C7B9FF] text-[#041021] text-sm font-semibold"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="flex-1 h-14 rounded-2xl bg-gradient-to-r from-[#4F8CFF] to-[#C7B9FF] text-[#041021] text-base font-bold shadow-[0_8px_30px_rgba(79,140,255,0.4)]"
                 type="button"
               >
                 Apply Filters
-              </button>
-              <button
+              </motion.button>
+              <motion.button
                 onClick={() => setSelectedVibes([])}
-                className="h-12 px-6 rounded-full bg-white/5 text-white text-sm border border-white/10"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="h-14 px-7 rounded-2xl bg-white/[0.08] text-white text-base font-semibold border border-white/15 backdrop-blur-sm"
                 type="button"
               >
                 Clear
-              </button>
+              </motion.button>
             </div>
           </motion.div>
         </div>
