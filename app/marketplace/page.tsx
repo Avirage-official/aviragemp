@@ -19,6 +19,7 @@ export type Venue = {  // ADD "export" here
   subcategory: string;
   priceRange: string | null;
   imageUrl: string | null;
+  images: string[];
   compatibilityScores: Record<string, number>;
   vibes: string[];
   googleMapsUrl: string | null;
@@ -79,6 +80,7 @@ export default async function MarketplacePage() {
       subcategory: venue.subcategory,
       priceRange: venue.priceRange,
       imageUrl: venue.imageUrl,
+      images: venue.imageUrl ? [venue.imageUrl] : [],
       compatibilityScores: scores,
       vibes: venue.vibes.map((v) => v.vibe),
       googleMapsUrl: venue.googleMapsUrl,

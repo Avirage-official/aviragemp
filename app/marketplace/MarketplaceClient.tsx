@@ -2,44 +2,19 @@
 
 import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import {
-  MagnifyingGlass,
-  Sparkle,
-  X,
-} from "@phosphor-icons/react";
+import { X, Sparkle } from "@phosphor-icons/react";
 import type { Venue } from "./page";
 
-import { HeroBannerCanvas } from "./_components/HeroBannerCanvas";
+import { MarketplaceHero } from "./_components/MarketplaceHero";
+import { FiltersBar } from "./_components/FiltersBar";
+import { MarketplaceGrid } from "./_components/MarketplaceGrid";
 import { EditorialLane } from "./_components/EditorialLane";
 
 /* ============================================================================
-   TYPES
-============================================================================ */
+   TYPES & CONSTANTS
+   ============================================================================ */
 
-type SubcategoryFilter =
-  | "all"
-  | "nomnoms"
-  | "creativevibe"
-  | "wellness"
-  | "nightlife"
-  | "outdoors"
-  | "learning"
-  | "community";
-
-/* ============================================================================
-   CONSTANTS
-============================================================================ */
-
-const SUBCATEGORIES = [
-  { id: "all" as const, label: "All Spaces" },
-  { id: "nomnoms" as const, label: "NomNoms" },
-  { id: "creativevibe" as const, label: "Creative" },
-  { id: "wellness" as const, label: "Wellness" },
-  { id: "nightlife" as const, label: "Nightlife" },
-  { id: "outdoors" as const, label: "Outdoors" },
-  { id: "learning" as const, label: "Learning" },
-  { id: "community" as const, label: "Community" },
-];
+type LayoutMode = "grid" | "editorial";
 
 const VIBE_OPTIONS = [
   { id: "date_quiet", label: "Date · Quiet" },
@@ -88,7 +63,7 @@ const VIBE_OPTIONS = [
 
 /* ============================================================================
    HELPERS
-============================================================================ */
+   ============================================================================ */
 
 function getMatchPercentage(
   scores: Record<string, number>,
@@ -99,44 +74,8 @@ function getMatchPercentage(
 }
 
 /* ============================================================================
-   GRID CARD (used only when user forces it via search/filter)
-============================================================================ */
-
-function GridCard({ venue }: { venue: Venue }) {
-  return (
-    <motion.div
-      whileHover={{ y: -4 }}
-      className="rounded-xl overflow-hidden bg-[#111111] border border-white/5 hover:border-white/10 transition-all"
-    >
-      <div className="relative aspect-[4/3] bg-zinc-900 overflow-hidden">
-        {venue.imageUrl ? (
-          <img
-            src={venue.imageUrl}
-            alt={venue.name}
-            className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
-          />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center">
-            <Sparkle className="w-10 h-10 text-zinc-700" weight="duotone" />
-          </div>
-        )}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/55 to-transparent opacity-0 hover:opacity-100 transition-opacity" />
-      </div>
-      <div className="p-4">
-        <div className="text-white font-medium line-clamp-2">{venue.name}</div>
-        <div className="text-xs text-zinc-400 mt-1 line-clamp-1">
-          {venue.neighborhood
-            ? `${venue.neighborhood}, ${venue.city}`
-            : venue.city}
-        </div>
-      </div>
-    </motion.div>
-  );
-}
-
-/* ============================================================================
-   MAIN
-============================================================================ */
+   MAIN COMPONENT
+   ============================================================================ */
 
 export default function MarketplaceClient({
   initialVenues,
@@ -145,35 +84,29 @@ export default function MarketplaceClient({
   initialVenues: Venue[];
   userArchetype: string | null;
 }) {
+  // State
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] =
-    useState<SubcategoryFilter>("all");
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [selectedVibes, setSelectedVibes] = useState<string[]>([]);
-  const [showVibeFilter, setShowVibeFilter] = useState(false);
-  const [forceGrid, setForceGrid] = useState(false);
+  const [showMobileFilter, setShowMobileFilter] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const toggleVibe = (vibeId: string) => {
-    setSelectedVibes((prev) =>
-      prev.includes(vibeId)
-        ? prev.filter((v) => v !== vibeId)
-        : [...prev, vibeId]
-    );
-  };
-
-  const clearAll = () => {
-    setSearchQuery("");
-    setSelectedCategory("all");
-    setSelectedVibes([]);
-    setForceGrid(false);
-  };
-
-  const filtersActive =
-    forceGrid ||
-    !!searchQuery.trim() ||
+  // Determine layout mode
+  const hasActiveFilters =
+    searchQuery.trim() !== "" ||
     selectedCategory !== "all" ||
     selectedVibes.length > 0;
 
-  // === Featured (hero)
+  const layoutMode: LayoutMode = hasActiveFilters ? "grid" : "editorial";
+
+  // Reset all filters
+  const resetFilters = () => {
+    setSearchQuery("");
+    setSelectedCategory("all");
+    setSelectedVibes([]);
+  };
+
+  // Hero venues (top matches for user)
   const heroVenues = useMemo(() => {
     if (!userArchetype) return [];
     return [...initialVenues]
@@ -186,7 +119,7 @@ export default function MarketplaceClient({
       .slice(0, 5);
   }, [initialVenues, userArchetype]);
 
-  // === Filtered venues (grid-mode)
+  // Filtered venues for grid mode
   const filteredVenues = useMemo(() => {
     let filtered = [...initialVenues];
 
@@ -211,6 +144,7 @@ export default function MarketplaceClient({
       );
     }
 
+    // Sort by match if user is logged in
     if (userArchetype) {
       filtered.sort((a, b) => {
         const matchA = getMatchPercentage(a.compatibilityScores, userArchetype);
@@ -222,9 +156,9 @@ export default function MarketplaceClient({
     return filtered;
   }, [initialVenues, searchQuery, selectedCategory, selectedVibes, userArchetype]);
 
-  // === Editorial lanes (default-mode)
-  const lanes = useMemo(() => {
-    const pick = (subcategory: SubcategoryFilter) => {
+  // Editorial lanes (by category)
+  const editorialLanes = useMemo(() => {
+    const pickByCategory = (subcategory: string) => {
       let items = initialVenues.filter((v) => v.subcategory === subcategory);
 
       if (userArchetype) {
@@ -235,107 +169,55 @@ export default function MarketplaceClient({
         });
       }
 
-      // alive but not cramped
       return items.slice(0, 12);
     };
 
-    return [
-      { title: "NomNoms", venues: pick("nomnoms") },
-      { title: "Creative", venues: pick("creativevibe") },
-      { title: "Wellness", venues: pick("wellness") },
-      { title: "Nightlife", venues: pick("nightlife") },
-      { title: "Outdoors", venues: pick("outdoors") },
-      { title: "Learning", venues: pick("learning") },
-      { title: "Community", venues: pick("community") },
-    ].filter((x) => x.venues.length > 0);
+    const categories = [
+      { title: "NomNoms", subcategory: "nomnoms" },
+      { title: "Creative", subcategory: "creativevibe" },
+      { title: "Wellness", subcategory: "wellness" },
+      { title: "Nightlife", subcategory: "nightlife" },
+      { title: "Outdoors", subcategory: "outdoors" },
+      { title: "Learning", subcategory: "learning" },
+      { title: "Community", subcategory: "community" },
+    ];
+
+    return categories
+      .map(({ title, subcategory }) => ({
+        title,
+        venues: pickByCategory(subcategory),
+      }))
+      .filter((lane) => lane.venues.length > 0);
   }, [initialVenues, userArchetype]);
 
+  const toggleVibe = (vibeId: string) => {
+    setSelectedVibes((prev) =>
+      prev.includes(vibeId)
+        ? prev.filter((v) => v !== vibeId)
+        : [...prev, vibeId]
+    );
+  };
+
   return (
-    <div className="min-h-screen bg-black">
-      {/* Sticky Header Bar */}
-      <div className="sticky top-0 z-40 bg-black/70 backdrop-blur border-b border-white/5">
-        <div className="max-w-[1800px] mx-auto px-6 py-4">
-          <div className="flex items-center justify-between gap-4">
-            <div className="hidden md:block">
-              <div className="text-white text-lg font-semibold">
-                Discover Spaces
-              </div>
-              <div className="text-xs text-zinc-400">
-                Curated discovery without noise
-              </div>
-            </div>
+    <div className="min-h-screen bg-[#0B0D10]">
+      {/* Sticky Filters Bar */}
+      <FiltersBar
+        searchValue={searchQuery}
+        onSearchChange={setSearchQuery}
+        selectedVibes={selectedVibes}
+        onVibesChange={setSelectedVibes}
+        selectedCategory={selectedCategory}
+        onCategoryChange={setSelectedCategory}
+        onReset={resetFilters}
+        onMobileFilterOpen={() => setShowMobileFilter(true)}
+      />
 
-            {/* Search */}
-            <div className="relative w-full md:w-[420px]">
-              <MagnifyingGlass
-                className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500"
-                weight="bold"
-              />
-              <input
-                type="text"
-                placeholder="Search spaces..."
-                value={searchQuery}
-                onChange={(e) => {
-                  setSearchQuery(e.target.value);
-                  if (e.target.value.trim()) setForceGrid(true);
-                }}
-                className="w-full h-11 pl-10 pr-4 rounded-lg bg-[#111111] border border-white/5 text-sm text-white placeholder:text-zinc-500 focus:border-white/10 outline-none transition-all"
-              />
-            </div>
-
-            {/* Desktop: View All toggle */}
-            <div className="hidden md:flex items-center gap-3">
-              <button
-                onClick={() => setForceGrid((v) => !v)}
-                className="h-11 px-4 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-sm text-white transition"
-                type="button"
-              >
-                {forceGrid ? "Curated view" : "View all"}
-              </button>
-
-              {(searchQuery ||
-                selectedCategory !== "all" ||
-                selectedVibes.length > 0) && (
-                <button
-                  onClick={clearAll}
-                  className="h-11 px-4 rounded-lg text-sm text-zinc-300 hover:text-white transition"
-                  type="button"
-                >
-                  Clear
-                </button>
-              )}
-            </div>
-          </div>
-
-          {/* Category Tabs */}
-          <div className="mt-4 flex items-center gap-3 overflow-x-auto pb-2 scrollbar-hide">
-            {SUBCATEGORIES.map((cat) => (
-              <button
-                key={cat.id}
-                onClick={() => {
-                  setSelectedCategory(cat.id);
-                  if (cat.id !== "all") setForceGrid(true);
-                }}
-                className={`px-5 py-2.5 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${
-                  selectedCategory === cat.id
-                    ? "bg-white text-black"
-                    : "bg-transparent text-zinc-400 hover:text-white hover:bg-white/5"
-                }`}
-                type="button"
-              >
-                {cat.label}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* DEFAULT MODE (no grid) */}
-      {!filtersActive && (
+      {/* Editorial Mode: Hero + Lanes */}
+      {layoutMode === "editorial" && (
         <>
-          <HeroBannerCanvas venues={heroVenues} />
-          <div className="max-w-[1800px] mx-auto">
-            {lanes.map((lane) => (
+          <MarketplaceHero slides={heroVenues} />
+          <div className="max-w-[1800px] mx-auto py-8">
+            {editorialLanes.map((lane) => (
               <EditorialLane
                 key={lane.title}
                 title={lane.title}
@@ -346,83 +228,40 @@ export default function MarketplaceClient({
         </>
       )}
 
-      {/* GRID MODE (only when user intends it) */}
-      {filtersActive && (
+      {/* Grid Mode: Filtered Results */}
+      {layoutMode === "grid" && (
         <div className="max-w-[1800px] mx-auto px-6 py-10">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-semibold text-white">
+          <div className="flex items-center justify-between mb-8">
+            <h2 className="text-2xl font-semibold text-white">
               Results
-              <span className="ml-2 text-zinc-500">
+              <span className="ml-3 text-zinc-500 text-lg">
                 ({filteredVenues.length})
               </span>
             </h2>
-
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() => setForceGrid(false)}
-                className="text-sm text-zinc-400 hover:text-white transition"
-                type="button"
-              >
-                Back to curated
-              </button>
-              <button
-                onClick={clearAll}
-                className="text-sm text-zinc-400 hover:text-white transition"
-                type="button"
-              >
-                Clear filters
-              </button>
-            </div>
           </div>
 
-          {filteredVenues.length > 0 ? (
-            <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-              {filteredVenues.map((v) => (
-                <GridCard key={v.id} venue={v} />
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-20">
-              <div className="w-16 h-16 rounded-full bg-zinc-900 flex items-center justify-center mx-auto mb-4">
-                <MagnifyingGlass className="w-8 h-8 text-zinc-700" weight="duotone" />
-              </div>
-              <h3 className="text-lg font-semibold text-white mb-2">
-                No spaces found
-              </h3>
-              <p className="text-sm text-zinc-500">
-                Try adjusting your filters
-              </p>
-            </div>
-          )}
+          <MarketplaceGrid venues={filteredVenues} isLoading={isLoading} />
         </div>
       )}
 
-      {/* Mobile Vibe Filter Button */}
-      <button
-        onClick={() => setShowVibeFilter(true)}
-        className="lg:hidden fixed bottom-6 right-6 w-14 h-14 rounded-full bg-white text-black flex items-center justify-center shadow-xl z-50"
-        type="button"
-      >
-        <Sparkle className="w-6 h-6" weight="fill" />
-      </button>
-
-      {/* Mobile Vibe Filter Modal */}
-      {showVibeFilter && (
-        <div className="lg:hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-end">
+      {/* Mobile Vibe Filter Bottom Sheet */}
+      {showMobileFilter && (
+        <div className="md:hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-end">
           <motion.div
             initial={{ y: "100%" }}
             animate={{ y: 0 }}
             exit={{ y: "100%" }}
-            className="w-full bg-[#0A0A0A] rounded-t-2xl p-6 max-h-[80vh] overflow-y-auto"
+            className="w-full bg-[#0F1114] rounded-t-2xl p-6 max-h-[80vh] overflow-y-auto border-t border-white/[0.06]"
           >
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-lg font-semibold text-white">
                 Filter by Vibe
               </h3>
               <button
-                onClick={() => setShowVibeFilter(false)}
-                className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center"
+                onClick={() => setShowMobileFilter(false)}
+                className="w-9 h-9 rounded-full bg-zinc-800 flex items-center justify-center"
                 type="button"
+                aria-label="Close filter menu"
               >
                 <X className="w-5 h-5 text-white" weight="bold" />
               </button>
@@ -432,14 +271,11 @@ export default function MarketplaceClient({
               {VIBE_OPTIONS.map((vibe) => (
                 <button
                   key={vibe.id}
-                  onClick={() => {
-                    toggleVibe(vibe.id);
-                    setForceGrid(true);
-                  }}
+                  onClick={() => toggleVibe(vibe.id)}
                   className={`w-full text-left px-4 py-3 rounded-lg text-sm transition-all ${
                     selectedVibes.includes(vibe.id)
-                      ? "bg-blue-500/10 text-blue-400 border border-blue-500/20"
-                      : "bg-zinc-800/30 text-zinc-400"
+                      ? "bg-gradient-to-r from-[#4F8CFF]/10 to-[#C7B9FF]/10 text-[#C7B9FF] border border-[#C7B9FF]/20"
+                      : "bg-zinc-800/30 text-zinc-400 hover:bg-zinc-800/50"
                   }`}
                   type="button"
                 >
@@ -450,17 +286,15 @@ export default function MarketplaceClient({
 
             <div className="mt-6 flex gap-3">
               <button
-                onClick={() => {
-                  setShowVibeFilter(false);
-                }}
-                className="flex-1 h-11 rounded-lg bg-white text-black text-sm font-semibold"
+                onClick={() => setShowMobileFilter(false)}
+                className="flex-1 h-12 rounded-full bg-gradient-to-r from-[#4F8CFF] to-[#C7B9FF] text-[#041021] text-sm font-semibold"
                 type="button"
               >
-                Apply
+                Apply Filters
               </button>
               <button
                 onClick={() => setSelectedVibes([])}
-                className="h-11 px-4 rounded-lg bg-white/5 text-white text-sm border border-white/10"
+                className="h-12 px-6 rounded-full bg-white/5 text-white text-sm border border-white/10"
                 type="button"
               >
                 Clear
