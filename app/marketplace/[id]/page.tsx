@@ -108,16 +108,40 @@ function getDominantArchetype(scores: Record<string, number>): {
 export default async function VenueDetailPage({ params }: PageProps) {
   const { id } = await params;
 
-  // Get user archetype
+  // Get user data and astrology profile
   const { userId } = await auth();
   let userArchetype: string | null = null;
+  let currentUser: any = null;
+  let astrologyProfile: any = null;
 
   if (userId) {
     const user = await prisma.user.findUnique({
       where: { clerkId: userId },
-      select: { primaryCode: true },
+      select: {
+        id: true,
+        clerkId: true,
+        primaryCode: true,
+        currentMood: true,
+        astrology: {
+          select: {
+            moonSign: true,
+            sunSign: true,
+            risingSign: true,
+          },
+        },
+      },
     });
-    userArchetype = user?.primaryCode || null;
+    
+    if (user) {
+      userArchetype = user.primaryCode;
+      currentUser = {
+        id: user.id,
+        clerkId: user.clerkId,
+        archetype: user.primaryCode,
+        mood: user.currentMood,
+      };
+      astrologyProfile = user.astrology;
+    }
   }
 
   // Fetch venue
@@ -174,5 +198,11 @@ export default async function VenueDetailPage({ params }: PageProps) {
     userMatch,
   };
 
-  return <VenueDetailClient venue={venueDetail} />;
+  return (
+    <VenueDetailClient 
+      venue={venueDetail} 
+      currentUser={currentUser}
+      astrologyProfile={astrologyProfile}
+    />
+  );
 }
