@@ -11,6 +11,7 @@ import {
   Lightning,
   X,
 } from "@phosphor-icons/react";
+import type { Venue } from "./page";
 
 /* ============================================================================
    TYPES
