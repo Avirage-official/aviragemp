@@ -40,6 +40,16 @@ const ARCHETYPE_MESSAGES: Record<string, { title: string; subtitle: string }> = 
 export function MarketplaceHero({ slides, userArchetype }: MarketplaceHeroProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
+  const [scrollY, setScrollY] = useState(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrollY(window.scrollY);
+    };
+    
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   useEffect(() => {
     if (!isAutoPlaying || slides.length <= 1) return;
@@ -108,6 +118,7 @@ export function MarketplaceHero({ slides, userArchetype }: MarketplaceHeroProps)
               initial={{ scale: 1.1 }}
               animate={{ scale: 1 }}
               transition={{ duration: 8, ease: "easeOut" }}
+              style={{ transform: `translateY(${scrollY * 0.5}px)` }}
             >
               <Image
                 src={currentSlide.venue.imageUrl}
@@ -145,7 +156,7 @@ export function MarketplaceHero({ slides, userArchetype }: MarketplaceHeroProps)
       </AnimatePresence>
 
       {/* Content */}
-      <div className="relative z-10 h-full max-w-[1800px] mx-auto px-6 flex items-end pb-16">
+      <div className="relative z-10 h-full max-w-[1800px] mx-auto px-6 md:px-8 lg:px-12 flex items-end pb-20 md:pb-24">
         <motion.div
           key={`content-${currentIndex}`}
           initial={{ opacity: 0, y: 20 }}
@@ -159,19 +170,19 @@ export function MarketplaceHero({ slides, userArchetype }: MarketplaceHeroProps)
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.4, delay: 0.3 }}
-              className="inline-flex items-center gap-2 mb-5 px-4 py-2 rounded-full bg-white/90 backdrop-blur-md border border-blue-200/50 text-sm text-blue-700 shadow-sm"
+              className="inline-flex items-center gap-2 mb-6 px-5 py-2.5 rounded-full bg-white/90 backdrop-blur-md border border-blue-200/50 text-sm text-blue-700 shadow-sm"
             >
               <Lightning weight="fill" className="text-cyan-500" />
               <span className="font-medium">Resonating right now</span>
             </motion.div>
 
             {/* Title - Enhanced Typography */}
-            <h1 className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-slate-900 leading-[1.1] mb-4 tracking-tight">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-slate-900 leading-[1.1] mb-5 tracking-tight">
               {currentSlide.venue.name}
             </h1>
 
             {/* Location - Enhanced Styling */}
-            <div className="flex items-center gap-2 text-slate-700 mb-6 text-sm md:text-base">
+            <div className="flex items-center gap-2 text-slate-700 mb-7 text-sm md:text-base">
               <MapPin weight="fill" className="w-5 h-5 text-cyan-500" />
               <span className="font-medium">
                 {currentSlide.venue.neighborhood
@@ -182,7 +193,7 @@ export function MarketplaceHero({ slides, userArchetype }: MarketplaceHeroProps)
 
             {/* Description - Improved Readability */}
             {currentSlide.venue.description && (
-              <p className="text-slate-700 text-base md:text-lg leading-[1.7] max-w-[65ch] mb-8">
+              <p className="text-slate-700 text-base md:text-lg leading-[1.7] max-w-[65ch] mb-9">
                 {currentSlide.venue.description}
               </p>
             )}

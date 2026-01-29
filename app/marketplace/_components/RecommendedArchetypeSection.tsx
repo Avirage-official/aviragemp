@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Sparkles, Heart } from "@phosphor-icons/react";
+import { Sparkle, Heart } from "@phosphor-icons/react";
 import Link from "next/link";
 import Image from "next/image";
 import type { Venue } from "../page";
@@ -67,7 +67,7 @@ export function RecommendedArchetypeSection({
             transition={{ duration: 0.5, delay: 0.2 }}
             className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 mb-6"
           >
-            <Sparkles weight="fill" className="text-purple-500 w-5 h-5" />
+            <Sparkle weight="fill" className="text-purple-500 w-5 h-5" />
             <span className="text-sm font-semibold text-purple-700">
               Curated For Your Archetype
             </span>
