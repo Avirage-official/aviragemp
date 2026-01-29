@@ -10,6 +10,9 @@ import { FiltersBar } from "./_components/FiltersBar";
 import { SideFilters } from "./_components/SideFilters";
 import { MarketplaceGrid } from "./_components/MarketplaceGrid";
 import { EditorialLane } from "./_components/EditorialLane";
+import { TopRecommendedBanner } from "./_components/TopRecommendedBanner";
+import { RecommendedArchetypeSection } from "./_components/RecommendedArchetypeSection";
+import { FunFactsSection } from "./_components/FunFactsSection";
 
 /* ============================================================================
    TYPES & CONSTANTS
@@ -192,6 +195,32 @@ export default function MarketplaceClient({
       .filter((lane) => lane.venues.length > 0);
   }, [initialVenues, userArchetype]);
 
+  // Top recommended venues for banner
+  const topRecommendedVenues = useMemo(() => {
+    if (!userArchetype) return [];
+    return [...initialVenues]
+      .map((v) => ({
+        venue: v,
+        match: getMatchPercentage(v.compatibilityScores, userArchetype),
+      }))
+      .filter((x) => x.match >= 80 && x.venue.imageUrl)
+      .sort((a, b) => b.match - a.match)
+      .slice(0, 3);
+  }, [initialVenues, userArchetype]);
+
+  // Recommended archetype venues (medium match)
+  const recommendedArchetypeVenues = useMemo(() => {
+    if (!userArchetype) return [];
+    return [...initialVenues]
+      .map((v) => ({
+        ...v,
+        match: getMatchPercentage(v.compatibilityScores, userArchetype),
+      }))
+      .filter((v) => v.match >= 70)
+      .sort((a, b) => b.match - a.match)
+      .slice(0, 8);
+  }, [initialVenues, userArchetype]);
+
   const toggleVibe = (vibeId: string) => {
     setSelectedVibes((prev) =>
       prev.includes(vibeId)
@@ -225,17 +254,48 @@ export default function MarketplaceClient({
         onMobileFilterOpen={() => setShowMobileFilter(true)}
       />
 
-      {/* Editorial Mode: Hero + Lanes */}
+      {/* Editorial Mode: Top Banner + Hero + Recommended Section + Lanes + Fun Facts */}
       {layoutMode === "editorial" && (
         <>
+          {/* Top Recommended Banner */}
+          <TopRecommendedBanner 
+            topVenues={topRecommendedVenues} 
+            userArchetype={userArchetype}
+          />
+          
+          {/* Hero Carousel */}
           <MarketplaceHero slides={heroVenues} userArchetype={userArchetype} />
-          <div className="max-w-[1800px] mx-auto py-8">
-            {editorialLanes.map((lane) => (
-              <EditorialLane
-                key={lane.title}
-                title={lane.title}
-                venues={lane.venues}
-              />
+          
+          {/* Recommended for Your Archetype Section */}
+          <RecommendedArchetypeSection 
+            venues={recommendedArchetypeVenues}
+            userArchetype={userArchetype}
+          />
+          
+          {/* Fun Facts Section */}
+          <FunFactsSection 
+            totalVenues={initialVenues.length}
+            userArchetype={userArchetype}
+          />
+          
+          {/* Editorial Lanes - Full Width */}
+          <div className="w-full py-8">
+            {editorialLanes.map((lane, idx) => (
+              <div key={lane.title}>
+                <EditorialLane
+                  title={lane.title}
+                  venues={lane.venues}
+                />
+                {/* Add fun facts between some lanes */}
+                {idx === Math.floor(editorialLanes.length / 2) && (
+                  <div className="my-16">
+                    <FunFactsSection 
+                      totalVenues={initialVenues.length}
+                      userArchetype={userArchetype}
+                    />
+                  </div>
+                )}
+              </div>
             ))}
           </div>
         </>
@@ -313,7 +373,7 @@ export default function MarketplaceClient({
                 onClick={() => setShowMobileFilter(false)}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                className="flex-1 h-14 rounded-2xl bg-gradient-to-r from-blue-500 to-purple-500 text-white text-base font-bold shadow-lg shadow-blue-500/30"
+                className="flex-1 h-16 rounded-2xl bg-gradient-to-r from-blue-500 to-purple-500 text-white text-base md:text-lg font-bold shadow-lg shadow-blue-500/30"
                 type="button"
               >
                 Apply Filters
@@ -322,7 +382,7 @@ export default function MarketplaceClient({
                 onClick={() => setSelectedVibes([])}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                className="h-14 px-7 rounded-2xl bg-slate-100 text-slate-700 text-base font-semibold border border-slate-200"
+                className="h-16 px-8 rounded-2xl bg-slate-100 text-slate-700 text-base md:text-lg font-semibold border border-slate-200"
                 type="button"
               >
                 Clear

@@ -187,12 +187,12 @@ export function MarketplaceHero({ slides, userArchetype }: MarketplaceHeroProps)
               </p>
             )}
 
-            {/* CTA Row - Premium Button Design */}
+            {/* CTA Row - Premium Button Design with Larger Size */}
             <div className="flex flex-wrap items-center gap-4">
               <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                 <Link
                   href={`/marketplace/${currentSlide.venue.id}`}
-                  className="inline-flex items-center justify-center px-9 h-13 md:h-14 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 text-white text-sm md:text-base font-semibold hover:shadow-xl hover:shadow-blue-500/30 transition-all duration-300 shadow-lg shadow-blue-500/25"
+                  className="inline-flex items-center justify-center px-10 h-14 md:h-16 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 text-white text-base md:text-lg font-semibold hover:shadow-xl hover:shadow-blue-500/30 transition-all duration-300 shadow-lg shadow-blue-500/25"
                   aria-label={`Explore ${currentSlide.venue.name}`}
                 >
                   Explore this space
@@ -230,27 +230,27 @@ export function MarketplaceHero({ slides, userArchetype }: MarketplaceHeroProps)
       {/* Navigation Controls */}
       {slides.length > 1 && (
         <>
-          {/* Arrows - Enhanced Design */}
+          {/* Arrows - Enhanced Design with Larger Size */}
           <div className="absolute left-6 right-6 top-1/2 -translate-y-1/2 z-20 flex justify-between pointer-events-none">
             <motion.button
               onClick={goToPrevious}
               aria-label="Previous slide"
               whileHover={{ scale: 1.1, backgroundColor: "rgba(255,255,255,0.95)" }}
               whileTap={{ scale: 0.95 }}
-              className="pointer-events-auto w-14 h-14 rounded-full bg-white/80 backdrop-blur-xl border border-slate-200 flex items-center justify-center transition-all duration-200 shadow-lg hover:shadow-xl"
+              className="pointer-events-auto w-16 h-16 rounded-full bg-white/80 backdrop-blur-xl border border-slate-200 flex items-center justify-center transition-all duration-200 shadow-lg hover:shadow-xl"
               type="button"
             >
-              <CaretLeft className="w-6 h-6 text-slate-700" weight="bold" />
+              <CaretLeft className="w-7 h-7 text-slate-700" weight="bold" />
             </motion.button>
             <motion.button
               onClick={goToNext}
               aria-label="Next slide"
               whileHover={{ scale: 1.1, backgroundColor: "rgba(255,255,255,0.95)" }}
               whileTap={{ scale: 0.95 }}
-              className="pointer-events-auto w-14 h-14 rounded-full bg-white/80 backdrop-blur-xl border border-slate-200 flex items-center justify-center transition-all duration-200 shadow-lg hover:shadow-xl"
+              className="pointer-events-auto w-16 h-16 rounded-full bg-white/80 backdrop-blur-xl border border-slate-200 flex items-center justify-center transition-all duration-200 shadow-lg hover:shadow-xl"
               type="button"
             >
-              <CaretRight className="w-6 h-6 text-slate-700" weight="bold" />
+              <CaretRight className="w-7 h-7 text-slate-700" weight="bold" />
             </motion.button>
           </div>
 

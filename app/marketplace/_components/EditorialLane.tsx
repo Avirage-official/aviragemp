@@ -14,9 +14,9 @@ export function EditorialLane({
   if (!venues.length) return null;
 
   return (
-    <section className="mb-24">
+    <section className="mb-24 w-full">
       {/* Section Header - Enhanced with Count */}
-      <div className="flex items-end justify-between mb-7 px-6">
+      <div className="flex items-end justify-between mb-7 px-6 max-w-[1800px] mx-auto">
         <div>
           <h2 className="text-2xl md:text-3xl font-semibold text-slate-900 tracking-tight mb-1">
             {title}
@@ -27,7 +27,7 @@ export function EditorialLane({
         </div>
       </div>
 
-      {/* Lane - Enhanced with Momentum Scrolling */}
+      {/* Lane - Enhanced with Momentum Scrolling - Full Width */}
       <div className="relative overflow-x-auto scrollbar-hide scroll-smooth">
         <div className="flex gap-8 px-6 pb-4" style={{ scrollSnapType: "x mandatory" }}>
           {venues.map((venue, idx) => (
