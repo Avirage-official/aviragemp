@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Funnel, CaretRight, SlidersHorizontal } from "@phosphor-icons/react";
+import { X, Funnel, CaretRight, SlidersHorizontal, Sparkles, MapPin } from "@phosphor-icons/react";
 
 interface SideFiltersProps {
   selectedVibes: string[];
@@ -12,6 +12,11 @@ interface SideFiltersProps {
   onReset: () => void;
   isOpen: boolean;
   onToggle: () => void;
+  priceRange?: [number, number];
+  onPriceRangeChange?: (range: [number, number]) => void;
+  maxDistance?: number;
+  onMaxDistanceChange?: (distance: number) => void;
+  onSurpriseMe?: () => void;
 }
 
 const VIBE_OPTIONS = [
@@ -70,6 +75,13 @@ const SUBCATEGORIES = [
   { id: "community", label: "Community" },
 ];
 
+const PRICE_LEVELS = [
+  { value: 1, label: "$", desc: "Budget-friendly" },
+  { value: 2, label: "$$", desc: "Moderate" },
+  { value: 3, label: "$$$", desc: "Upscale" },
+  { value: 4, label: "$$$$", desc: "Premium" },
+];
+
 export function SideFilters({
   selectedVibes,
   onVibesChange,
@@ -78,7 +90,15 @@ export function SideFilters({
   onReset,
   isOpen,
   onToggle,
+  priceRange = [1, 4],
+  onPriceRangeChange,
+  maxDistance = 50,
+  onMaxDistanceChange,
+  onSurpriseMe,
 }: SideFiltersProps) {
+  const [localPriceRange, setLocalPriceRange] = useState(priceRange);
+  const [localMaxDistance, setLocalMaxDistance] = useState(maxDistance);
+
   const toggleVibe = (vibeId: string) => {
     onVibesChange(
       selectedVibes.includes(vibeId)
@@ -87,130 +107,350 @@ export function SideFilters({
     );
   };
 
-  const hasActiveFilters = selectedCategory !== "all" || selectedVibes.length > 0;
+  const hasActiveFilters = 
+    selectedCategory !== "all" || 
+    selectedVibes.length > 0 ||
+    localPriceRange[0] !== 1 ||
+    localPriceRange[1] !== 4 ||
+    localMaxDistance !== 50;
+
+  const handlePriceRangeChange = (index: number, value: number) => {
+    const newRange: [number, number] = [...localPriceRange] as [number, number];
+    newRange[index] = value;
+    setLocalPriceRange(newRange);
+    onPriceRangeChange?.(newRange);
+  };
+
+  const handleDistanceChange = (value: number) => {
+    setLocalMaxDistance(value);
+    onMaxDistanceChange?.(value);
+  };
 
   return (
     <>
-      {/* Toggle Button (when sidebar is closed) */}
-      {!isOpen && (
-        <motion.button
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          onClick={onToggle}
-          className="fixed left-4 top-24 z-40 w-12 h-12 rounded-full bg-white border border-slate-200 shadow-lg flex items-center justify-center hover:shadow-xl transition-all duration-200 hover:scale-105"
-          aria-label="Open filters"
-        >
-          <Funnel className="w-5 h-5 text-slate-700" weight="bold" />
-        </motion.button>
-      )}
-
-      {/* Sidebar Overlay (desktop) */}
-      <AnimatePresence>
-        {isOpen && (
-          <>
-            {/* Backdrop */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={onToggle}
-              className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40"
-            />
-
-            {/* Sidebar */}
-            <motion.aside
-              initial={{ x: -320 }}
-              animate={{ x: 0 }}
-              exit={{ x: -320 }}
-              transition={{ type: "spring", damping: 30, stiffness: 300 }}
-              className="fixed left-0 top-0 bottom-0 w-80 bg-white border-r border-slate-200 shadow-2xl z-50 overflow-y-auto"
+      {/* Fixed Sidebar (always visible on desktop) */}
+      <motion.aside
+        initial={{ x: 0 }}
+        className="hidden lg:block fixed left-0 top-0 bottom-0 w-80 bg-white/95 backdrop-blur-lg border-r border-slate-200 shadow-xl z-40 overflow-y-auto"
+      >
+        {/* Header */}
+        <div className="sticky top-0 bg-white/95 backdrop-blur-lg border-b border-slate-200 p-6 z-10">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <SlidersHorizontal className="w-5 h-5 text-blue-500" weight="bold" />
+              <h2 className="text-lg font-semibold text-slate-900">Filters</h2>
+            </div>
+          </div>
+          {hasActiveFilters && (
+            <motion.button
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              onClick={onReset}
+              className="text-sm text-blue-600 hover:text-blue-700 font-medium"
             >
-              {/* Header */}
-              <div className="sticky top-0 bg-white border-b border-slate-200 p-6 z-10">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-2">
-                    <SlidersHorizontal className="w-5 h-5 text-blue-500" weight="bold" />
-                    <h2 className="text-lg font-semibold text-slate-900">Filters</h2>
-                  </div>
-                  <motion.button
-                    onClick={onToggle}
-                    whileHover={{ scale: 1.1, rotate: 90 }}
-                    whileTap={{ scale: 0.9 }}
-                    className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center hover:bg-slate-200 transition-colors"
-                    aria-label="Close filters"
-                  >
-                    <X className="w-4 h-4 text-slate-700" weight="bold" />
-                  </motion.button>
-                </div>
-                {hasActiveFilters && (
-                  <motion.button
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    onClick={onReset}
-                    className="text-sm text-blue-600 hover:text-blue-700 font-medium"
-                  >
-                    Reset all filters
-                  </motion.button>
-                )}
-              </div>
+              Reset all filters
+            </motion.button>
+          )}
+        </div>
 
-              {/* Category Section */}
-              <div className="p-6 border-b border-slate-200">
-                <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wider mb-4">
-                  Category
-                </h3>
-                <div className="space-y-2">
-                  {SUBCATEGORIES.map((cat) => (
-                    <motion.button
-                      key={cat.id}
-                      onClick={() => onCategoryChange(cat.id)}
-                      whileHover={{ x: 4 }}
-                      whileTap={{ scale: 0.98 }}
-                      className={`w-full text-left px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 flex items-center justify-between ${
-                        selectedCategory === cat.id
-                          ? "bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-md"
-                          : "bg-slate-50 text-slate-700 hover:bg-slate-100 border border-slate-200"
-                      }`}
-                    >
-                      <span>{cat.label}</span>
-                      {selectedCategory === cat.id && (
-                        <CaretRight className="w-4 h-4" weight="bold" />
-                      )}
-                    </motion.button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Vibes Section */}
-              <div className="p-6">
-                <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wider mb-4">
-                  Vibes
-                  {selectedVibes.length > 0 && (
-                    <span className="ml-2 text-blue-600">({selectedVibes.length})</span>
-                  )}
-                </h3>
-                <div className="space-y-2">
-                  {VIBE_OPTIONS.map((vibe) => (
-                    <motion.button
-                      key={vibe.id}
-                      onClick={() => toggleVibe(vibe.id)}
-                      whileHover={{ x: 4 }}
-                      whileTap={{ scale: 0.98 }}
-                      className={`w-full text-left px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 ${
-                        selectedVibes.includes(vibe.id)
-                          ? "bg-gradient-to-r from-blue-50 to-purple-50 text-blue-700 border border-blue-200 shadow-sm"
-                          : "bg-slate-50 text-slate-700 hover:bg-slate-100 border border-slate-200"
-                      }`}
-                    >
-                      {vibe.label}
-                    </motion.button>
-                  ))}
-                </div>
-              </div>
-            </motion.aside>
-          </>
+        {/* Surprise Me Button */}
+        {onSurpriseMe && (
+          <div className="p-6 border-b border-slate-200">
+            <motion.button
+              onClick={onSurpriseMe}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="w-full px-6 py-4 rounded-xl bg-gradient-to-r from-purple-500 via-pink-500 to-orange-500 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center gap-2"
+            >
+              <Sparkles className="w-5 h-5" weight="fill" />
+              <span>Surprise Me!</span>
+            </motion.button>
+          </div>
         )}
-      </AnimatePresence>
+
+        {/* Price Range */}
+        {onPriceRangeChange && (
+          <div className="p-6 border-b border-slate-200">
+            <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wider mb-4">
+              Price Range
+            </h3>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between gap-4">
+                {PRICE_LEVELS.map((level) => (
+                  <motion.button
+                    key={level.value}
+                    onClick={() => {
+                      if (localPriceRange[0] === level.value && localPriceRange[1] === level.value) {
+                        handlePriceRangeChange(0, 1);
+                        handlePriceRangeChange(1, 4);
+                      } else {
+                        handlePriceRangeChange(0, level.value);
+                        handlePriceRangeChange(1, level.value);
+                      }
+                    }}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className={`flex-1 px-3 py-2 rounded-lg text-sm font-bold transition-all ${
+                      level.value >= localPriceRange[0] && level.value <= localPriceRange[1]
+                        ? "bg-green-500 text-white shadow-md"
+                        : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                    }`}
+                  >
+                    {level.label}
+                  </motion.button>
+                ))}
+              </div>
+              <p className="text-xs text-slate-600 text-center">
+                {localPriceRange[0] === 1 && localPriceRange[1] === 4
+                  ? "All prices"
+                  : `${PRICE_LEVELS.find(p => p.value === localPriceRange[0])?.label} to ${PRICE_LEVELS.find(p => p.value === localPriceRange[1])?.label}`}
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Distance Filter */}
+        {onMaxDistanceChange && (
+          <div className="p-6 border-b border-slate-200">
+            <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wider mb-4 flex items-center gap-2">
+              <MapPin className="w-4 h-4" weight="bold" />
+              Max Distance
+            </h3>
+            <div className="space-y-3">
+              <input
+                type="range"
+                min="1"
+                max="100"
+                value={localMaxDistance}
+                onChange={(e) => handleDistanceChange(parseInt(e.target.value))}
+                className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-500"
+              />
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-slate-600">1 km</span>
+                <span className="font-semibold text-blue-600">{localMaxDistance} km</span>
+                <span className="text-slate-600">100 km</span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Category Section */}
+        <div className="p-6 border-b border-slate-200">
+          <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wider mb-4">
+            Category
+          </h3>
+          <div className="space-y-2">
+            {SUBCATEGORIES.map((cat) => (
+              <motion.button
+                key={cat.id}
+                onClick={() => onCategoryChange(cat.id)}
+                whileHover={{ x: 4 }}
+                whileTap={{ scale: 0.98 }}
+                className={`w-full text-left px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 flex items-center justify-between ${
+                  selectedCategory === cat.id
+                    ? "bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-md"
+                    : "bg-slate-50 text-slate-700 hover:bg-slate-100 border border-slate-200"
+                }`}
+              >
+                <span>{cat.label}</span>
+                {selectedCategory === cat.id && (
+                  <CaretRight className="w-4 h-4" weight="bold" />
+                )}
+              </motion.button>
+            ))}
+          </div>
+        </div>
+
+        {/* Vibes Section */}
+        <div className="p-6">
+          <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wider mb-4">
+            Vibes
+            {selectedVibes.length > 0 && (
+              <span className="ml-2 text-blue-600">({selectedVibes.length})</span>
+            )}
+          </h3>
+          <div className="space-y-2">
+            {VIBE_OPTIONS.map((vibe) => (
+              <motion.button
+                key={vibe.id}
+                onClick={() => toggleVibe(vibe.id)}
+                whileHover={{ x: 4 }}
+                whileTap={{ scale: 0.98 }}
+                className={`w-full text-left px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 ${
+                  selectedVibes.includes(vibe.id)
+                    ? "bg-blue-100 text-blue-700 border border-blue-300"
+                    : "bg-slate-50 text-slate-700 hover:bg-slate-100 border border-slate-200"
+                }`}
+              >
+                {vibe.label}
+              </motion.button>
+            ))}
+          </div>
+        </div>
+      </motion.aside>
+
+      {/* Mobile Filter Button & Modal */}
+      <div className="lg:hidden">
+        {!isOpen && (
+          <motion.button
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            onClick={onToggle}
+            className="fixed left-4 top-24 z-40 w-12 h-12 rounded-full bg-white border border-slate-200 shadow-lg flex items-center justify-center hover:shadow-xl transition-all duration-200 hover:scale-105"
+            aria-label="Open filters"
+          >
+            <Funnel className="w-5 h-5 text-slate-700" weight="bold" />
+          </motion.button>
+        )}
+
+        <AnimatePresence>
+          {isOpen && (
+            <>
+              {/* Backdrop */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={onToggle}
+                className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40"
+              />
+
+              {/* Mobile Sidebar */}
+              <motion.aside
+                initial={{ x: -320 }}
+                animate={{ x: 0 }}
+                exit={{ x: -320 }}
+                transition={{ type: "spring", damping: 30, stiffness: 300 }}
+                className="fixed left-0 top-0 bottom-0 w-80 bg-white border-r border-slate-200 shadow-2xl z-50 overflow-y-auto"
+              >
+                {/* Mobile Header */}
+                <div className="sticky top-0 bg-white border-b border-slate-200 p-6 z-10">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <SlidersHorizontal className="w-5 h-5 text-blue-500" weight="bold" />
+                      <h2 className="text-lg font-semibold text-slate-900">Filters</h2>
+                    </div>
+                    <motion.button
+                      onClick={onToggle}
+                      whileHover={{ scale: 1.1, rotate: 90 }}
+                      whileTap={{ scale: 0.9 }}
+                      className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center hover:bg-slate-200 transition-colors"
+                      aria-label="Close filters"
+                    >
+                      <X className="w-4 h-4 text-slate-700" weight="bold" />
+                    </motion.button>
+                  </div>
+                  {hasActiveFilters && (
+                    <motion.button
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      onClick={onReset}
+                      className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+                    >
+                      Reset all filters
+                    </motion.button>
+                  )}
+                </div>
+
+                {/* Mobile content - same sections as desktop */}
+                {/* Surprise Me */}
+                {onSurpriseMe && (
+                  <div className="p-6 border-b border-slate-200">
+                    <motion.button
+                      onClick={() => {
+                        onSurpriseMe();
+                        onToggle();
+                      }}
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      className="w-full px-6 py-4 rounded-xl bg-gradient-to-r from-purple-500 via-pink-500 to-orange-500 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center gap-2"
+                    >
+                      <Sparkles className="w-5 h-5" weight="fill" />
+                      <span>Surprise Me!</span>
+                    </motion.button>
+                  </div>
+                )}
+
+                {/* Price Range - Mobile */}
+                {onPriceRangeChange && (
+                  <div className="p-6 border-b border-slate-200">
+                    <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wider mb-4">
+                      Price Range
+                    </h3>
+                    <div className="flex items-center gap-2">
+                      {PRICE_LEVELS.map((level) => (
+                        <motion.button
+                          key={level.value}
+                          onClick={() => {
+                            handlePriceRangeChange(0, level.value);
+                            handlePriceRangeChange(1, level.value);
+                          }}
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          className={`flex-1 px-3 py-2 rounded-lg text-sm font-bold ${
+                            level.value >= localPriceRange[0] && level.value <= localPriceRange[1]
+                              ? "bg-green-500 text-white"
+                              : "bg-slate-100 text-slate-600"
+                          }`}
+                        >
+                          {level.label}
+                        </motion.button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Category - Mobile */}
+                <div className="p-6 border-b border-slate-200">
+                  <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wider mb-4">
+                    Category
+                  </h3>
+                  <div className="space-y-2">
+                    {SUBCATEGORIES.map((cat) => (
+                      <motion.button
+                        key={cat.id}
+                        onClick={() => onCategoryChange(cat.id)}
+                        className={`w-full text-left px-4 py-3 rounded-lg text-sm font-medium ${
+                          selectedCategory === cat.id
+                            ? "bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-md"
+                            : "bg-slate-50 text-slate-700 border border-slate-200"
+                        }`}
+                      >
+                        {cat.label}
+                      </motion.button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Vibes - Mobile */}
+                <div className="p-6">
+                  <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wider mb-4">
+                    Vibes
+                    {selectedVibes.length > 0 && (
+                      <span className="ml-2 text-blue-600">({selectedVibes.length})</span>
+                    )}
+                  </h3>
+                  <div className="space-y-2">
+                    {VIBE_OPTIONS.map((vibe) => (
+                      <motion.button
+                        key={vibe.id}
+                        onClick={() => toggleVibe(vibe.id)}
+                        className={`w-full text-left px-4 py-3 rounded-lg text-sm font-medium ${
+                          selectedVibes.includes(vibe.id)
+                            ? "bg-blue-100 text-blue-700 border border-blue-300"
+                            : "bg-slate-50 text-slate-700 border border-slate-200"
+                        }`}
+                      >
+                        {vibe.label}
+                      </motion.button>
+                    ))}
+                  </div>
+                </div>
+              </motion.aside>
+            </>
+          )}
+        </AnimatePresence>
+      </div>
     </>
   );
 }

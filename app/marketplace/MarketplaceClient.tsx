@@ -10,6 +10,12 @@ import { FiltersBar } from "./_components/FiltersBar";
 import { SideFilters } from "./_components/SideFilters";
 import { MarketplaceGrid } from "./_components/MarketplaceGrid";
 import { EditorialLane } from "./_components/EditorialLane";
+import { ArchetypeSpotlight } from "./_components/ArchetypeSpotlight";
+import { FriendsPicks } from "./_components/FriendsPicks";
+import { MoodTracker } from "./_components/MoodTracker";
+import { ProgressBadges } from "./_components/ProgressBadges";
+import { NotificationsBell } from "./_components/NotificationsBell";
+import { QuizTeaser } from "./_components/QuizTeaser";
 
 /* ============================================================================
    TYPES & CONSTANTS
@@ -92,6 +98,8 @@ export default function MarketplaceClient({
   const [showMobileFilter, setShowMobileFilter] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [priceRange, setPriceRange] = useState<[number, number]>([1, 4]);
+  const [maxDistance, setMaxDistance] = useState<number>(50);
 
   // Determine layout mode
   const hasActiveFilters =
@@ -106,6 +114,16 @@ export default function MarketplaceClient({
     setSearchQuery("");
     setSelectedCategory("all");
     setSelectedVibes([]);
+    setPriceRange([1, 4]);
+    setMaxDistance(50);
+  };
+
+  // Surprise Me - Random venue selection
+  const handleSurpriseMe = () => {
+    if (filteredVenues.length > 0) {
+      const randomVenue = filteredVenues[Math.floor(Math.random() * filteredVenues.length)];
+      window.location.href = `/marketplace/${randomVenue.id}`;
+    }
   };
 
   // Hero venues (top matches for user)
@@ -202,7 +220,7 @@ export default function MarketplaceClient({
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Side Filters (Desktop) */}
+      {/* Side Filters (Desktop - Fixed, Always Visible) */}
       <SideFilters
         selectedVibes={selectedVibes}
         onVibesChange={setSelectedVibes}
@@ -211,51 +229,91 @@ export default function MarketplaceClient({
         onReset={resetFilters}
         isOpen={isSidebarOpen}
         onToggle={() => setIsSidebarOpen(!isSidebarOpen)}
+        priceRange={priceRange}
+        onPriceRangeChange={setPriceRange}
+        maxDistance={maxDistance}
+        onMaxDistanceChange={setMaxDistance}
+        onSurpriseMe={handleSurpriseMe}
       />
 
-      {/* Top Search Bar (Simplified) */}
-      <FiltersBar
-        searchValue={searchQuery}
-        onSearchChange={setSearchQuery}
-        selectedVibes={selectedVibes}
-        onVibesChange={setSelectedVibes}
-        selectedCategory={selectedCategory}
-        onCategoryChange={setSelectedCategory}
-        onReset={resetFilters}
-        onMobileFilterOpen={() => setShowMobileFilter(true)}
-      />
-
-      {/* Editorial Mode: Hero + Lanes */}
-      {layoutMode === "editorial" && (
-        <>
-          <MarketplaceHero slides={heroVenues} userArchetype={userArchetype} />
-          <div className="max-w-[1800px] mx-auto py-8">
-            {editorialLanes.map((lane) => (
-              <EditorialLane
-                key={lane.title}
-                title={lane.title}
-                venues={lane.venues}
+      {/* Main Content Area - Offset for fixed sidebar on desktop */}
+      <div className="lg:pl-80">
+        {/* Top Bar with Notifications */}
+        <div className="sticky top-0 z-30 bg-white/95 backdrop-blur-lg border-b border-slate-200 px-6 py-4">
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex-1">
+              <FiltersBar
+                searchValue={searchQuery}
+                onSearchChange={setSearchQuery}
+                selectedVibes={selectedVibes}
+                onVibesChange={setSelectedVibes}
+                selectedCategory={selectedCategory}
+                onCategoryChange={setSelectedCategory}
+                onReset={resetFilters}
+                onMobileFilterOpen={() => setShowMobileFilter(true)}
               />
-            ))}
+            </div>
+            <NotificationsBell />
           </div>
-        </>
-      )}
-
-      {/* Grid Mode: Filtered Results */}
-      {layoutMode === "grid" && (
-        <div className="max-w-[1800px] mx-auto px-6 py-10">
-          <div className="flex items-center justify-between mb-8">
-            <h2 className="text-2xl font-semibold text-slate-900">
-              Results
-              <span className="ml-3 text-slate-500 text-lg">
-                ({filteredVenues.length})
-              </span>
-            </h2>
-          </div>
-
-          <MarketplaceGrid venues={filteredVenues} isLoading={isLoading} />
         </div>
-      )}
+
+        {/* Archetype Spotlight */}
+        {userArchetype && (
+          <div className="px-6 pt-8">
+            <ArchetypeSpotlight userArchetype={userArchetype} />
+          </div>
+        )}
+
+        {/* Interactive Widgets - Only show when not filtering */}
+        {!hasActiveFilters && (
+          <div className="px-6 py-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <MoodTracker />
+              <ProgressBadges />
+              {!userArchetype && <QuizTeaser />}
+            </div>
+          </div>
+        )}
+
+        {/* Friends' Picks Lane - Show in editorial mode */}
+        {layoutMode === "editorial" && (
+          <div className="px-6 py-6">
+            <FriendsPicks />
+          </div>
+        )}
+
+        {/* Editorial Mode: Hero + Lanes */}
+        {layoutMode === "editorial" && (
+          <>
+            <MarketplaceHero slides={heroVenues} userArchetype={userArchetype} />
+            <div className="px-6 py-8">
+              {editorialLanes.map((lane) => (
+                <EditorialLane
+                  key={lane.title}
+                  title={lane.title}
+                  venues={lane.venues}
+                />
+              ))}
+            </div>
+          </>
+        )}
+
+        {/* Grid Mode: Filtered Results */}
+        {layoutMode === "grid" && (
+          <div className="px-6 py-10">
+            <div className="flex items-center justify-between mb-8">
+              <h2 className="text-2xl font-semibold text-slate-900">
+                Results
+                <span className="ml-3 text-slate-500 text-lg">
+                  ({filteredVenues.length})
+                </span>
+              </h2>
+            </div>
+
+            <MarketplaceGrid venues={filteredVenues} isLoading={isLoading} />
+          </div>
+        )}
+      </div>
 
       {/* Mobile Vibe Filter Bottom Sheet - Enhanced Design */}
       {showMobileFilter && (
