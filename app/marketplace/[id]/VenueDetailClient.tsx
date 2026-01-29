@@ -462,8 +462,7 @@ export default function VenueDetailClient({
       : null;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-black via-indigo-950/10 to-black pb-20">{
-
+    <div className="min-h-screen bg-gradient-to-br from-black via-indigo-950/10 to-black pb-20">
       {/* Header */}
       <div className="sticky top-0 z-20 bg-black/80 backdrop-blur-xl border-b border-white/5">
         <div className="max-w-[1400px] mx-auto px-4 sm:px-6 py-3">
