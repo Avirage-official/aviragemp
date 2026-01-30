@@ -87,7 +87,7 @@ export default function HomePage() {
             >
               <Sparkles className="w-4 h-4 text-[#FF6B35]" />
               <span className="text-sm font-medium text-slate-700">
-                Welcome to ETHOS
+                Introducing ETHOS
               </span>
             </motion.div>
 
@@ -97,10 +97,10 @@ export default function HomePage() {
               transition={{ duration: 0.7, delay: 0.1 }}
               className="text-5xl md:text-7xl lg:text-8xl font-bold tracking-tight leading-[1.1] text-slate-900"
             >
-              Travel your way.
+              Navigate your world.
               <br />
               <span className="bg-gradient-to-r from-[#006994] via-[#00AEEF] to-[#FF6B35] bg-clip-text text-transparent">
-                Find places that feel like you.
+                Find places that align with you.
               </span>
             </motion.h1>
 
@@ -110,7 +110,7 @@ export default function HomePage() {
               transition={{ duration: 0.7, delay: 0.2 }}
               className="text-xl md:text-2xl text-slate-700 max-w-3xl mx-auto leading-relaxed"
             >
-              Discover personalized travel experiences, places, and connections that match your natural style.
+              Discover how places around you affect your well-being. ETHOS helps you understand and find environments that align with who you are.
             </motion.p>
 
             {/* CTAs */}
@@ -124,11 +124,11 @@ export default function HomePage() {
                 onClick={handleGetStarted}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.98 }}
-                aria-label={user ? "Go to your dashboard" : "Take the Travel Style Quiz"}
+                aria-label={user ? "Go to your dashboard" : "Get Started"}
                 className="group relative px-9 py-4 rounded-xl bg-gradient-to-r from-[#006994] to-[#00AEEF] text-white font-semibold flex items-center gap-2 shadow-2xl shadow-[#00AEEF]/40 hover:shadow-[#00AEEF]/60 transition-all"
               >
                 <div className="absolute -inset-1 rounded-xl bg-gradient-to-r from-[#006994] to-[#00AEEF] opacity-30 blur group-hover:opacity-50 transition-opacity" />
-                <span className="relative">{user ? "Go to Dashboard" : "Take the Travel Style Quiz"}</span>
+                <span className="relative">{user ? "Go to Dashboard" : "Get Started"}</span>
                 <ArrowRight className="relative w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </motion.button>
 
@@ -153,7 +153,7 @@ export default function HomePage() {
               transition={{ delay: 0.5 }}
               className="text-sm text-slate-500 pt-4"
             >
-              No commitment required · Takes 2 minutes
+              Free to join · Discover your alignment
             </motion.p>
           </div>
         </motion.div>
@@ -197,32 +197,34 @@ export default function HomePage() {
             <h2 className="text-4xl md:text-5xl font-bold mb-6 text-slate-900">
               Your Personal{" "}
               <span className="bg-gradient-to-r from-[#006994] via-[#00AEEF] to-[#FF6B35] bg-clip-text text-transparent">
-                Travel Discovery
+                Alignment Platform
               </span>
-              {" "}Platform
             </h2>
             <p className="text-xl text-slate-600 max-w-3xl mx-auto leading-relaxed">
-              ETHOS helps you discover personalized travel experiences, places, and connections that match your natural style.
+              ETHOS is an identity-based social layer that helps you find alignment socially, emotionally, and experientially. Starting with local places—discover how the environments around you affect you, positively or negatively.
+            </p>
+            <p className="text-lg text-slate-500 max-w-2xl mx-auto leading-relaxed mt-4">
+              This site focuses on helping you navigate places around you. ETHOS will expand to other areas like career and more in the future.
             </p>
           </motion.div>
 
           <div className="grid md:grid-cols-3 gap-6 md:gap-8">
             <Feature
               icon={<Compass />}
-              title="Discover your travel style"
-              text="Take a personalized quiz to uncover your unique travel preferences and what kind of experiences energize you."
+              title="Understand your environmental preferences"
+              text="Discover how different places and environments affect your well-being and energy levels."
               delay={0.1}
             />
             <Feature
               icon={<Zap />}
-              title="Find aligned experiences"
-              text="Explore destinations, activities, and hidden gems perfectly matched to your travel personality."
+              title="Find aligned local experiences"
+              text="Explore venues, activities, and spaces around you that match your personal alignment."
               delay={0.2}
             />
             <Feature
               icon={<Users />}
-              title="Connect with like-minded travelers"
-              text="Meet fellow adventurers who share your travel style and create meaningful connections on the road."
+              title="Connect through shared place experiences"
+              text="Meet people who resonate with similar environments and share meaningful local discoveries."
               delay={0.3}
             />
           </div>
@@ -246,28 +248,28 @@ export default function HomePage() {
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight text-slate-900">
             Ready to discover{" "}
             <span className="bg-gradient-to-r from-[#006994] via-[#00AEEF] to-[#FF6B35] bg-clip-text text-transparent">
-              your travel style
+              places that align with you
             </span>
             ?
           </h2>
           <p className="text-xl text-slate-600 leading-relaxed">
-            Take the quiz and start finding travel experiences perfectly matched to who you are.
+            Join ETHOS and start understanding how the environments around you affect your well-being.
           </p>
 
           <motion.button
             onClick={handleGetStarted}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.98 }}
-            aria-label={user ? "Go to your dashboard" : "Take the Travel Style Quiz"}
+            aria-label={user ? "Go to your dashboard" : "Get Started"}
             className="group relative inline-flex items-center gap-2 px-10 py-5 rounded-xl bg-gradient-to-r from-[#006994] to-[#00AEEF] text-white font-semibold text-lg shadow-2xl shadow-[#00AEEF]/40 hover:shadow-[#00AEEF]/60 transition-all"
           >
             <div className="absolute -inset-1 rounded-xl bg-gradient-to-r from-[#006994] to-[#00AEEF] opacity-30 blur group-hover:opacity-50 transition-opacity" />
-            <span className="relative">{user ? "Go to Dashboard" : "Take the Travel Style Quiz"}</span>
+            <span className="relative">{user ? "Go to Dashboard" : "Get Started"}</span>
             <ArrowRight className="relative w-5 h-5 group-hover:translate-x-1 transition-transform" />
           </motion.button>
           
           <p className="text-sm text-slate-500">
-            Free to start · No credit card needed
+            Free to join · Start exploring today
           </p>
         </motion.div>
       </section>

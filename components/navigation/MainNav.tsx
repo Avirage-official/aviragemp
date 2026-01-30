@@ -28,10 +28,19 @@ export function MainNav() {
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 10);
+    // For landing page, show nav only after scrolling past hero (viewport height)
+    // For other pages, show after minimal scroll
+    const handleScroll = () => {
+      if (pathname === "/") {
+        setScrolled(window.scrollY > window.innerHeight * 0.8);
+      } else {
+        setScrolled(window.scrollY > 10);
+      }
+    };
+    handleScroll(); // Initial check
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  }, [pathname]);
 
   useEffect(() => {
     setMobileOpen(false);
@@ -58,10 +67,12 @@ export function MainNav() {
   return (
     <>
       <nav
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-          scrolled || !isLandingPage
-            ? "bg-[#0A0A0A]/95 backdrop-blur-xl border-b border-white/[0.06] shadow-lg"
-            : "bg-transparent"
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
+          scrolled
+            ? "bg-[#0A0A0A]/95 backdrop-blur-xl border-b border-white/[0.06] shadow-lg opacity-100 translate-y-0"
+            : isLandingPage
+            ? "bg-transparent opacity-0 -translate-y-full pointer-events-none"
+            : "bg-[#0A0A0A]/95 backdrop-blur-xl border-b border-white/[0.06] shadow-lg"
         }`}
       >
         <div className="mx-auto px-4 sm:px-6">
