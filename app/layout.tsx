@@ -18,7 +18,7 @@ export default function RootLayout({
       appearance={{
         baseTheme: undefined,
         variables: {
-          colorPrimary: '#4F8CFF',
+          colorPrimary: '#006994',
           colorBackground: '#FFFFFF',
           colorInputBackground: '#F8FAFC',
           colorText: '#0F172A',
@@ -26,10 +26,10 @@ export default function RootLayout({
         },
         elements: {
           card: 'backdrop-blur-xl bg-white/90 border border-white/20 shadow-2xl rounded-3xl',
-          headerTitle: 'text-2xl font-bold bg-gradient-to-r from-[#4F8CFF] to-[#C7B9FF] bg-clip-text text-transparent',
-          formButtonPrimary: 'bg-gradient-to-r from-[#4F8CFF] to-[#C7B9FF] hover:shadow-lg transition-all duration-300',
-          socialButtonsBlockButton: 'border border-gray-200 hover:border-[#4F8CFF]/30 transition-all duration-300',
-          footerActionLink: 'text-[#4F8CFF] hover:text-[#C7B9FF] transition-colors',
+          headerTitle: 'text-2xl font-bold bg-gradient-to-r from-[#006994] to-[#4F8CFF] bg-clip-text text-transparent',
+          formButtonPrimary: 'bg-gradient-to-r from-[#006994] to-[#4F8CFF] hover:shadow-lg transition-all duration-300',
+          socialButtonsBlockButton: 'border border-gray-200 hover:border-[#006994]/30 transition-all duration-300',
+          footerActionLink: 'text-[#006994] hover:text-[#4F8CFF] transition-colors',
         }
       }}
     >
