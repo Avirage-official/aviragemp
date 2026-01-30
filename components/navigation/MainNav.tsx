@@ -38,7 +38,7 @@ export function MainNav() {
   }, [pathname]);
 
   // Hide MainNav only on dashboard routes (dashboard has its own nav in layout)
-  // Keep showing on marketplace
+  // Keep showing on marketplace and landing page
   if (pathname?.startsWith('/dashboard')) {
     return null;
   }
@@ -52,12 +52,15 @@ export function MainNav() {
     return pathname === href || pathname?.startsWith(href);
   };
 
+  // Check if we're on the landing page
+  const isLandingPage = pathname === "/";
+
   return (
     <>
       <nav
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-          scrolled
-            ? "bg-[#0A0A0A]/95 backdrop-blur-xl border-b border-white/[0.06]"
+          scrolled || !isLandingPage
+            ? "bg-[#0A0A0A]/95 backdrop-blur-xl border-b border-white/[0.06] shadow-lg"
             : "bg-transparent"
         }`}
       >
