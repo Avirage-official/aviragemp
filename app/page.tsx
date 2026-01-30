@@ -53,6 +53,7 @@ export default function HomePage() {
             loop
             muted
             playsInline
+            aria-hidden="true"
           />
 
           {/* Enhanced gradient overlays with glassmorphism */}
@@ -123,6 +124,7 @@ export default function HomePage() {
                 onClick={handleGetStarted}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.98 }}
+                aria-label={user ? "Go to your dashboard" : "Get started with ETHOS for free"}
                 className="group relative px-9 py-4 rounded-xl bg-gradient-to-r from-[#4F8CFF] to-[#C7B9FF] text-white font-semibold flex items-center gap-2 shadow-2xl shadow-[#4F8CFF]/40 hover:shadow-[#4F8CFF]/60 transition-all"
               >
                 <div className="absolute -inset-1 rounded-xl bg-gradient-to-r from-[#4F8CFF] to-[#C7B9FF] opacity-30 blur group-hover:opacity-50 transition-opacity" />
@@ -157,8 +159,12 @@ export default function HomePage() {
         </motion.div>
 
         {/* SCROLL INDICATOR */}
-        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-10">
-          <div className="flex flex-col items-center gap-2 text-white/50">
+        <button
+          onClick={() => window.scrollTo({ top: window.innerHeight, behavior: 'smooth' })}
+          aria-label="Scroll to content"
+          className="absolute bottom-10 left-1/2 -translate-x-1/2 z-10 cursor-pointer bg-transparent border-none"
+        >
+          <div className="flex flex-col items-center gap-2 text-white/50 hover:text-white/70 transition-colors">
             <span className="text-xs uppercase tracking-wider font-medium">
               Scroll to explore
             </span>
@@ -170,7 +176,7 @@ export default function HomePage() {
               <div className="w-1 h-2 bg-gradient-to-b from-[#4F8CFF] to-[#7CF5C8] rounded-full" />
             </motion.div>
           </div>
-        </div>
+        </button>
       </section>
 
       {/* WHAT IS ETHOS */}
@@ -252,6 +258,7 @@ export default function HomePage() {
             onClick={handleGetStarted}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.98 }}
+            aria-label={user ? "Go to your dashboard" : "Get started with ETHOS for free"}
             className="group relative inline-flex items-center gap-2 px-10 py-5 rounded-xl bg-gradient-to-r from-[#4F8CFF] to-[#C7B9FF] text-white font-semibold text-lg shadow-2xl shadow-[#4F8CFF]/40 hover:shadow-[#4F8CFF]/60 transition-all"
           >
             <div className="absolute -inset-1 rounded-xl bg-gradient-to-r from-[#4F8CFF] to-[#C7B9FF] opacity-30 blur group-hover:opacity-50 transition-opacity" />
@@ -316,6 +323,57 @@ function Feature({
   );
 }
 
+// Particle class definition (outside component for performance)
+class Particle {
+  x: number;
+  y: number;
+  size: number;
+  speedX: number;
+  speedY: number;
+  color: string;
+  opacity: number;
+  canvasWidth: number;
+  canvasHeight: number;
+
+  constructor(canvasWidth: number, canvasHeight: number) {
+    this.canvasWidth = canvasWidth;
+    this.canvasHeight = canvasHeight;
+    this.x = Math.random() * canvasWidth;
+    this.y = Math.random() * canvasHeight;
+    this.size = Math.random() * 2 + 0.5;
+    this.speedX = Math.random() * 0.5 - 0.25;
+    this.speedY = Math.random() * 0.5 - 0.25;
+    
+    const colors = [
+      "79, 140, 255",    // #4F8CFF
+      "199, 185, 255",   // #C7B9FF
+      "124, 245, 200",   // #7CF5C8
+    ];
+    const color = colors[Math.floor(Math.random() * colors.length)];
+    this.color = `rgba(${color}, 0.6)`;
+    this.opacity = Math.random() * 0.5 + 0.2;
+  }
+
+  update() {
+    this.x += this.speedX;
+    this.y += this.speedY;
+
+    if (this.x > this.canvasWidth) this.x = 0;
+    if (this.x < 0) this.x = this.canvasWidth;
+    if (this.y > this.canvasHeight) this.y = 0;
+    if (this.y < 0) this.y = this.canvasHeight;
+  }
+
+  draw(ctx: CanvasRenderingContext2D) {
+    ctx.fillStyle = this.color;
+    ctx.globalAlpha = this.opacity;
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+  }
+}
+
 // Particle Background Component
 function ParticleBackground() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -334,71 +392,35 @@ function ParticleBackground() {
     resizeCanvas();
     window.addEventListener("resize", resizeCanvas);
 
-    class Particle {
-      x: number;
-      y: number;
-      size: number;
-      speedX: number;
-      speedY: number;
-      color: string;
-      opacity: number;
-      canvasWidth: number;
-      canvasHeight: number;
-
-      constructor(canvasWidth: number, canvasHeight: number) {
-        this.canvasWidth = canvasWidth;
-        this.canvasHeight = canvasHeight;
-        this.x = Math.random() * canvasWidth;
-        this.y = Math.random() * canvasHeight;
-        this.size = Math.random() * 2 + 0.5;
-        this.speedX = Math.random() * 0.5 - 0.25;
-        this.speedY = Math.random() * 0.5 - 0.25;
-        
-        const colors = [
-          "79, 140, 255",    // #4F8CFF
-          "199, 185, 255",   // #C7B9FF
-          "124, 245, 200",   // #7CF5C8
-        ];
-        const color = colors[Math.floor(Math.random() * colors.length)];
-        this.color = `rgba(${color}, 0.6)`;
-        this.opacity = Math.random() * 0.5 + 0.2;
-      }
-
-      update() {
-        this.x += this.speedX;
-        this.y += this.speedY;
-
-        if (this.x > this.canvasWidth) this.x = 0;
-        if (this.x < 0) this.x = this.canvasWidth;
-        if (this.y > this.canvasHeight) this.y = 0;
-        if (this.y < 0) this.y = this.canvasHeight;
-      }
-
-      draw() {
-        if (!ctx) return;
-        ctx.fillStyle = this.color;
-        ctx.globalAlpha = this.opacity;
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.globalAlpha = 1;
-      }
-    }
+    // Reduce particles on mobile for better performance
+    const isMobile = window.innerWidth < 768;
+    const numberOfParticles = isMobile ? 30 : 60;
 
     const particlesArray: Particle[] = [];
-    const numberOfParticles = 60;
-
     for (let i = 0; i < numberOfParticles; i++) {
       particlesArray.push(new Particle(canvas.width, canvas.height));
     }
 
     let animationFrameId: number;
+    let isVisible = true;
+
+    // Use Page Visibility API to pause animations when page is not visible
+    const handleVisibilityChange = () => {
+      isVisible = !document.hidden;
+      if (isVisible) {
+        animate();
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
     const animate = () => {
+      if (!isVisible) return;
+      
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       particlesArray.forEach((particle) => {
         particle.update();
-        particle.draw();
+        particle.draw(ctx);
       });
 
       animationFrameId = requestAnimationFrame(animate);
@@ -408,6 +430,7 @@ function ParticleBackground() {
 
     return () => {
       window.removeEventListener("resize", resizeCanvas);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
       cancelAnimationFrame(animationFrameId);
     };
   }, []);
@@ -420,6 +443,8 @@ function ParticleBackground() {
       transition={{ duration: 2 }}
       className="absolute inset-0 pointer-events-none"
       style={{ zIndex: 1 }}
+      aria-hidden="true"
+      role="presentation"
     />
   );
 }
