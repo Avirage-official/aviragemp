@@ -124,7 +124,7 @@ export default function HomePage() {
                 onClick={handleGetStarted}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.98 }}
-                aria-label={user ? "Go to your dashboard" : "Take the travel style quiz"}
+                aria-label={user ? "Go to your dashboard" : "Take the Travel Style Quiz"}
                 className="group relative px-9 py-4 rounded-xl bg-gradient-to-r from-[#006994] to-[#00AEEF] text-white font-semibold flex items-center gap-2 shadow-2xl shadow-[#00AEEF]/40 hover:shadow-[#00AEEF]/60 transition-all"
               >
                 <div className="absolute -inset-1 rounded-xl bg-gradient-to-r from-[#006994] to-[#00AEEF] opacity-30 blur group-hover:opacity-50 transition-opacity" />
@@ -258,11 +258,11 @@ export default function HomePage() {
             onClick={handleGetStarted}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.98 }}
-            aria-label={user ? "Go to your dashboard" : "Discover your travel style"}
+            aria-label={user ? "Go to your dashboard" : "Take the Travel Style Quiz"}
             className="group relative inline-flex items-center gap-2 px-10 py-5 rounded-xl bg-gradient-to-r from-[#006994] to-[#00AEEF] text-white font-semibold text-lg shadow-2xl shadow-[#00AEEF]/40 hover:shadow-[#00AEEF]/60 transition-all"
           >
             <div className="absolute -inset-1 rounded-xl bg-gradient-to-r from-[#006994] to-[#00AEEF] opacity-30 blur group-hover:opacity-50 transition-opacity" />
-            <span className="relative">{user ? "Go to Dashboard" : "Discover Your Travel Style"}</span>
+            <span className="relative">{user ? "Go to Dashboard" : "Take the Travel Style Quiz"}</span>
             <ArrowRight className="relative w-5 h-5 group-hover:translate-x-1 transition-transform" />
           </motion.button>
           
@@ -348,7 +348,7 @@ class Particle {
       "0, 105, 148",     // #006994 (ocean blue)
       "0, 174, 239",     // #00AEEF (bright blue)
       "255, 107, 53",    // #FF6B35 (sunset orange)
-      "124, 245, 200",   // #7CF5C8 (mint - keeping this)
+      "124, 245, 200",   // #7CF5C8 (mint accent)
     ];
     const color = colors[Math.floor(Math.random() * colors.length)];
     this.color = `rgba(${color}, 0.6)`;
