@@ -64,14 +64,17 @@ export function MainNav() {
   // Check if we're on the landing page
   const isLandingPage = pathname === "/";
 
+  // Completely hide navigation on landing page
+  if (isLandingPage) {
+    return null;
+  }
+
   return (
     <>
       <nav
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
           scrolled
             ? "bg-[#0A0A0A]/95 backdrop-blur-xl border-b border-white/[0.06] shadow-lg opacity-100 translate-y-0"
-            : isLandingPage
-            ? "bg-transparent opacity-0 -translate-y-full pointer-events-none"
             : "bg-[#0A0A0A]/95 backdrop-blur-xl border-b border-white/[0.06] shadow-lg"
         }`}
       >
