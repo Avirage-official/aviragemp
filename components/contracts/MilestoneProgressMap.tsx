@@ -3,18 +3,16 @@
 import { motion } from "framer-motion";
 import { CheckCircle2, Circle, Clock, XCircle, AlertCircle } from "lucide-react";
 
-type MilestoneStatus = "PENDING" | "IN_PROGRESS" | "COMPLETED" | "BLOCKED";
-
 type Milestone = {
   id: string;
   title: string;
-  description?: string;
+  description?: string | null;
   deliverables: string[];
-  status: MilestoneStatus;
+  status: string;
   amount: number;
   currency: string;
-  dueDate?: Date | string;
-  completedAt?: Date | string;
+  dueDate?: Date | string | null;
+  completedAt?: Date | string | null;
   orderIndex: number;
 };
 
@@ -129,7 +127,13 @@ function MilestoneCard({
   total: number;
   onClick?: (milestone: Milestone) => void;
 }) {
-  const statusConfig = {
+  const statusConfig: Record<string, {
+    icon: any;
+    color: string;
+    bgColor: string;
+    borderColor: string;
+    glowColor: string;
+  }> = {
     COMPLETED: {
       icon: CheckCircle2,
       color: "text-green-400",
@@ -160,7 +164,7 @@ function MilestoneCard({
     },
   };
 
-  const config = statusConfig[milestone.status];
+  const config = statusConfig[milestone.status] || statusConfig.PENDING;
   const Icon = config.icon;
 
   return (

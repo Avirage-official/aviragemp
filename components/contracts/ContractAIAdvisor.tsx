@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Brain, ShieldCheck, AlertTriangle, Lightbulb, TrendUp } from "lucide-react";
+import { Brain, ShieldCheck, AlertTriangle, Lightbulb, TrendingUp } from "lucide-react";
 import { useEffect, useState } from "react";
 
 type RiskFlag = {
@@ -226,7 +226,7 @@ export function ContractAIAdvisor({ contractData, isAnalyzing = false }: Contrac
                 >
                   {allSuggestions.length === 0 ? (
                     <div className="rounded-lg bg-purple-500/10 border border-purple-500/20 p-4 text-center">
-                      <TrendUp className="mx-auto mb-2 h-8 w-8 text-purple-400" />
+                      <TrendingUp className="mx-auto mb-2 h-8 w-8 text-purple-400" />
                       <p className="text-sm text-purple-300">Contract looks good!</p>
                     </div>
                   ) : (
