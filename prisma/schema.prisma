@@ -487,6 +487,7 @@ model BusinessProfile {
 
   listings      Listing[]
   subscriptions Subscription[]
+  contracts     Contract[]
 
   @@index([subscriptionStatus])
   @@index([primaryCode])
@@ -785,4 +786,77 @@ model VenueCheckin {
   @@index([venueId])
   @@index([status])
   @@index([expiresAt])
+}
+
+////////////////////////
+// CONTRACTS & MILESTONES - 2026 AI GOVERNANCE
+////////////////////////
+
+model Contract {
+  id        String   @id @default(cuid())
+  businessId String
+  clientId   String?  // Optional client User reference
+  
+  business BusinessProfile @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  
+  title       String
+  description String?  @db.Text
+  
+  // Contract status
+  status      String   @default("DRAFT") // DRAFT, ACTIVE, COMPLETED, CANCELLED
+  
+  // Legal terms
+  legalTerms  String   @db.Text
+  
+  // Financial
+  totalAmount Float
+  currency    String   @default("USD")
+  
+  // 2026 AI Governance Fields
+  aiAssumptions Json?   // AI-detected assumptions in the contract
+  aiRiskFlags   Json?   // AI-flagged potential risks
+  aiConfidence  Float?  // AI confidence score (0.0 to 1.0)
+  
+  // Signatures
+  businessSignedAt DateTime?
+  clientSignedAt   DateTime?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  milestones Milestone[]
+  
+  @@index([businessId])
+  @@index([status])
+}
+
+model Milestone {
+  id         String   @id @default(cuid())
+  contractId String
+  
+  contract Contract @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  
+  title        String
+  description  String?  @db.Text
+  deliverables String[] @default([])
+  
+  // Milestone status
+  status       String   @default("PENDING") // PENDING, IN_PROGRESS, COMPLETED, BLOCKED
+  
+  // Financial
+  amount       Float
+  currency     String   @default("USD")
+  
+  // Dates
+  dueDate      DateTime?
+  completedAt  DateTime?
+  
+  // Order in sequence
+  orderIndex   Int      @default(0)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@index([contractId])
+  @@index([status])
 }
